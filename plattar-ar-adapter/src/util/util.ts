@@ -8,6 +8,17 @@ for (let i = 0; i < 256; i++) {
  * Static Utility Functions
  */
 export class Util {
+    public static canAugment(): boolean {
+        if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+            return Util.canQuicklook();
+        }
+        else if (/android/i.test(navigator.userAgent)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public static canQuicklook(): boolean {
         const tempAnchor: HTMLAnchorElement = document.createElement("a");
 

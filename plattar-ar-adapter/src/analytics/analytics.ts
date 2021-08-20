@@ -18,7 +18,7 @@ export class Analytics {
     };
 
     public static track(event: any, dataSet: any) {
-        const dimensions: AnalyticsDimensions = Analytics._DIMS;
+        const dimensions: AnalyticsDimensions = Analytics.getDimensions();
 
         const url: string = "https://c.plattar.space/api/v2/analytics";
         var data = dataSet || {};
@@ -59,5 +59,9 @@ export class Analytics {
         }
 
         return userID;
+    }
+
+    public static getDimensions(): AnalyticsDimensions {
+        return Analytics._DIMS;
     }
 }
