@@ -17,7 +17,7 @@ export class Analytics {
         user_id: Analytics.getUserID()
     };
 
-    public static track(event: any, dataSet: any) {
+    public static track(event: any, dataSet: any | undefined = undefined) {
         const dimensions: AnalyticsDimensions = Analytics.getDimensions();
 
         const url: string = "https://c.plattar.space/api/v2/analytics";
@@ -63,5 +63,29 @@ export class Analytics {
 
     public static getDimensions(): AnalyticsDimensions {
         return Analytics._DIMS;
+    }
+
+    public static startRecordEngagement(): void {
+        let time: Date;
+
+        const handlePageHide = () => {
+            if (document.visibilityState === "hidden") {
+                time = new Date();
+            }
+            else {
+                const time2 = new Date();
+                const diff = time2.getTime() - time.getTime();
+
+                Analytics.track({
+                    eventAction: 'View Time',
+                    viewTime: diff,
+                    eventLabel: diff
+                });
+
+                document.removeEventListener("visibilitychange", handlePageHide, false);
+            }
+        };
+
+        document.addEventListener("visibilitychange", handlePageHide, false);
     }
 }
