@@ -22,7 +22,7 @@ jobs:
       - name: set pre-release version
         run: npm version --prefix plattar-ar-adapter ${{ env.RELEASE_VERSION }}
       - name: write version.js
-        run: rm -rf plattar-ar-adapter/version.js && echo 'module.exports = "${{ env.RELEASE_VERSION }}";' > plattar-ar-adapter/version.js
+        run: rm -rf plattar-ar-adapter/src/version.ts && echo 'export "${{ env.RELEASE_VERSION }}";' > plattar-ar-adapter/src/version.ts
       - name: copy README
         run: cp README.md plattar-ar-adapter/README.md
       - name: copy graphics
