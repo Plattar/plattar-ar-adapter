@@ -1,4 +1,5 @@
 import { Util } from "../util/util";
+import { Server } from "@plattar/plattar-api";
 
 interface AnalyticsDimensions {
     source: string;
@@ -17,37 +18,33 @@ export class Analytics {
         user_id: Analytics.getUserID()
     };
 
-    public static track(event: any, dataSet: any | undefined = undefined) {
+    public static track(dataSet: any) {
         const dimensions: AnalyticsDimensions = Analytics.getDimensions();
 
-        const url: string = "https://c.plattar.space/api/v2/analytics";
-        var data = dataSet || {};
-
-        if (typeof event == 'object') {
-            data = event;
-            event = 'track';
-        }
+        const url: string = Server.location().analytics;
+        const data = dataSet || {};
 
         Object.assign(data, dimensions);
 
-        var analytic = {
-            event: event,
+        const analytic = {
+            event: "track",
             application_id: data.applicationId,
-            origin: 'production',
+            origin: Server.location().type,
             data: data
         };
 
-        var xmlhttp = new XMLHttpRequest();   // new HttpRequest instance
+        const xmlhttp: XMLHttpRequest = new XMLHttpRequest();
         xmlhttp.open("POST", url);
         xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
         xmlhttp.send(JSON.stringify(analytic));
     }
 
     public static getUserID(): string {
+        const key: string = "plattar_user_id";
         let userID: string | null = null;
 
         try {
-            userID = localStorage.getItem("plattar_user_id");
+            userID = localStorage.getItem(key);
         }
         catch (err) {
             userID = Util.generateUUID();
@@ -55,7 +52,7 @@ export class Analytics {
 
         if (!userID) {
             userID = Util.generateUUID();
-            localStorage.setItem("plattar_user_id", userID);
+            localStorage.setItem(key, userID);
         }
 
         return userID;
@@ -77,7 +74,7 @@ export class Analytics {
                 const diff = time2.getTime() - time.getTime();
 
                 Analytics.track({
-                    eventAction: 'View Time',
+                    eventAction: "View Time",
                     viewTime: diff,
                     eventLabel: diff
                 });
