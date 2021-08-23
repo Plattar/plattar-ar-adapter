@@ -18,13 +18,5 @@ export class RealityViewer {
 
         anchor.setAttribute("href", this.modelUrl);
         anchor.click();
-
-        Analytics.track({
-            device: "ios",
-            eventCategory: "Reality Viewer",
-            eventAction: "Start Augment"
-        });
-
-        Analytics.startRecordEngagement();
     }
 }

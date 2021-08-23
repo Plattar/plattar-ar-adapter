@@ -3,7 +3,7 @@ import { Server } from "@plattar/plattar-api";
 
 export class Analytics {
 
-    public static track(dataSet: any) {
+    public track(dataSet: any) {
         const url: string = Server.location().analytics;
         const data = dataSet || {};
 
@@ -13,7 +13,7 @@ export class Analytics {
             pageTitle: document.title,
             pageURL: location.href,
             referrer: document.referrer,
-            user_id: Analytics.getUserID(),
+            user_id: this.getUserID(),
             origin: Server.location().type,
             data: data
         };
@@ -24,7 +24,7 @@ export class Analytics {
         xmlhttp.send(JSON.stringify(analytic));
     }
 
-    public static getUserID(): string {
+    public getUserID(): string {
         const key: string = "plattar_user_id";
         let userID: string | null = null;
 
@@ -43,7 +43,7 @@ export class Analytics {
         return userID;
     }
 
-    public static startRecordEngagement(): void {
+    public startRecordEngagement(): void {
         let time: Date;
 
         const handlePageHide = () => {
@@ -54,7 +54,7 @@ export class Analytics {
                 const time2 = new Date();
                 const diff = time2.getTime() - time.getTime();
 
-                Analytics.track({
+                this.track({
                     eventAction: "View Time",
                     viewTime: diff,
                     eventLabel: diff

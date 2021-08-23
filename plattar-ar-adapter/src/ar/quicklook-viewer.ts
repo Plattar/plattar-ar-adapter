@@ -32,12 +32,6 @@ export class QuicklookViewer {
 
                 document.body.removeChild(anchor);
                 anchor.removeEventListener("message", handleQuicklook, false);
-
-                Analytics.track({
-                    device: "ios",
-                    eventCategory: "Quick Look",
-                    eventAction: "CallToAction"
-                });
             };
 
             anchor.addEventListener("message", handleQuicklook, false);
@@ -52,13 +46,5 @@ export class QuicklookViewer {
 
         anchor.setAttribute("href", encodeURI(url));
         anchor.click();
-
-        Analytics.track({
-            device: "ios",
-            eventCategory: "Quick Look",
-            eventAction: "Start Augment"
-        });
-
-        Analytics.startRecordEngagement();
     }
 }

@@ -49,13 +49,5 @@ export class SceneViewer {
         const anchor: HTMLAnchorElement = document.createElement("a");
         anchor.setAttribute("href", intent);
         anchor.click();
-
-        Analytics.track({
-            device: "android",
-            eventCategory: "Scene Viewer",
-            eventAction: "Start Augment"
-        });
-
-        Analytics.startRecordEngagement();
     }
 }
