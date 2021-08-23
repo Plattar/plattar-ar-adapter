@@ -23,10 +23,15 @@ export class Analytics {
 
         this.push("data", data);
 
-        const xmlhttp: XMLHttpRequest = new XMLHttpRequest();
-        xmlhttp.open("POST", url);
-        xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        xmlhttp.send(JSON.stringify(Object.fromEntries(this._map)));
+        try {
+            const xmlhttp: XMLHttpRequest = new XMLHttpRequest();
+            xmlhttp.open("POST", url);
+            xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+            xmlhttp.send(JSON.stringify(Object.fromEntries(this._map)));
+        }
+        catch (err) {
+            console.error("Analytics.track() - Error during POST - " + err);
+        }
     }
 
     public push(key: string, value: any): void {
