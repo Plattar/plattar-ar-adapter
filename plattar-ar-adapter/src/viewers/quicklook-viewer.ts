@@ -1,4 +1,4 @@
-export class QuicklookViewer {
+export default class QuicklookViewer {
     public modelUrl: string | null = null;
     public araction: string | null = null;
     public arcallback: () => void;

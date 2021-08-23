@@ -1,7 +1,7 @@
-import { Util } from "../util/util";
+import Util from "../util/util";
 import { Server } from "@plattar/plattar-api";
 
-export class Analytics {
+export default class Analytics {
 
     private readonly _map: Map<string, any>;
 

@@ -1,7 +1,7 @@
 /**
  * Simple HTTP interaction module
  */
-export class BasicHTTP {
+export default class BasicHTTP {
     public static get(protocol: string, path: string): Promise<any> {
         return new Promise<any>((accept, reject) => {
             const http: XMLHttpRequest = new XMLHttpRequest();

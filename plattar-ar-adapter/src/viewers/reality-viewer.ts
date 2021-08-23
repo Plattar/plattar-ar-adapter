@@ -1,4 +1,4 @@
-export class RealityViewer {
+export default class RealityViewer {
     public modelUrl: string | null = null;
 
     constructor() {

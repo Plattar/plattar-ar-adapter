@@ -1,6 +1,6 @@
 /**
  * Performs AR related to Plattar Configurator functionalities
  */
-export class ConfiguratorAR {
+export default class ConfiguratorAR {
 
 }

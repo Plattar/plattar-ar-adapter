@@ -1,4 +1,4 @@
 export * as version from "./version";
-export { ConfiguratorAR } from "./ar/configurator-ar";
-export { ProductAR } from "./ar/product-ar";
-export { SceneAR } from "./ar/scene-ar";
+export * as ConfiguratorAR from "./ar/configurator-ar";
+export * as ProductAR from "./ar/product-ar";
+export * as SceneAR from "./ar/scene-ar";

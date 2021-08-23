@@ -1,4 +1,4 @@
-export class SceneViewer {
+export default class SceneViewer {
     public modelUrl: string | null = null;
     public araction: string | null = null;
     public titleHTML: string;

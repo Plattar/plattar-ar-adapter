@@ -7,7 +7,7 @@ for (let i = 0; i < 256; i++) {
 /**
  * Static Utility Functions
  */
-export class Util {
+export default class Util {
 
     public static canAugment(): boolean {
         if (Util.isInApp()) {
