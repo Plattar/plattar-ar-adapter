@@ -1,34 +1,19 @@
 import { Util } from "../util/util";
 import { Server } from "@plattar/plattar-api";
 
-interface AnalyticsDimensions {
-    source: string;
-    pageTitle: string;
-    pageURL: string;
-    referrer: string;
-    user_id: string;
-}
-
 export class Analytics {
-    private static readonly _DIMS = {
-        source: "embed",
-        pageTitle: document.title,
-        pageURL: location.href,
-        referrer: document.referrer,
-        user_id: Analytics.getUserID()
-    };
 
     public static track(dataSet: any) {
-        const dimensions: AnalyticsDimensions = Analytics.getDimensions();
-
         const url: string = Server.location().analytics;
         const data = dataSet || {};
 
-        Object.assign(data, dimensions);
-
         const analytic = {
             event: "track",
-            application_id: data.applicationId,
+            source: "embed",
+            pageTitle: document.title,
+            pageURL: location.href,
+            referrer: document.referrer,
+            user_id: Analytics.getUserID(),
             origin: Server.location().type,
             data: data
         };
@@ -56,10 +41,6 @@ export class Analytics {
         }
 
         return userID;
-    }
-
-    public static getDimensions(): AnalyticsDimensions {
-        return Analytics._DIMS;
     }
 
     public static startRecordEngagement(): void {
