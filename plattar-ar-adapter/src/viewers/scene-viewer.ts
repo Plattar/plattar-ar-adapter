@@ -1,5 +1,3 @@
-import { Analytics } from "../analytics/analytics";
-
 export class SceneViewer {
     public modelUrl: string | null = null;
     public araction: string | null = null;

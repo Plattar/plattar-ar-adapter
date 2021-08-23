@@ -1,5 +1,3 @@
-import { Analytics } from "../analytics/analytics";
-
 export class RealityViewer {
     public modelUrl: string | null = null;
 
