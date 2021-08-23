@@ -47,11 +47,22 @@ export class Analytics {
         }
         catch (err) {
             userID = Util.generateUUID();
+
+            // try storing if just generated
+            try {
+                localStorage.setItem(key, userID);
+            }
+            catch (_err) {/* silent */ }
         }
 
         if (!userID) {
             userID = Util.generateUUID();
-            localStorage.setItem(key, userID);
+
+            // try storing if just generated
+            try {
+                localStorage.setItem(key, userID);
+            }
+            catch (_err) { /*silent */ }
         }
 
         return userID;
