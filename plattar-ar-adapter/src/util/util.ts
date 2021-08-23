@@ -8,8 +8,23 @@ for (let i = 0; i < 256; i++) {
  * Static Utility Functions
  */
 export class Util {
+
     public static canAugment(): boolean {
+        if (Util.isInApp()) {
+            return false;
+        }
+
         if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+            // inside facebook browser
+            if (/\bFB[\w_]+\//.test(navigator.userAgent)) {
+                return false;
+            }
+
+            // inside instagram browser
+            if (/\bInstagram/i.test(navigator.userAgent)) {
+                return false;
+            }
+
             return Util.canQuicklook();
         }
         else if (/android/i.test(navigator.userAgent)) {
