@@ -2,14 +2,12 @@ import { Analytics } from "../analytics/analytics";
 
 export class SceneViewer {
     public modelUrl: string | null = null;
-    public url: string | null = null;
     public araction: string | null = null;
     public titleHTML: string;
     public isVertical: boolean = false;
 
     constructor() {
         this.modelUrl = null;
-        this.url = null;
         this.titleHTML = "<b>" + document.title;
         this.isVertical = false;
     }
@@ -19,30 +17,14 @@ export class SceneViewer {
             throw new Error("SceneViewer.start() - model url not set, use SceneViewer.modelUrl");
         }
 
-        const url: string | null = this.url;
         const araction: string | null = this.araction;
 
         let composedLink: string | null = null;
 
-        if (url || araction) {
-            if (araction) {
-                const link: URL = new URL(location.href);
-                link.searchParams.set("araction", araction);
-                composedLink = encodeURIComponent(link.href);
-            }
-            else if (url && /^http/.test(url)) {
-                composedLink = encodeURIComponent(url);
-            }
-            else if (url && /araction=/.test(url)) {
-                const match: RegExpMatchArray | null = url.match(/araction=(.*)/gm);
-
-                if (match) {
-                    const action = match[0].split("=")[1];
-                    const link: URL = new URL(location.href);
-                    link.searchParams.set("araction", action);
-                    composedLink = encodeURIComponent(link.href);
-                }
-            }
+        if (araction) {
+            const link: URL = new URL(location.href);
+            link.searchParams.set("araction", araction);
+            composedLink = encodeURIComponent(link.href);
         }
 
         if (!composedLink) {
