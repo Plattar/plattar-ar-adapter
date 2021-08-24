@@ -74,12 +74,25 @@ export default class ProductAR {
 
                 // otherwise both the product and variation are available
                 // we need to figure out if we can actually do AR though
-                if (!variation.attributes.file_model_id) {
+                // check if variation has a model file defined
+                const modelID: string | undefined = variation.attributes.file_model_id;
+
+                if (!modelID) {
                     return reject(new Error("ProductAR.init() - cannot proceed as variation does not have a defined file"));
                 }
 
+                // find the actual FileModel from Variation
+                const model: FileModel | undefined = variation.relationships.find(FileModel, modelID);
 
+                if (!model) {
+                    return reject(new Error("ProductAR.init() - cannot proceed as ModelFile for selected variation is corrupt"));
+                }
 
+                // we need to define our AR module here
+                // we are in Safari/Quicklook mode here
+                if (Util.isSafari() && Util.canQuicklook()) {
+                    // model needs to have either USDZ or REALITY files defined
+                }
             }).catch(reject);
         });
     }
@@ -106,6 +119,15 @@ export default class ProductAR {
             throw new Error("ProductAR.start() - cannot proceed as AR instance is null");
         }
 
+        // this was initialised via the init() function
         this._ar.start();
+
+        this._analytics.track({
+            device: this._ar.device,
+            eventCategory: this._ar.nodeType,
+            eventAction: "Start Augment"
+        });
+
+        this._analytics.startRecordEngagement();
     }
 }

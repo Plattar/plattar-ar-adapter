@@ -11,6 +11,14 @@ export default class QuicklookViewer extends ARViewer {
         this.arcallback = () => { };
     }
 
+    public get nodeType(): string {
+        return "Quick Look";
+    }
+
+    public get device(): string {
+        return "ios";
+    }
+
     public start(): void {
         if (!this.modelUrl) {
             throw new Error("QuicklookViewer.start() - model url not set, use QuicklookViewer.modelUrl");

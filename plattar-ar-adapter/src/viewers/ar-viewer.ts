@@ -6,4 +6,6 @@ export default abstract class ARViewer {
     }
 
     public abstract start(): void;
+    public abstract get nodeType(): string;
+    public abstract get device(): string;
 }

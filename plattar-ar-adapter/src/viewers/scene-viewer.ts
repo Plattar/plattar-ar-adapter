@@ -11,6 +11,14 @@ export default class SceneViewer extends ARViewer {
         this.isVertical = false;
     }
 
+    public get nodeType(): string {
+        return "Scene Viewer";
+    }
+
+    public get device(): string {
+        return "android";
+    }
+
     public start(): void {
         if (!this.modelUrl) {
             throw new Error("SceneViewer.start() - model url not set, use SceneViewer.modelUrl");
