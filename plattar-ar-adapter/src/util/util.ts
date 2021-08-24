@@ -10,10 +10,6 @@ for (let i = 0; i < 256; i++) {
 export default class Util {
 
     public static canAugment(): boolean {
-        if (Util.isInApp()) {
-            return false;
-        }
-
         if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
             // inside facebook browser
             if (/\bFB[\w_]+\//.test(navigator.userAgent)) {
@@ -42,6 +38,24 @@ export default class Util {
             tempAnchor.relList.supports("ar");
     }
 
+    public static canSceneViewer(): boolean {
+        return Util.canAugment() && /android/i.test(navigator.userAgent);
+    }
+
+    public static canRealityViewer(): boolean {
+        if (!Util.canAugment()) {
+            return false;
+        }
+
+        if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+            if (Util.isSafari() && Util.getIOSVersion()[0] >= 13) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static isSafari(): boolean {
         if (navigator.vendor && navigator.userAgent) {
             return navigator.vendor.indexOf("Apple") > -1 &&
@@ -50,22 +64,6 @@ export default class Util {
         }
 
         return false;
-    }
-
-    public static isInApp(): boolean {
-        // @ts-ignore
-        const useragent: string = navigator.userAgent || navigator.vendor || <string>(window.opera);
-
-        const rules: string[] = [
-            'WebView',
-            '(iPhone|iPod|iPad)(?!.*Safari\/)',
-            'Android.*(wv|\.0\.0\.0)',
-        ];
-
-        const rString: string = rules.join('|');
-        const regex: RegExp = new RegExp(rString, "ig");
-
-        return Boolean(useragent.match(regex));
     }
 
     public static generateUUID(): string {

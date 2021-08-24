@@ -1,7 +1,10 @@
-import { FileModel, Product, ProductVariation, Scene, Project } from "@plattar/plattar-api";
+import { FileModel, Product, ProductVariation, Scene, Project, Server } from "@plattar/plattar-api";
 import Analytics from "../analytics/analytics";
 import Util from "../util/util";
 import ARViewer from "../viewers/ar-viewer";
+import QuicklookViewer from "../viewers/quicklook-viewer";
+import RealityViewer from "../viewers/reality-viewer";
+import SceneViewer from "../viewers/scene-viewer";
 
 /**
  * Performs AR functionality related to Plattar Products and Variation types
@@ -90,9 +93,38 @@ export default class ProductAR {
 
                 // we need to define our AR module here
                 // we are in Safari/Quicklook mode here
-                if (Util.isSafari() && Util.canQuicklook()) {
+                if (Util.isSafari()) {
                     // model needs to have either USDZ or REALITY files defined
+                    // we load REALITY stuff first if available
+                    if (model.attributes.reality_filename && Util.canRealityViewer()) {
+                        this._ar = new RealityViewer();
+                        this._ar.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.reality_filename;
+
+                        return accept(this);
+                    }
+
+                    // otherwise, load the USDZ stuff second if available
+                    if (model.attributes.usdz_filename && Util.canQuicklook()) {
+                        this._ar = new QuicklookViewer();
+                        this._ar.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.usdz_filename;
+
+                        return accept(this);
+                    }
+
+                    return reject(new Error("ProductAR.init() - cannot proceed as ModelFile does not have a defined .usdz or .reality file"));
                 }
+
+                // check android
+                if (Util.canSceneViewer()) {
+                    this._ar = new SceneViewer();
+                    this._ar.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.original_filename;
+
+                    return accept(this);
+                }
+
+                // otherwise, we didn't have AR available - it should never really reach this stage as this should be caught
+                // earlier in the process
+                return reject(new Error("ProductAR.init() - could not initialise AR correctly, check values"));
             }).catch(reject);
         });
     }
