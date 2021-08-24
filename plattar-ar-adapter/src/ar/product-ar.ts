@@ -41,6 +41,36 @@ export default class ProductAR {
         return this._variationID;
     }
 
+    private _setupAnalytics(product: Product, variation: ProductVariation): void {
+        const analytics: Analytics = this._analytics;
+
+        const scene: Scene | undefined = product.relationships.find(Scene);
+
+        // setup scene stuff (if any)
+        if (scene) {
+            analytics.push("sceneId", scene.id);
+            analytics.push("sceneTitle", scene.attributes.title);
+
+            const application: Project | undefined = scene.relationships.find(Project);
+
+            // setup application stuff (if any)
+            if (application) {
+                analytics.push("applicationId", application.id);
+                analytics.push("applicationTitle", application.attributes.title);
+            }
+        }
+
+        // set product stuff
+        analytics.push("productId", product.id);
+        analytics.push("productTitle", product.attributes.title);
+        analytics.push("productSKU", product.attributes.sku);
+
+        // set variation stuff
+        analytics.push("variationId", variation.id);
+        analytics.push("variationTitle", variation.attributes.title);
+        analytics.push("variationSKU", variation.attributes.sku);
+    }
+
     /**
      * Initialise the ProductAR instance. This returns a Promise that resolves
      * successfully if initialisation is successful, otherwise it will fail.
@@ -90,6 +120,8 @@ export default class ProductAR {
                 if (!model) {
                     return reject(new Error("ProductAR.init() - cannot proceed as ModelFile for selected variation is corrupt"));
                 }
+
+                this._setupAnalytics(product, variation);
 
                 // we need to define our AR module here
                 // we are in Safari/Quicklook mode here
