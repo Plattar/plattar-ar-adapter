@@ -15,7 +15,15 @@ export default class Analytics {
         this.push("user_id", this.getUserID());
     }
 
-    public track(dataSet: any | undefined | null = null) {
+    public track(dataSet: any | undefined | null = null): void {
+        this._send("track", dataSet);
+    }
+
+    public pageview(dataSet: any | undefined | null = null): void {
+        this._send("pageview", dataSet);
+    }
+
+    private _send(event: string, dataSet: any | undefined | null = null): void {
         const url: string = Server.location().analytics;
         const data = dataSet || {};
 
@@ -23,9 +31,9 @@ export default class Analytics {
         const cData: any = Object.assign(data, dims);
 
         const analytic: any = {
-            event: "track",
+            event: event,
             origin: Server.location().type,
-            application_id: data.applicationId,
+            application_id: cData.applicationId,
             data: cData
         };
 
@@ -40,7 +48,7 @@ export default class Analytics {
             xmlhttp.send(JSON.stringify(analytic));
         }
         catch (err) {
-            console.error("Analytics.track() - Error during POST - " + err);
+            console.error("Analytics.send(" + event + ") - Error during POST - " + err);
         }
     }
 
