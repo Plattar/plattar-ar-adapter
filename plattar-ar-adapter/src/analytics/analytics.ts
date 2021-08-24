@@ -8,26 +8,32 @@ export default class Analytics {
     constructor() {
         this._map = new Map<string, any>();
 
-        this.push("event", "track");
         this.push("source", "embed");
         this.push("pageTitle", document.title);
         this.push("pageURL", location.href);
         this.push("referrer", document.referrer);
         this.push("user_id", this.getUserID());
-        this.push("origin", Server.location().type);
     }
 
-    public track(dataSet: any) {
+    public track(dataSet: any | undefined | null = null) {
         const url: string = Server.location().analytics;
         const data = dataSet || {};
 
-        this.push("data", data);
+        const dims: any = Object.fromEntries(this._map);
+        const cData: any = Object.assign(data, dims);
+
+        const analytic: any = {
+            event: "track",
+            origin: Server.location().type,
+            application_id: data.applicationId,
+            data: cData
+        };
 
         try {
             const xmlhttp: XMLHttpRequest = new XMLHttpRequest();
             xmlhttp.open("POST", url);
             xmlhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-            xmlhttp.send(JSON.stringify(Object.fromEntries(this._map)));
+            xmlhttp.send(JSON.stringify(analytic));
         }
         catch (err) {
             console.error("Analytics.track() - Error during POST - " + err);
