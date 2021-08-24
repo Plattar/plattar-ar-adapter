@@ -29,6 +29,10 @@ export default class Analytics {
             data: cData
         };
 
+        // NOTE - Consider switching this to navigator.sendBeacon which is designed
+        // for sending analytics data even when page is unloaded
+        // see https://stackoverflow.com/questions/40523469/navigator-sendbeacon-to-pass-header-information
+        // see https://developer.mozilla.org/en-US/docs/Web/API/Beacon_API
         try {
             const xmlhttp: XMLHttpRequest = new XMLHttpRequest();
             xmlhttp.open("POST", url);
