@@ -1,11 +1,12 @@
-export default class SceneViewer {
-    public modelUrl: string | null = null;
+import ARViewer from "./ar-viewer";
+
+export default class SceneViewer extends ARViewer {
     public araction: string | null = null;
     public titleHTML: string;
     public isVertical: boolean = false;
 
     constructor() {
-        this.modelUrl = null;
+        super();
         this.titleHTML = "<b>" + document.title;
         this.isVertical = false;
     }

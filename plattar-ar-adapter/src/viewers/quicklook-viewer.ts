@@ -1,11 +1,12 @@
-export default class QuicklookViewer {
-    public modelUrl: string | null = null;
+import ARViewer from "./ar-viewer";
+
+export default class QuicklookViewer extends ARViewer {
     public araction: string | null = null;
     public arcallback: () => void;
     public titleHTML: string;
 
     constructor() {
-        this.modelUrl = null;
+        super();
         this.titleHTML = "&checkoutTitle=" + document.title + "&checkoutSubtitle=" + document.title;
         this.arcallback = () => { };
     }

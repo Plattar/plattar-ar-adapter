@@ -1,8 +1,8 @@
-export default class RealityViewer {
-    public modelUrl: string | null = null;
+import ARViewer from "./ar-viewer";
 
+export default class RealityViewer extends ARViewer {
     constructor() {
-        this.modelUrl = null;
+        super();
     }
 
     public start(): void {
