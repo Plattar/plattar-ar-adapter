@@ -3,8 +3,6 @@
 </h3>
 
 [![install size](https://packagephobia.com/badge?p=@plattar/plattar-ar-adapter)](https://packagephobia.com/result?p=@plattar/plattar-ar-adapter)
-[![Minified](https://badgen.net/bundlephobia/min/@plattar/plattar-ar-adapter)](https://bundlephobia.com/result?p=@plattar/plattar-ar-adapter)
-[![MinZipped](https://badgen.net/bundlephobia/minzip/@plattar/plattar-ar-adapter)](https://bundlephobia.com/result?p=@plattar/plattar-ar-adapter)
 [![NPM](https://img.shields.io/npm/v/@plattar/plattar-ar-adapter)](https://www.npmjs.com/package/@plattar/plattar-ar-adapter)
 [![License](https://img.shields.io/npm/l/@plattar/plattar-ar-adapter)](https://www.npmjs.com/package/@plattar/plattar-ar-adapter)
 
