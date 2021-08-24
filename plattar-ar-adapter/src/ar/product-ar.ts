@@ -24,12 +24,8 @@ export default class ProductAR {
             throw new Error("ProductAR.constructor(productID, variationID) - productID must be defined");
         }
 
-        if (!variationID) {
-            throw new Error("ProductAR.constructor(productID, variationID) - variationID must be defined");
-        }
-
         this._productID = productID;
-        this._variationID = variationID;
+        this._variationID = variationID ? variationID : "default";
         this._analytics = new Analytics();
         this._ar = null;
     }
@@ -62,6 +58,27 @@ export default class ProductAR {
             product.include(Scene.include(Project));
 
             product.get().then((product: Product) => {
+                // find the required variation from our product
+                const variationID: string | undefined = this.variationID ? (this.variationID === "default" ? product.attributes.product_variation_id : this.variationID) : product.attributes.product_variation_id;
+
+                if (!variationID) {
+                    return reject(new Error("ProductAR.init() - cannot proceed as variation was not defined correctly"));
+                }
+
+                const variation: ProductVariation | undefined = product.relationships.find(ProductVariation, variationID);
+
+                // make sure our variation is actually available before moving forward
+                if (!variation) {
+                    return reject(new Error("ProductAR.init() - cannot proceed as variation with id " + variationID + " cannot be found"));
+                }
+
+                // otherwise both the product and variation are available
+                // we need to figure out if we can actually do AR though
+                if (!variation.attributes.file_model_id) {
+                    return reject(new Error("ProductAR.init() - cannot proceed as variation does not have a defined file"));
+                }
+
+
 
             }).catch(reject);
         });
