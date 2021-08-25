@@ -5,11 +5,12 @@ import ARViewer from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
+import LauncherAR from "./launcher-ar";
 
 /**
  * Performs AR functionality related to Plattar Products and Variation types
  */
-export default class ProductAR {
+export default class ProductAR extends LauncherAR {
 
     // analytics instance
     private readonly _analytics: Analytics;
@@ -23,6 +24,8 @@ export default class ProductAR {
     private _ar: ARViewer | null;
 
     constructor(productID: string | undefined | null = null, variationID: string | undefined | null = null) {
+        super();
+
         if (!productID) {
             throw new Error("ProductAR.constructor(productID, variationID) - productID must be defined");
         }
@@ -78,8 +81,8 @@ export default class ProductAR {
      * filure can occur for a number of reasons but it generally means that AR
      * cannot be performed.
      */
-    public init(): Promise<ProductAR> {
-        return new Promise<ProductAR>((accept, reject) => {
+    public init(): Promise<LauncherAR> {
+        return new Promise<LauncherAR>((accept, reject) => {
             if (!Util.canAugment()) {
                 return reject(new Error("ProductAR.init() - cannot proceed as AR not available in context"));
             }
@@ -167,7 +170,7 @@ export default class ProductAR {
      */
     public launch(): Promise<void> {
         return new Promise<void>((accept, reject) => {
-            this.init().then((value: ProductAR) => {
+            this.init().then((value: LauncherAR) => {
                 value.start();
 
                 return accept();
