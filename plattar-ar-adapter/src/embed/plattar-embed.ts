@@ -54,6 +54,32 @@ export default class PlattarEmbed extends HTMLElement {
         }
 
         this._isReady = true;
+
+        const init: string | null = this.hasAttribute("init") ? this.getAttribute("init") : null;
+
+        if (init === "ar") {
+            this.startAR();
+        }
+        else if (init === "viewer") {
+            this.startViewer();
+        }
+        else if (init === "qrcode") {
+            this.startQRCode();
+        }
+        else if (init === "ar-fallback-qrcode") {
+            this.startAR().then((_) => {
+                // nothing to do, launched successfully
+            }).catch((err) => {
+                this.startQRCode();
+            });
+        }
+        else if (init === "ar-fallback-viewer") {
+            this.startAR().then((_) => {
+                // nothing to do, launched successfully
+            }).catch((err) => {
+                this.startViewer();
+            });
+        }
     }
 
     public initAR(): Promise<LauncherAR> {
