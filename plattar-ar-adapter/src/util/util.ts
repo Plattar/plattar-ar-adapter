@@ -7,7 +7,7 @@ for (let i = 0; i < 256; i++) {
 /**
  * Static Utility Functions
  */
-export default class Util {
+export class Util {
 
     public static canAugment(): boolean {
         if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {

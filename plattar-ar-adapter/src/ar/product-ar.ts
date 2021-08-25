@@ -1,16 +1,16 @@
 import { FileModel, Product, ProductVariation, Scene, Project, Server } from "@plattar/plattar-api";
 import Analytics from "../analytics/analytics";
-import Util from "../util/util";
+import { Util } from "../util/util";
 import ARViewer from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
-import LauncherAR from "./launcher-ar";
+import { LauncherAR } from "./launcher-ar";
 
 /**
  * Performs AR functionality related to Plattar Products and Variation types
  */
-export default class ProductAR extends LauncherAR {
+export class ProductAR extends LauncherAR {
 
     // analytics instance
     private readonly _analytics: Analytics;

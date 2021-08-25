@@ -1,4 +1,4 @@
-import Util from "../util/util";
+import { Util } from "../util/util";
 import { Server } from "@plattar/plattar-api";
 
 export default class Analytics {

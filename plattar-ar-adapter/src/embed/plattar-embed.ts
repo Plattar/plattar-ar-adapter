@@ -1,6 +1,6 @@
 import { Server } from "@plattar/plattar-api";
-import ProductAR from "../ar/product-ar";
-import LauncherAR from "../ar/launcher-ar";
+import { ProductAR } from "../ar/product-ar";
+import { LauncherAR } from "../ar/launcher-ar";
 
 /**
  * This is the primary <plattar-embed /> node that allows easy embedding

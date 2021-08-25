@@ -1,4 +1,4 @@
-export default abstract class LauncherAR {
+export abstract class LauncherAR {
     constructor() { }
     public abstract init(): Promise<LauncherAR>;
     public abstract launch(): Promise<void>;
