@@ -67,16 +67,16 @@ export default class PlattarEmbed extends HTMLElement {
             this.startQRCode();
         }
         else if (init === "ar-fallback-qrcode") {
-            this.startAR().then((_) => {
+            this.startAR().then(() => {
                 // nothing to do, launched successfully
-            }).catch((err) => {
+            }).catch((_err) => {
                 this.startQRCode();
             });
         }
         else if (init === "ar-fallback-viewer") {
-            this.startAR().then((_) => {
+            this.startAR().then(() => {
                 // nothing to do, launched successfully
-            }).catch((err) => {
+            }).catch((_err) => {
                 this.startViewer();
             });
         }
@@ -210,7 +210,7 @@ export default class PlattarEmbed extends HTMLElement {
                     viewer.setAttribute("margin", "" + opt.margin);
                 }
 
-                const dst: string = Server.location().base + "/renderer/viewer.html?scene_id=" + this._sceneID;
+                const dst: string = Server.location().base + "renderer/viewer.html?scene_id=" + this._sceneID;
 
                 viewer.setAttribute("url", dst);
 
@@ -241,7 +241,7 @@ export default class PlattarEmbed extends HTMLElement {
                     viewer.setAttribute("margin", "" + opt.margin);
                 }
 
-                let dst: string = Server.location().base + "/renderer/product.html?product_id=" + this._productID;
+                let dst: string = Server.location().base + "renderer/product.html?product_id=" + this._productID;
 
                 if (this._variationID) {
                     dst += "&variation_id=" + this._variationID;
