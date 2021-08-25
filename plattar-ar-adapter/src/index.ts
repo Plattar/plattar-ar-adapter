@@ -1,3 +1,6 @@
+export * as PlattarWeb from "@plattar/plattar-web";
+export * as PlattarQRCode from "@plattar/plattar-qrcode";
+
 export * as version from "./version";
 export * as ConfiguratorAR from "./ar/configurator-ar";
 export * as ProductAR from "./ar/product-ar";
