@@ -30,6 +30,10 @@ export default class PlattarEmbed extends HTMLElement {
         this._viewer = null;
     }
 
+    public get viewer(): HTMLElement | null {
+        return this._viewer;
+    }
+
     connectedCallback() {
         const server: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
 
