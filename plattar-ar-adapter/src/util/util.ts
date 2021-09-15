@@ -10,7 +10,7 @@ for (let i = 0; i < 256; i++) {
 export class Util {
 
     public static canAugment(): boolean {
-        if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+        if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !(<any>window).MSStream) {
             // inside facebook browser
             if (/\bFB[\w_]+\//.test(navigator.userAgent)) {
                 return false;
@@ -47,7 +47,7 @@ export class Util {
             return false;
         }
 
-        if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+        if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !(<any>window).MSStream) {
             if (Util.isSafari() && Util.getIOSVersion()[0] >= 13) {
                 return true;
             }
