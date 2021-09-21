@@ -1,5 +1,5 @@
 import { FileModel, Product, ProductVariation, Scene, Project, Server } from "@plattar/plattar-api";
-import Analytics from "../analytics/analytics";
+import { Analytics } from "@plattar/plattar-analytics";
 import { Util } from "../util/util";
 import ARViewer from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
@@ -13,7 +13,7 @@ import { LauncherAR } from "./launcher-ar";
 export class ProductAR extends LauncherAR {
 
     // analytics instance
-    private readonly _analytics: Analytics;
+    private _analytics: Analytics | null = null;
 
     // product and selected variation IDs
     private readonly _productID: string;
@@ -32,7 +32,6 @@ export class ProductAR extends LauncherAR {
 
         this._productID = productID;
         this._variationID = variationID ? variationID : "default";
-        this._analytics = new Analytics();
         this._ar = null;
     }
 
@@ -45,33 +44,40 @@ export class ProductAR extends LauncherAR {
     }
 
     private _setupAnalytics(product: Product, variation: ProductVariation): void {
-        const analytics: Analytics = this._analytics;
+        let analytics: Analytics | null = null;
 
         const scene: Scene | undefined = product.relationships.find(Scene);
 
         // setup scene stuff (if any)
         if (scene) {
-            analytics.push("sceneId", scene.id);
-            analytics.push("sceneTitle", scene.attributes.title);
+            analytics = new Analytics(scene.attributes.application_id);
+            analytics.origin = <any>Server.location().type;
+
+            this._analytics = analytics;
+
+            analytics.data.push("sceneId", scene.id);
+            analytics.data.push("sceneTitle", scene.attributes.title);
 
             const application: Project | undefined = scene.relationships.find(Project);
 
             // setup application stuff (if any)
             if (application) {
-                analytics.push("applicationId", application.id);
-                analytics.push("applicationTitle", application.attributes.title);
+                analytics.data.push("applicationId", application.id);
+                analytics.data.push("applicationTitle", application.attributes.title);
             }
         }
 
-        // set product stuff
-        analytics.push("productId", product.id);
-        analytics.push("productTitle", product.attributes.title);
-        analytics.push("productSKU", product.attributes.sku);
+        if (analytics) {
+            // set product stuff
+            analytics.data.push("productId", product.id);
+            analytics.data.push("productTitle", product.attributes.title);
+            analytics.data.push("productSKU", product.attributes.sku);
 
-        // set variation stuff
-        analytics.push("variationId", variation.id);
-        analytics.push("variationTitle", variation.attributes.title);
-        analytics.push("variationSKU", variation.attributes.sku);
+            // set variation stuff
+            analytics.data.push("variationId", variation.id);
+            analytics.data.push("variationTitle", variation.attributes.title);
+            analytics.data.push("variationSKU", variation.attributes.sku);
+        }
     }
 
     /**
@@ -186,15 +192,19 @@ export class ProductAR extends LauncherAR {
             throw new Error("ProductAR.start() - cannot proceed as AR instance is null");
         }
 
+        const analytics: Analytics | null = this._analytics;
+
+        if (analytics) {
+            analytics.data.push("device", this._ar.device);
+            analytics.data.push("eventCategory", this._ar.nodeType);
+            analytics.data.push("eventAction", "Start Augment");
+
+            analytics.write();
+
+            analytics.startRecordEngagement();
+        }
+
         // this was initialised via the init() function
         this._ar.start();
-
-        this._analytics.track({
-            device: this._ar.device,
-            eventCategory: this._ar.nodeType,
-            eventAction: "Start Augment"
-        });
-
-        this._analytics.startRecordEngagement();
     }
 }

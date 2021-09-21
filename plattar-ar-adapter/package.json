@@ -37,12 +37,13 @@
   },
   "homepage": "https://www.plattar.com",
   "dependencies": {
-    "@plattar/plattar-api": "^1.114.1",
+    "@plattar/plattar-analytics": "^1.116.2",
+    "@plattar/plattar-api": "^1.115.2",
     "@plattar/plattar-qrcode": "1.114.1",
     "@plattar/plattar-web": "^1.113.10"
   },
   "devDependencies": {
-    "@babel/cli": "^7.15.4",
+    "@babel/cli": "^7.15.7",
     "@babel/core": "^7.15.5",
     "@babel/preset-env": "^7.15.6",
     "browserify": "^17.0.0",
