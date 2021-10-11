@@ -26,7 +26,7 @@ export default class SceneViewer extends ARViewer {
 
         const araction: string | null = this.araction;
 
-        let composedLink: string | null = null;
+        let composedLink: string = encodeURIComponent(location.href);
 
         if (araction) {
             const link: URL = new URL(location.href);
