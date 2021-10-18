@@ -207,4 +207,16 @@ export class ProductAR extends LauncherAR {
         // this was initialised via the init() function
         this._ar.start();
     }
+
+    public canQuicklook(): boolean {
+        return this._ar && this._ar.nodeType === "Quick Look" ? true : false;
+    }
+
+    public canRealityViewer(): boolean {
+        return this._ar && this._ar.nodeType === "Reality Viewer" ? true : false;
+    }
+
+    public canSceneViewer(): boolean {
+        return this._ar && this._ar.nodeType === "Scene Viewer" ? true : false;
+    }
 }
