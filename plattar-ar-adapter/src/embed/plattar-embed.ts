@@ -250,6 +250,10 @@ export default class PlattarEmbed extends HTMLElement {
                     viewer.setAttribute("margin", "" + opt.margin);
                 }
 
+                if (opt.qrType) {
+                    viewer.setAttribute("qr-type", opt.qrType);
+                }
+
                 let dst: string = Server.location().base + "renderer/product.html?product_id=" + this._productID;
 
                 if (this._variationID) {
