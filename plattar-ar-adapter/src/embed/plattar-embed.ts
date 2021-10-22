@@ -191,6 +191,7 @@ export default class PlattarEmbed extends HTMLElement {
 
             const opt: any = options || {
                 color: "#101721",
+                qrType: "default",
                 margin: 0
             };
 
@@ -212,6 +213,10 @@ export default class PlattarEmbed extends HTMLElement {
 
                 if (opt.margin) {
                     viewer.setAttribute("margin", "" + opt.margin);
+                }
+
+                if (opt.qrType) {
+                    viewer.setAttribute("qr-type", opt.qrType);
                 }
 
                 const dst: string = Server.location().base + "renderer/viewer.html?scene_id=" + this._sceneID;
