@@ -35,7 +35,7 @@ npm install @plattar/plattar-ar-adapter
 -   Launch AR for Plattar Products & Variations
 
 ```typescript
-import {ProductAR} from "@pattar/plattar-ar-adapter";
+import {ProductAR} from "@plattar/plattar-ar-adapter";
 
 // grab your product/variation ID from the Plattar CMS
 const productID:string = "{YOUR_PRODUCT_ID}";
@@ -53,7 +53,7 @@ webAR.init().then((ar:ProductAR) => {
 -   Launch AR for Plattar Scenes
 
 ```typescript
-import {SceneAR} from "@pattar/plattar-ar-adapter";
+import {SceneAR} from "@plattar/plattar-ar-adapter";
 
 // grab your scene ID from the Plattar CMS
 const sceneID:string = "{YOUR_SCENE_ID}";
