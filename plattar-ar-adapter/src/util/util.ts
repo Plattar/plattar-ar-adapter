@@ -4,20 +4,23 @@
 export class Util {
 
     public static canAugment(): boolean {
-        if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !(<any>window).MSStream) {
+        const userAgent: string = navigator.userAgent;
+
+        // test google chrome on IOS and standard IOS test
+        if ((/CriOS/i.test(userAgent) || /Macintosh|iPad|iPhone|iPod/.test(userAgent)) && !(<any>window).MSStream) {
             // inside facebook browser
-            if (/\bFB[\w_]+\//.test(navigator.userAgent)) {
+            if (/\bFB[\w_]+\//.test(userAgent)) {
                 return false;
             }
 
             // inside instagram browser
-            if (/\bInstagram/i.test(navigator.userAgent)) {
+            if (/\bInstagram/i.test(userAgent)) {
                 return false;
             }
 
             return Util.canQuicklook();
         }
-        else if (/android/i.test(navigator.userAgent)) {
+        else if (/android/i.test(userAgent)) {
             return true;
         }
 
@@ -55,6 +58,16 @@ export class Util {
             return navigator.vendor.indexOf("Apple") > -1 &&
                 navigator.userAgent.indexOf("CriOS") === -1 &&
                 navigator.userAgent.indexOf("FxiOS") === -1;
+        }
+
+        return false;
+    }
+
+    public static isChromeOnIOS(): boolean {
+        const userAgent: string = navigator.userAgent;
+
+        if (userAgent) {
+            return Util.canAugment() && /CriOS/i.test(userAgent);
         }
 
         return false;

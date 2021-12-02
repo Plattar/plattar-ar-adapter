@@ -38,8 +38,8 @@
   "homepage": "https://www.plattar.com",
   "dependencies": {
     "@plattar/plattar-analytics": "^1.117.2",
-    "@plattar/plattar-api": "^1.118.1",
-    "@plattar/plattar-qrcode": "1.119.1",
+    "@plattar/plattar-api": "^1.120.1",
+    "@plattar/plattar-qrcode": "1.120.3",
     "@plattar/plattar-web": "^1.117.1"
   },
   "devDependencies": {
