@@ -134,7 +134,7 @@ export class ProductAR extends LauncherAR {
 
                 // we need to define our AR module here
                 // we are in Safari/Quicklook mode here
-                if (Util.isSafari()) {
+                if (Util.isSafari() || Util.isChromeOnIOS()) {
                     // model needs to have either USDZ or REALITY files defined
                     // we load REALITY stuff first if available
                     if (model.attributes.reality_filename && Util.canRealityViewer()) {
