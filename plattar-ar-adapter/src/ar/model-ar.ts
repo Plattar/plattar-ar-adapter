@@ -141,7 +141,7 @@ export class ModelAR extends LauncherAR {
         if (analytics) {
             analytics.data.push("device", this._ar.device);
             analytics.data.push("eventCategory", this._ar.nodeType);
-            analytics.data.push("eventAction", "Start Augment");
+            analytics.data.push("eventAction", "Start Model Augment");
 
             analytics.write();
 
