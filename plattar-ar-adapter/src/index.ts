@@ -12,7 +12,9 @@ import PlattarEmbed from "./embed/plattar-embed";
 import version from "./version";
 
 if (customElements) {
-    customElements.define("plattar-embed", PlattarEmbed);
+    if (customElements.get("plattar-embed") === undefined) {
+        customElements.define("plattar-embed", PlattarEmbed);
+    }
 }
 
 console.log("using @plattar/plattar-ar-adapter v" + version);
