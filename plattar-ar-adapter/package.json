@@ -40,14 +40,14 @@
     "@plattar/plattar-analytics": "^1.117.2",
     "@plattar/plattar-api": "^1.120.1",
     "@plattar/plattar-qrcode": "1.120.3",
-    "@plattar/plattar-web": "^1.117.1"
+    "@plattar/plattar-web": "^1.122.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.16.0",
-    "@babel/core": "^7.16.0",
-    "@babel/preset-env": "^7.16.4",
+    "@babel/cli": "^7.16.8",
+    "@babel/core": "^7.16.10",
+    "@babel/preset-env": "^7.16.10",
     "browserify": "^17.0.0",
-    "typescript": "^4.5.2",
+    "typescript": "^4.5.4",
     "uglify-es": "^3.3.9"
   },
   "publishConfig": {
