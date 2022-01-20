@@ -142,6 +142,14 @@ export default class PlattarEmbed extends HTMLElement {
                 viewer.setAttribute("server", this._server);
                 viewer.setAttribute("scene-id", this._sceneID);
 
+                if (this._productID) {
+                    viewer.setAttribute("product-id", this._productID);
+                }
+
+                if (this._variationID) {
+                    viewer.setAttribute("variation-id", this._variationID);
+                }
+
                 viewer.onload = () => {
                     return accept(viewer);
                 };
@@ -219,7 +227,15 @@ export default class PlattarEmbed extends HTMLElement {
                     viewer.setAttribute("qr-type", opt.qrType);
                 }
 
-                const dst: string = Server.location().base + "renderer/viewer.html?scene_id=" + this._sceneID;
+                let dst: string = Server.location().base + "renderer/viewer.html?scene_id=" + this._sceneID;
+
+                if (this._productID) {
+                    dst += "&productId=" + this._productID;
+                }
+
+                if (this._variationID) {
+                    dst += "&variationId=" + this._variationID;
+                }
 
                 viewer.setAttribute("url", dst);
 
