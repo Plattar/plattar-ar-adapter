@@ -226,6 +226,8 @@ export default class PlattarEmbed extends HTMLElement {
 
                 this._viewer = viewer;
 
+                this._currentState = EmbedState.SceneViewer;
+
                 return;
             }
 
@@ -250,6 +252,8 @@ export default class PlattarEmbed extends HTMLElement {
                 shadow.append(viewer);
 
                 this._viewer = viewer;
+
+                this._currentState = EmbedState.ProductViewer;
 
                 return;
             }
@@ -314,6 +318,8 @@ export default class PlattarEmbed extends HTMLElement {
 
                 this._viewer = viewer;
 
+                this._currentState = EmbedState.QRCode;
+
                 return;
             }
 
@@ -352,6 +358,8 @@ export default class PlattarEmbed extends HTMLElement {
                 shadow.append(viewer);
 
                 this._viewer = viewer;
+
+                this._currentState = EmbedState.QRCode;
 
                 return;
             }
