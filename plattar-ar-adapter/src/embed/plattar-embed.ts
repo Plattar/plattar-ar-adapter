@@ -3,10 +3,29 @@ import { ProductAR } from "../ar/product-ar";
 import { LauncherAR } from "../ar/launcher-ar";
 
 /**
+ * This tracks the current state of the Embed
+ */
+enum EmbedState {
+    None,
+    SceneViewer,
+    ProductViewer,
+    ProductAR,
+    QRCode
+}
+
+/**
  * This is the primary <plattar-embed /> node that allows easy embedding
  * of Plattar related content
  */
 export default class PlattarEmbed extends HTMLElement {
+
+    // this is the current state of the embed, none by default
+    private _currentState: EmbedState = EmbedState.None;
+    private _qrCodeOptions: any = {
+        color: "#101721",
+        qrType: "default",
+        margin: 0
+    };
 
     private _sceneID: string | null;
     private _productID: string | null;
@@ -35,6 +54,45 @@ export default class PlattarEmbed extends HTMLElement {
     }
 
     connectedCallback() {
+        const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === "attributes") {
+                    const sceneID: string | null = this.hasAttribute("scene-id") ? this.getAttribute("scene-id") : null;
+                    const productID: string | null = this.hasAttribute("product-id") ? this.getAttribute("product-id") : null;
+                    const variationID: string | null = this.hasAttribute("variation-id") ? this.getAttribute("variation-id") : null;
+
+                    let updated: boolean = false;
+
+                    if (sceneID !== this._sceneID) {
+                        this._sceneID = sceneID;
+
+                        updated = true;
+                    }
+
+                    if (productID !== this._productID) {
+                        this._productID = productID;
+
+                        updated = true;
+                    }
+
+                    if (variationID !== this._variationID) {
+                        this._variationID = variationID;
+
+                        updated = true;
+                    }
+
+                    if (updated) {
+                        // re-render based on internal state
+                        this._OnAttributesUpdated();
+                    }
+                }
+            });
+        });
+
+        observer.observe(this, {
+            attributes: true
+        });
+
         const server: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
 
         Server.create(Server.match(server || "production"));
@@ -206,11 +264,10 @@ export default class PlattarEmbed extends HTMLElement {
                 return reject(new Error("PlattarEmbed.startQRCode() - cannot execute as page has not loaded yet"));
             }
 
-            const opt: any = options || {
-                color: "#101721",
-                qrType: "default",
-                margin: 0
-            };
+            const opt: any = options || this._qrCodeOptions;
+
+            // reset instance for later use
+            this._qrCodeOptions = opt;
 
             if (this._viewer) {
                 this._viewer.remove();
@@ -301,5 +358,44 @@ export default class PlattarEmbed extends HTMLElement {
 
             return reject(new Error("PlattarEmbed.startQRCode() - minimum required attributes not set, use scene-id or product-id as a minimum"));
         });
+    }
+
+    /**
+     * This is called by the observer if any of the embed attributes have changed
+     * based on the state of the embed, we update the internal structure accordingly
+     */
+    private _OnAttributesUpdated(): void {
+        // nothing to update in these scenarios
+        if (this._currentState === EmbedState.None || this._currentState === EmbedState.ProductAR) {
+            return;
+        }
+
+        // re-render the QR Code when attributes have changed
+        if (this._currentState === EmbedState.QRCode) {
+            this.startQRCode(this._qrCodeOptions);
+
+            return;
+        }
+
+        // use the messenger function to change variation when attributes have changed
+        if (this._currentState === EmbedState.SceneViewer) {
+            const viewer: any | null = this.viewer;
+
+            if (viewer) {
+                viewer.messenger.selectVariation(this._productID, this._variationID);
+            }
+
+            return;
+        }
+
+        if (this._currentState === EmbedState.ProductViewer) {
+            const viewer: any | null = this.viewer;
+
+            if (viewer) {
+                viewer.messenger.selectVariation(this._variationID);
+            }
+
+            return;
+        }
     }
 }
