@@ -99,6 +99,15 @@ export default class PlattarEmbed extends HTMLElement {
                 return product.init().then(accept).catch(reject);
             }
 
+            // If Product is set (under any scenario) then use ProductAR
+            // NOTE: At some point this should check for Scenes when SceneAR
+            // is implemented
+            if (this._productID) {
+                const product = new ProductAR(this._productID, this._variationID);
+
+                return product.init().then(accept).catch(reject);
+            }
+
             // otherwise, scene was set so use SceneAR
             if (this._sceneID) {
                 return reject(new Error("PlattarEmbed.initAR() - scene-id not yet supported"));
