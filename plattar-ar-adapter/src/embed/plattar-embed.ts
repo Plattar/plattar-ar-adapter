@@ -9,8 +9,17 @@ enum EmbedState {
     None,
     SceneViewer,
     ProductViewer,
+    ConfiguratorViewer,
     ProductAR,
     QRCode
+}
+
+/**
+ * This tracks the current embed type
+ */
+enum EmbedType {
+    Viewer,
+    Configurator
 }
 
 /**
@@ -18,9 +27,12 @@ enum EmbedState {
  * of Plattar related content
  */
 export default class PlattarEmbed extends HTMLElement {
-
     // this is the current state of the embed, none by default
     private _currentState: EmbedState = EmbedState.None;
+
+    // this is the current embed type, viewer by default
+    private _currentType: EmbedType = EmbedType.Viewer;
+
     private _qrCodeOptions: any = {
         color: "#101721",
         qrType: "default",
@@ -54,6 +66,22 @@ export default class PlattarEmbed extends HTMLElement {
     }
 
     connectedCallback() {
+
+        const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "viewer";
+
+        if (embedType) {
+            switch (embedType.toLowerCase()) {
+                case "viewer":
+                    this._currentType = EmbedType.Viewer;
+                    break;
+                case "configurator":
+                    this._currentType = EmbedType.Configurator;
+                    break;
+                default:
+                    this._currentType = EmbedType.Viewer;
+            }
+        }
+
         const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === "attributes") {
@@ -200,8 +228,8 @@ export default class PlattarEmbed extends HTMLElement {
                 this._viewer = null;
             }
 
-            // if scene is set, we use <plattar-viewer /> node from plattar-web
-            if (this._sceneID) {
+            // if scene is set and embed is a viewer type, we use <plattar-viewer /> node from plattar-web
+            if (this._sceneID && this._currentType === EmbedType.Viewer) {
                 const viewer: HTMLElement = document.createElement("plattar-viewer");
 
                 viewer.setAttribute("width", this._width);
@@ -227,6 +255,40 @@ export default class PlattarEmbed extends HTMLElement {
                 this._viewer = viewer;
 
                 this._currentState = EmbedState.SceneViewer;
+
+                return;
+            }
+
+            // if scene is set and embed is a configurator type, we use <plattar-configurator /> node from plattar-web
+            if (this._sceneID && this._currentType === EmbedType.Configurator) {
+                const viewer: HTMLElement = document.createElement("plattar-configurator");
+
+                viewer.setAttribute("width", this._width);
+                viewer.setAttribute("height", this._height);
+                viewer.setAttribute("server", this._server);
+                viewer.setAttribute("scene-id", this._sceneID);
+
+                const configState: string | null = this.hasAttribute("config-state") ? this.getAttribute("config-state") : null;
+                const showAR: string | null = this.hasAttribute("show-ar") ? this.getAttribute("show-ar") : null;
+
+                if (configState) {
+                    viewer.setAttribute("config-state", configState);
+                }
+
+                if (showAR) {
+                    viewer.setAttribute("show-ar", showAR);
+                }
+
+                viewer.onload = () => {
+                    return accept(viewer);
+                };
+
+                const shadow = this.shadowRoot || this.attachShadow({ mode: 'open' });
+                shadow.append(viewer);
+
+                this._viewer = viewer;
+
+                this._currentState = EmbedState.ConfiguratorViewer;
 
                 return;
             }
@@ -278,8 +340,9 @@ export default class PlattarEmbed extends HTMLElement {
                 this._viewer = null;
             }
 
-            // if scene is set, we embed a QR code that takes us to viewer.html
-            if (this._sceneID) {
+            // if scene is set and embed type is viewer
+            // we embed a QR code that takes us to viewer.html
+            if (this._sceneID && this._currentType == EmbedType.Viewer) {
                 const viewer: HTMLElement = document.createElement("plattar-qrcode");
 
                 viewer.setAttribute("width", this._width);
@@ -307,7 +370,56 @@ export default class PlattarEmbed extends HTMLElement {
                     dst += "&variationId=" + this._variationID;
                 }
 
-                viewer.setAttribute("url", dst);
+                viewer.setAttribute("url", opt.url || dst);
+
+                viewer.onload = () => {
+                    return accept(viewer);
+                };
+
+                const shadow = this.shadowRoot || this.attachShadow({ mode: 'open' });
+                shadow.append(viewer);
+
+                this._viewer = viewer;
+
+                this._currentState = EmbedState.QRCode;
+
+                return;
+            }
+
+            // if scene is set and embed type is configurator
+            // we embed a QR code that takes us to configurator.html
+            if (this._sceneID && this._currentType == EmbedType.Configurator) {
+                const viewer: HTMLElement = document.createElement("plattar-qrcode");
+
+                viewer.setAttribute("width", this._width);
+                viewer.setAttribute("height", this._height);
+
+                if (opt.color) {
+                    viewer.setAttribute("color", opt.color);
+                }
+
+                if (opt.margin) {
+                    viewer.setAttribute("margin", "" + opt.margin);
+                }
+
+                if (opt.qrType) {
+                    viewer.setAttribute("qr-type", opt.qrType);
+                }
+
+                let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + this._sceneID;
+
+                const configState: string | null = this.hasAttribute("config-state") ? this.getAttribute("config-state") : null;
+                const showAR: string | null = this.hasAttribute("show-ar") ? this.getAttribute("show-ar") : null;
+
+                if (configState) {
+                    dst += "&config_state=" + configState;
+                }
+
+                if (showAR) {
+                    dst += "&show_ar=" + showAR;
+                }
+
+                viewer.setAttribute("url", opt.url || dst);
 
                 viewer.onload = () => {
                     return accept(viewer);
@@ -348,7 +460,7 @@ export default class PlattarEmbed extends HTMLElement {
                     dst += "&variation_id=" + this._variationID;
                 }
 
-                viewer.setAttribute("url", dst);
+                viewer.setAttribute("url", opt.url || dst);
 
                 viewer.onload = () => {
                     return accept(viewer);
@@ -374,7 +486,9 @@ export default class PlattarEmbed extends HTMLElement {
      */
     private _OnAttributesUpdated(): void {
         // nothing to update in these scenarios
-        if (this._currentState === EmbedState.None || this._currentState === EmbedState.ProductAR) {
+        if (this._currentState === EmbedState.None ||
+            this._currentState === EmbedState.ProductAR ||
+            this._currentState === EmbedState.ConfiguratorViewer) {
             return;
         }
 
