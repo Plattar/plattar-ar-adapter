@@ -1,6 +1,9 @@
 import { Server } from "@plattar/plattar-api";
 import { ProductAR } from "../ar/product-ar";
 import { LauncherAR } from "../ar/launcher-ar";
+import { Configurator } from "@plattar/plattar-services";
+import { Util } from "../util/util";
+import { RawAR } from "../ar/raw-ar";
 
 /**
  * This tracks the current state of the Embed
@@ -178,6 +181,10 @@ export default class PlattarEmbed extends HTMLElement {
                 return reject(new Error("PlattarEmbed.initAR() - cannot execute as page has not loaded yet"));
             }
 
+            if (!Util.canAugment()) {
+                return reject(new Error("PlattarEmbed.initAR() - cannot proceed as AR not available in context"));
+            }
+
             if (this._currentType === EmbedType.Viewer) {
                 // if scene is not set but product is, then use ProductAR
                 if (!this._sceneID && this._productID) {
@@ -199,8 +206,20 @@ export default class PlattarEmbed extends HTMLElement {
             if (this._currentType === EmbedType.Configurator) {
                 // if scene ID is available and the state is a configurator viewer
                 // we can use the real-time configurator state to launch the AR view
-                if (this._sceneID && this._currentState === EmbedState.ConfiguratorViewer) {
+                const viewer: HTMLElement | null = this.viewer;
 
+                if (viewer && this._sceneID && this._currentState === EmbedState.ConfiguratorViewer) {
+                    let output: string = "glb";
+
+                    if (Util.isSafari() || Util.isChromeOnIOS()) {
+                        output = "usdz";
+                    }
+
+                    (<any>viewer).messenger.getARFile(output).then((result: any) => {
+                        const rawAR: RawAR = new RawAR(result.filename);
+
+                        return rawAR.init().then(accept).catch(reject);
+                    }).catch(reject);
                 }
 
                 const configState: string | null = this.hasAttribute("config-state") ? this.getAttribute("config-state") : null;
@@ -208,7 +227,48 @@ export default class PlattarEmbed extends HTMLElement {
                 // otherwise scene ID is available to the viewer is not launched
                 // we can use the static configuration state to launch the AR view
                 if (this._sceneID && configState) {
+                    try {
+                        const decodedb64State: string = atob(configState);
+                        const state: any = JSON.parse(decodedb64State);
 
+                        if (state.meta) {
+                            const sceneProductIndex: number = state.meta.scene_product_index || 0;
+                            const variationIndex: number = state.meta.product_variation_index || 1;
+
+                            const states: Array<Array<string>> = state.states || [];
+
+                            if (states.length > 0) {
+                                const configurator: Configurator = new Configurator();
+
+                                states.forEach((productState: Array<string>) => {
+                                    configurator.addSceneProduct(productState[sceneProductIndex], productState[variationIndex]);
+                                });
+
+                                if (Util.isSafari() || Util.isChromeOnIOS()) {
+                                    configurator.output = "usdz";
+                                }
+
+                                if (Util.canSceneViewer()) {
+                                    configurator.output = "glb";
+                                }
+
+                                configurator.server = <any>this._server;
+
+                                return configurator.get().then((result: any) => {
+                                    const rawAR: RawAR = new RawAR(result.filename);
+
+                                    rawAR.init().then(accept).catch(reject);
+                                }).catch(reject);
+                            }
+
+                            return reject(new Error("PlattarEmbed.initAR() - invalid config-state does not have any product states"));
+                        }
+
+                        return reject(new Error("PlattarEmbed.initAR() - invalid config-state for configurator"));
+                    }
+                    catch (err) {
+                        return reject(err);
+                    }
                 }
             }
 
