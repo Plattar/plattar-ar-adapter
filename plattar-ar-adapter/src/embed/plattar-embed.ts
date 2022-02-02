@@ -178,20 +178,38 @@ export default class PlattarEmbed extends HTMLElement {
                 return reject(new Error("PlattarEmbed.initAR() - cannot execute as page has not loaded yet"));
             }
 
-            // if scene is not set but product is, then use ProductAR
-            if (!this._sceneID && this._productID) {
-                const product = new ProductAR(this._productID, this._variationID);
+            if (this._currentType === EmbedType.Viewer) {
+                // if scene is not set but product is, then use ProductAR
+                if (!this._sceneID && this._productID) {
+                    const product = new ProductAR(this._productID, this._variationID);
 
-                return product.init().then(accept).catch(reject);
+                    return product.init().then(accept).catch(reject);
+                }
+
+                // If Product is set (under any scenario) then use ProductAR
+                // NOTE: At some point this should check for Scenes when SceneAR
+                // is implemented
+                if (this._productID) {
+                    const product = new ProductAR(this._productID, this._variationID);
+
+                    return product.init().then(accept).catch(reject);
+                }
             }
 
-            // If Product is set (under any scenario) then use ProductAR
-            // NOTE: At some point this should check for Scenes when SceneAR
-            // is implemented
-            if (this._productID) {
-                const product = new ProductAR(this._productID, this._variationID);
+            if (this._currentType === EmbedType.Configurator) {
+                // if scene ID is available and the state is a configurator viewer
+                // we can use the real-time configurator state to launch the AR view
+                if (this._sceneID && this._currentState === EmbedState.ConfiguratorViewer) {
 
-                return product.init().then(accept).catch(reject);
+                }
+
+                const configState: string | null = this.hasAttribute("config-state") ? this.getAttribute("config-state") : null;
+
+                // otherwise scene ID is available to the viewer is not launched
+                // we can use the static configuration state to launch the AR view
+                if (this._sceneID && configState) {
+
+                }
             }
 
             // otherwise, scene was set so use SceneAR
