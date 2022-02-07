@@ -14,4 +14,13 @@ export class SceneAR extends LauncherAR {
         throw new Error("Method not implemented.");
     }
 
+    public canQuicklook(): boolean {
+        throw new Error("Method not implemented.");
+    }
+    public canRealityViewer(): boolean {
+        throw new Error("Method not implemented.");
+    }
+    public canSceneViewer(): boolean {
+        throw new Error("Method not implemented.");
+    }
 }
