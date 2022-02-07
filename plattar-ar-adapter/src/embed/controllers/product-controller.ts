@@ -21,6 +21,9 @@ export class ProductController extends PlattarController {
     public initAR(): Promise<LauncherAR> {
         throw new Error("Method not implemented.");
     }
+    public removeRenderer(): boolean {
+        throw new Error("Method not implemented.");
+    }
     public get element(): HTMLElement | null {
         throw new Error("Method not implemented.");
     }

@@ -1,9 +1,26 @@
 import { LauncherAR } from "../../ar/launcher-ar";
 
+export enum ControllerState {
+    None,
+    Renderer,
+    QRCode
+}
+
 /**
  * All Plattar Controllers are derived from the same interface
  */
 export abstract class PlattarController {
+
+    /**
+     * Default QR Code rendering options
+     */
+    public static get DEFAULT_QR_OPTIONS(): any {
+        return {
+            color: "#101721",
+            qrType: "default",
+            margin: 0
+        }
+    };
 
     private readonly _parent: HTMLElement;
 
@@ -39,6 +56,11 @@ export abstract class PlattarController {
     public abstract initAR(): Promise<LauncherAR>;
 
     /**
+     * Removes the currently active renderer view from the DOM
+     */
+    public abstract removeRenderer(): boolean;
+
+    /**
      * Get the underlying renderer component (if any)
      */
     public abstract get element(): HTMLElement | null;
@@ -57,5 +79,14 @@ export abstract class PlattarController {
      */
     public getAttribute(attribute: string): string | null {
         return this.parent ? (this.parent.hasAttribute(attribute) ? this.parent.getAttribute(attribute) : null) : null;
+    }
+
+    /**
+     * Appends the provided element into the shadow-root of the parent element
+     * @param element - The element to append
+     */
+    public append(element: HTMLElement): void {
+        const shadow = this.parent.shadowRoot || this.parent.attachShadow({ mode: 'open' });
+        shadow.append(element);
     }
 }
