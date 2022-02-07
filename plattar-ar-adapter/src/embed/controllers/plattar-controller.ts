@@ -49,4 +49,13 @@ export abstract class PlattarController {
     public get parent(): HTMLElement {
         return this._parent;
     }
+
+    /**
+     * Returns the specified attribute from the parent
+     * @param attribute - The name of thhe attribute
+     * @returns - The attribute value or null
+     */
+    public getAttribute(attribute: string): string | null {
+        return this.parent ? (this.parent.hasAttribute(attribute) ? this.parent.getAttribute(attribute) : null) : null;
+    }
 }
