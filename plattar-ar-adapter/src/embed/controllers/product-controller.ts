@@ -108,7 +108,7 @@ export class ProductController extends PlattarController {
             const productID: string | null = this.getAttribute("product-id");
 
             if (productID) {
-                // required attributes with defaults for plattar-viewer node
+                // required attributes with defaults for plattar-product node
                 const width: string = this.getAttribute("width") || "500px";
                 const height: string = this.getAttribute("height") || "500px";
                 const server: string = this.getAttribute("server") || "production";
