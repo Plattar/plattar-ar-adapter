@@ -47,6 +47,7 @@ export class ModelAR extends LauncherAR {
             analytics = new Analytics(project.id);
             analytics.origin = <any>Server.location().type;
 
+            analytics.data.push("type", "model-ar");
             analytics.data.push("applicationId", project.id);
             analytics.data.push("applicationTitle", project.attributes.title);
             analytics.data.push("modelId", model.id);

@@ -43,7 +43,7 @@ export class ProductAR extends LauncherAR {
         return this._variationID;
     }
 
-    private _setupAnalytics(product: Product, variation: ProductVariation): void {
+    private _SetupAnalytics(product: Product, variation: ProductVariation): void {
         let analytics: Analytics | null = null;
 
         const scene: Scene | undefined = product.relationships.find(Scene);
@@ -55,6 +55,7 @@ export class ProductAR extends LauncherAR {
 
             this._analytics = analytics;
 
+            analytics.data.push("type", "product-ar");
             analytics.data.push("sceneId", scene.id);
             analytics.data.push("sceneTitle", scene.attributes.title);
 
@@ -130,7 +131,7 @@ export class ProductAR extends LauncherAR {
                     return reject(new Error("ProductAR.init() - cannot proceed as ModelFile for selected variation is corrupt"));
                 }
 
-                this._setupAnalytics(product, variation);
+                this._SetupAnalytics(product, variation);
 
                 // we need to define our AR module here
                 // we are in Safari/Quicklook mode here
