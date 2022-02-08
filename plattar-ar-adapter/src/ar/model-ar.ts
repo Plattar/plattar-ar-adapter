@@ -47,6 +47,7 @@ export class ModelAR extends LauncherAR {
             analytics = new Analytics(project.id);
             analytics.origin = <any>Server.location().type;
 
+            analytics.data.push("type", "model-ar");
             analytics.data.push("applicationId", project.id);
             analytics.data.push("applicationTitle", project.attributes.title);
             analytics.data.push("modelId", model.id);
@@ -110,20 +111,6 @@ export class ModelAR extends LauncherAR {
                 // otherwise, we didn't have AR available - it should never really reach this stage as this should be caught
                 // earlier in the process
                 return reject(new Error("ModelAR.init() - could not initialise AR correctly, check values"));
-            }).catch(reject);
-        });
-    }
-
-    /**
-     * Initialise and launch with a single function call. this is mostly for convenience.
-     * Use .init() and .start() separately for fine-grained control
-     */
-    public launch(): Promise<void> {
-        return new Promise<void>((accept, reject) => {
-            this.init().then((value: LauncherAR) => {
-                value.start();
-
-                return accept();
             }).catch(reject);
         });
     }
