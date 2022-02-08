@@ -1,5 +1,6 @@
 import { Analytics } from "@plattar/plattar-analytics";
-import { Product, Project, Scene, SceneModel, SceneProduct, Server } from "@plattar/plattar-api";
+import { Product, Project, Scene, SceneProduct, Server } from "@plattar/plattar-api";
+import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
 import ARViewer from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
@@ -67,7 +68,31 @@ export class SceneAR extends LauncherAR {
      */
     private _ComposeScene(scene: Scene, output: "glb" | "usdz" | "vto"): Promise<string> {
         return new Promise<string>((accept, reject) => {
+            const sceneProducts: SceneProduct[] = scene.relationships.filter(SceneProduct);
 
+            // nothing to do if no AR components can be found
+            if (sceneProducts.length <= 0) {
+                return reject(new Error("SceneAR.ComposeScene() - cannot proceed as scene does not contain AR components"));
+            }
+
+            // define our configurator
+            const configurator: Configurator = new Configurator();
+
+            configurator.server = <any>Server.location().type;
+            configurator.output = output;
+
+            // add out scene models
+            sceneProducts.forEach((sceneProduct: SceneProduct) => {
+                const product: Product | undefined = sceneProduct.relationships.find(Product);
+
+                if (product && product.attributes.product_variation_id) {
+                    configurator.addSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
+                }
+            });
+
+            return configurator.get().then((result: any) => {
+                accept(result.filename);
+            }).catch(reject);
         });
     }
 
@@ -88,7 +113,6 @@ export class SceneAR extends LauncherAR {
             scene.include(Project);
             scene.include(SceneProduct);
             scene.include(SceneProduct.include(Product));
-            scene.include(SceneModel);
 
             scene.get().then((scene: Scene) => {
                 this._SetupAnalytics(scene);
