@@ -155,6 +155,19 @@ export default class PlattarEmbed extends HTMLElement {
     }
 
     /**
+     * This will remove the currently active Renderer
+     * 
+     * @returns - true if removed successfully, false otherwise
+     */
+    public removeRenderer(): boolean {
+        if (!this._controller) {
+            return false;
+        }
+
+        return this._controller.removeRenderer();
+    }
+
+    /**
      * This is called by the observer if any of the embed attributes have changed
      * based on the state of the embed, we update the internal structure accordingly
      */
