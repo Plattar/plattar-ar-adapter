@@ -4,13 +4,15 @@ import { PlattarController } from "./controllers/plattar-controller";
 import { ProductController } from "./controllers/product-controller";
 import { ViewerController } from "./controllers/viewer-controller";
 import { ConfiguratorController } from "./controllers/configurator-controller";
+import { VTOController } from "./controllers/vto-controller";
 
 /**
  * This tracks the current embed type
  */
 enum EmbedType {
     Viewer,
-    Configurator
+    Configurator,
+    VTO
 }
 
 /**
@@ -38,6 +40,9 @@ export default class PlattarEmbed extends HTMLElement {
             switch (embedType.toLowerCase()) {
                 case "viewer":
                     this._currentType = EmbedType.Viewer;
+                    break;
+                case "vto":
+                    this._currentType = EmbedType.VTO;
                     break;
                 case "configurator":
                     this._currentType = EmbedType.Configurator;
@@ -77,6 +82,9 @@ export default class PlattarEmbed extends HTMLElement {
         }
         else if (this._currentType === EmbedType.Configurator) {
             this._controller = new ConfiguratorController(this);
+        }
+        else if (this._currentType === EmbedType.VTO) {
+            this._controller = new VTOController(this);
         }
 
         const init: string | null = this.hasAttribute("init") ? this.getAttribute("init") : null;

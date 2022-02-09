@@ -108,6 +108,10 @@ export class ConfiguratorState {
         }
     }
 
+    public get length(): number {
+        return this._state.states.length;
+    }
+
     public static decode(state: string): ConfiguratorState {
         return new ConfiguratorState(state);
     }
