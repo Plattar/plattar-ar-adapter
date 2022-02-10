@@ -143,16 +143,6 @@ export class ProductController extends PlattarController {
         });
     }
 
-    public startAR(): Promise<void> {
-        return new Promise<void>((accept, reject) => {
-            this.initAR().then((launcher: LauncherAR) => {
-                launcher.start();
-
-                accept();
-            }).catch(reject);
-        });
-    }
-
     public initAR(): Promise<LauncherAR> {
         return new Promise<LauncherAR>((accept, reject) => {
             if (!Util.canAugment()) {

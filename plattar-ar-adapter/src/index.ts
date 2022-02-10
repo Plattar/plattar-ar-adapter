@@ -7,6 +7,7 @@ export { SceneAR } from "./ar/scene-ar";
 export { ModelAR } from "./ar/model-ar";
 export { RawAR } from "./ar/raw-ar";
 export { Util } from "./util/util";
+export { ConfiguratorState } from "./util/configurator-state";
 
 import PlattarEmbed from "./embed/plattar-embed";
 import version from "./version";

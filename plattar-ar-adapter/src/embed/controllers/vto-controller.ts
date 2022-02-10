@@ -1,14 +1,16 @@
 import { Server } from "@plattar/plattar-api";
 import { Configurator } from "@plattar/plattar-services";
+import { ConfiguratorState, SceneAR } from "../..";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { RawAR } from "../../ar/raw-ar";
+import { SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 
 /**
  * Manages an instance of the <plattar-configurator> HTML Element
  */
-export class ConfiguratorController extends PlattarController {
+export class VTOController extends PlattarController {
 
     private _state: ControllerState = ControllerState.None;
     private _element: HTMLElement | null = null;
@@ -60,7 +62,7 @@ export class ConfiguratorController extends PlattarController {
                     viewer.setAttribute("qr-type", opt.qrType);
                 }
 
-                let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + sceneID;
+                let dst: string = Server.location().base + "renderer/facear.html?scene_id=" + sceneID;
 
                 // optional attributes
                 const configState: string | null = this.getAttribute("config-state");
@@ -89,7 +91,7 @@ export class ConfiguratorController extends PlattarController {
                 return;
             }
 
-            return reject(new Error("ConfiguratorController.startQRCode() - minimum required attributes not set, use scene-id as a minimum"));
+            return reject(new Error("VTOController.startQRCode() - minimum required attributes not set, use scene-id as a minimum"));
         });
     }
 
@@ -101,12 +103,12 @@ export class ConfiguratorController extends PlattarController {
             const sceneID: string | null = this.getAttribute("scene-id");
 
             if (sceneID) {
-                // required attributes with defaults for plattar-configurator node
+                // required attributes with defaults for plattar-facear node
                 const width: string = this.getAttribute("width") || "500px";
                 const height: string = this.getAttribute("height") || "500px";
                 const server: string = this.getAttribute("server") || "production";
 
-                const viewer: HTMLElement = document.createElement("plattar-configurator");
+                const viewer: HTMLElement = document.createElement("plattar-facear");
 
                 viewer.setAttribute("width", width);
                 viewer.setAttribute("height", height);
@@ -137,14 +139,18 @@ export class ConfiguratorController extends PlattarController {
                 return;
             }
 
-            return reject(new Error("ConfiguratorController.startRenderer() - minimum required attributes not set, use scene-id as a minimum"));
+            return reject(new Error("VTOController.startRenderer() - minimum required attributes not set, use scene-id as a minimum"));
         });
     }
 
     public initAR(): Promise<LauncherAR> {
         return new Promise<LauncherAR>((accept, reject) => {
             if (!Util.canAugment()) {
-                return reject(new Error("ConfiguratorController.initAR() - cannot proceed as AR not available in context"));
+                return reject(new Error("VTOController.initAR() - cannot proceed as VTO AR not available in context"));
+            }
+
+            if (!(Util.isSafari() || Util.isChromeOnIOS())) {
+                return reject(new Error("VTOController.initAR() - cannot proceed as VTO AR only available on IOS Mobile devices"));
             }
 
             // if scene ID is available and the state is a configurator viewer
@@ -153,13 +159,7 @@ export class ConfiguratorController extends PlattarController {
             const sceneID: string | null = this.getAttribute("scene-id");
 
             if (viewer && sceneID) {
-                let output: string = "glb";
-
-                if (Util.isSafari() || Util.isChromeOnIOS()) {
-                    output = "usdz";
-                }
-
-                return (<any>viewer).messenger.getARFile(output).then((result: any) => {
+                return (<any>viewer).messenger.getARFile("vto").then((result: any) => {
                     const rawAR: RawAR = new RawAR(result.filename);
 
                     return rawAR.init().then(accept).catch(reject);
@@ -171,53 +171,40 @@ export class ConfiguratorController extends PlattarController {
             // otherwise scene ID is available to the viewer is not launched
             // we can use the static configuration state to launch the AR view
             if (sceneID && configState) {
-                try {
-                    const decodedb64State: string = atob(configState);
-                    const state: any = JSON.parse(decodedb64State);
+                const state: ConfiguratorState = ConfiguratorState.decode(configState);
 
-                    if (state.meta) {
-                        const sceneProductIndex: number = state.meta.scene_product_index || 0;
-                        const variationIndex: number = state.meta.product_variation_index || 1;
+                if (state.length > 0) {
+                    const server: string = this.getAttribute("server") || "production";
 
-                        const states: Array<Array<string>> = state.states || [];
+                    const configurator: Configurator = new Configurator();
+                    configurator.server = <any>server;
+                    configurator.output = "vto";
 
-                        if (states.length > 0) {
-                            const configurator: Configurator = new Configurator();
-
-                            states.forEach((productState: Array<string>) => {
-                                configurator.addSceneProduct(productState[sceneProductIndex], productState[variationIndex]);
-                            });
-
-                            if (Util.isSafari() || Util.isChromeOnIOS()) {
-                                configurator.output = "usdz";
-                            }
-
-                            if (Util.canSceneViewer()) {
-                                configurator.output = "glb";
-                            }
-
-                            const server: string = this.getAttribute("server") || "production";
-
-                            configurator.server = <any>server;
-
-                            return configurator.get().then((result: any) => {
-                                const rawAR: RawAR = new RawAR(result.filename);
-
-                                rawAR.init().then(accept).catch(reject);
-                            }).catch(reject);
+                    state.forEach((productState: SceneProductData) => {
+                        if (productState.meta_data.augment === true) {
+                            configurator.addSceneProduct(productState.scene_product_id, productState.product_variation_id);
                         }
+                    });
 
-                        return reject(new Error("ConfiguratorController.initAR() - invalid config-state does not have any product states"));
-                    }
+                    return configurator.get().then((result: any) => {
+                        const rawAR: RawAR = new RawAR(result.filename);
 
-                    return reject(new Error("ConfiguratorController.initAR() - invalid config-state for configurator"));
+                        rawAR.init().then(accept).catch(reject);
+                    }).catch(reject);
                 }
-                catch (err) {
-                    return reject(err);
-                }
+
+                return reject(new Error("VTOController.initAR() - invalid config-state does not have any product states"));
             }
 
-            return reject(new Error("ConfiguratorController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
+            // otherwise no config-state or viewer is active
+            // fallback to using default SceneAR implementation
+            if (sceneID) {
+                const sceneAR: SceneAR = new SceneAR(sceneID);
+
+                return sceneAR.init().then(accept).catch(reject);
+            }
+
+            return reject(new Error("VTOController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
         });
     }
 

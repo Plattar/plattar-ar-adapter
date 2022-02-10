@@ -48,7 +48,15 @@ export abstract class PlattarController {
     /**
      * Initialise and start AR mode if available
      */
-    public abstract startAR(): Promise<void>;
+    public startAR(): Promise<void> {
+        return new Promise<void>((accept, reject) => {
+            this.initAR().then((launcher: LauncherAR) => {
+                launcher.start();
+
+                accept();
+            }).catch(reject);
+        });
+    }
 
     /**
      * Initialise and return a launcher that can be used to start AR
