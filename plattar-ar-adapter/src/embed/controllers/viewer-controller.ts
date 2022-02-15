@@ -35,7 +35,9 @@ export class ViewerController extends PlattarController {
                 const productID: string | null = this.getAttribute("product-id");
                 const variationID: string | null = this.getAttribute("variation-id");
 
-                viewer.messenger.selectVariation(productID, variationID);
+                if (productID && variationID && viewer.messenger) {
+                    viewer.messenger.selectVariation(productID, variationID);
+                }
             }
 
             return;
