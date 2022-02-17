@@ -3,6 +3,7 @@ export * as PlattarQRCode from "@plattar/plattar-qrcode";
 
 export * as version from "./version";
 export { ProductAR } from "./ar/product-ar";
+export { SceneProductAR } from "./ar/scene-product-ar";
 export { SceneAR } from "./ar/scene-ar";
 export { ModelAR } from "./ar/model-ar";
 export { RawAR } from "./ar/raw-ar";

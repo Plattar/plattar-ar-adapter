@@ -1,6 +1,7 @@
 import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { ProductAR } from "../../ar/product-ar";
+import { SceneProductAR } from "../../ar/scene-product-ar";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 
@@ -32,7 +33,7 @@ export class ViewerController extends PlattarController {
             const viewer: any | null = this._element;
 
             if (viewer) {
-                const productID: string | null = this.getAttribute("product-id");
+                const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
 
                 if (productID && variationID && viewer.messenger) {
@@ -78,7 +79,7 @@ export class ViewerController extends PlattarController {
                 let dst: string = Server.location().base + "renderer/viewer.html?scene_id=" + sceneID;
 
                 // optional attributes
-                const productID: string | null = this.getAttribute("product-id");
+                const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
 
                 if (productID) {
@@ -129,7 +130,7 @@ export class ViewerController extends PlattarController {
                 viewer.setAttribute("scene-id", sceneID);
 
                 // optional attributes
-                const productID: string | null = this.getAttribute("product-id");
+                const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
 
                 if (productID) {
@@ -164,6 +165,7 @@ export class ViewerController extends PlattarController {
 
             const productID: string | null = this.getAttribute("product-id");
 
+            // use product-id if available
             if (productID) {
                 const variationID: string | null = this.getAttribute("variation-id");
 
@@ -172,14 +174,25 @@ export class ViewerController extends PlattarController {
                 return product.init().then(accept).catch(reject);
             }
 
+            const sceneProductID: string | null = this.getAttribute("scene-product-id");
+
+            // use scene-product-id if available
+            if (sceneProductID) {
+                const variationID: string | null = this.getAttribute("variation-id");
+
+                const product: SceneProductAR = new SceneProductAR(sceneProductID, variationID);
+
+                return product.init().then(accept).catch(reject);
+            }
+
             const sceneID: string | null = this.getAttribute("scene-id");
 
             // otherwise, scene was set so use SceneAR
             if (sceneID) {
-                return reject(new Error("ViewerController.initAR() - AR mode for scene-id not yet supported, use product-id"));
+                return reject(new Error("ViewerController.initAR() - AR mode for scene-id not yet supported, use product-id or scene-product-id"));
             }
 
-            return reject(new Error("ViewerController.initAR() - minimum required attributes not set, use scene-id or product-id as a minimum"));
+            return reject(new Error("ViewerController.initAR() - minimum required attributes not set, use product-id or scene-product-id as a minimum"));
         });
     }
 
