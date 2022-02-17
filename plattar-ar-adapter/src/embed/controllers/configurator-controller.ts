@@ -2,6 +2,9 @@ import { Server } from "@plattar/plattar-api";
 import { Configurator } from "@plattar/plattar-services";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { RawAR } from "../../ar/raw-ar";
+import { SceneAR } from "../../ar/scene-ar";
+import { SceneProductAR } from "../../ar/scene-product-ar";
+import { ConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 
@@ -147,78 +150,137 @@ export class ConfiguratorController extends PlattarController {
                 return reject(new Error("ConfiguratorController.initAR() - cannot proceed as AR not available in context"));
             }
 
-            // if scene ID is available and the state is a configurator viewer
-            // we can use the real-time configurator state to launch the AR view
-            const viewer: HTMLElement | null = this.element;
-            const sceneID: string | null = this.getAttribute("scene-id");
+            const arMode: string | null = this.getAttribute("ar-mode") || "generated";
 
-            if (viewer && sceneID) {
-                let output: string = "glb";
+            switch (arMode.toLowerCase()) {
+                case "inherited":
+                    this._InitARInherited(accept, reject);
+                    return;
+                case "generated":
+                default:
+                    this._InitARGenerated(accept, reject);
+            }
+        });
+    }
+
+    /**
+     * Private Function - This launches the Static/Inherited AR Mode
+     */
+    private _InitARInherited(accept: (value: LauncherAR | PromiseLike<LauncherAR>) => void, reject: (reason?: any) => void): void {
+        const sceneID: string | null = this.getAttribute("scene-id");
+        const configState: string | null = this.getAttribute("config-state");
+
+        // use config-state if its available
+        if (sceneID && configState) {
+            const state: ConfiguratorState = ConfiguratorState.decode(configState);
+            const first: SceneProductData | null = state.first();
+
+            if (first) {
+                const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
+
+                sceneProductAR.init().then(accept).catch(reject);
+
+                return;
+            }
+
+            return reject(new Error("ConfiguratorController.initAR() - invalid config-state does not have any product states"));
+        }
+
+        // otherwise fallback to using scene
+        if (sceneID) {
+            ConfiguratorState.decodeScene(sceneID).then((state: ConfiguratorState) => {
+                const first: SceneProductData | null = state.first();
+
+                if (first) {
+                    const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
+
+                    return sceneProductAR.init().then(accept).catch(reject);
+                }
+
+                return reject(new Error("ConfiguratorController.initAR() - invalid Scene does not have any product states"));
+            }).catch(reject);
+
+            return;
+        }
+
+        return reject(new Error("ConfiguratorController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
+    }
+
+    /**
+     * Private Function - This launches the Dynamic/Generated AR Mode
+     */
+    private _InitARGenerated(accept: (value: LauncherAR | PromiseLike<LauncherAR>) => void, reject: (reason?: any) => void): void {
+        // if scene ID is available and the state is a configurator viewer
+        // we can use the real-time configurator state to launch the AR view
+        const viewer: HTMLElement | null = this.element;
+        const sceneID: string | null = this.getAttribute("scene-id");
+
+        if (viewer && sceneID && (<any>viewer).messenger) {
+            let output: string = "glb";
+
+            if (Util.isSafari() || Util.isChromeOnIOS()) {
+                output = "usdz";
+            }
+
+            (<any>viewer).messenger.getARFile(output).then((result: any) => {
+                const rawAR: RawAR = new RawAR(result.filename);
+
+                return rawAR.init().then(accept).catch(reject);
+            }).catch(reject);
+
+            return;
+        }
+
+        const configState: string | null = this.getAttribute("config-state");
+
+        // otherwise scene ID is available to the viewer is not launched
+        // we can use the static configuration state to launch the AR view
+        if (sceneID && configState) {
+            const state: ConfiguratorState = ConfiguratorState.decode(configState);
+
+            if (state.length > 0) {
+                const server: string = this.getAttribute("server") || "production";
+
+                const configurator: Configurator = new Configurator();
+                configurator.server = <any>server;
 
                 if (Util.isSafari() || Util.isChromeOnIOS()) {
-                    output = "usdz";
+                    configurator.output = "usdz";
                 }
 
-                return (<any>viewer).messenger.getARFile(output).then((result: any) => {
+                if (Util.canSceneViewer()) {
+                    configurator.output = "glb";
+                }
+
+                state.forEach((productState: SceneProductData) => {
+                    if (productState.meta_data.augment === true) {
+                        configurator.addSceneProduct(productState.scene_product_id, productState.product_variation_id);
+                    }
+                });
+
+                configurator.get().then((result: any) => {
                     const rawAR: RawAR = new RawAR(result.filename);
 
-                    return rawAR.init().then(accept).catch(reject);
+                    rawAR.init().then(accept).catch(reject);
                 }).catch(reject);
+
+                return;
             }
 
-            const configState: string | null = this.getAttribute("config-state");
+            return reject(new Error("ConfiguratorController.initAR() - invalid config-state does not have any product states"));
+        }
 
-            // otherwise scene ID is available to the viewer is not launched
-            // we can use the static configuration state to launch the AR view
-            if (sceneID && configState) {
-                try {
-                    const decodedb64State: string = atob(configState);
-                    const state: any = JSON.parse(decodedb64State);
+        // otherwise no config-state or viewer is active
+        // fallback to using default SceneAR implementation
+        if (sceneID) {
+            const sceneAR: SceneAR = new SceneAR(sceneID);
 
-                    if (state.meta) {
-                        const sceneProductIndex: number = state.meta.scene_product_index || 0;
-                        const variationIndex: number = state.meta.product_variation_index || 1;
+            sceneAR.init().then(accept).catch(reject);
 
-                        const states: Array<Array<string>> = state.states || [];
+            return;
+        }
 
-                        if (states.length > 0) {
-                            const configurator: Configurator = new Configurator();
-
-                            states.forEach((productState: Array<string>) => {
-                                configurator.addSceneProduct(productState[sceneProductIndex], productState[variationIndex]);
-                            });
-
-                            if (Util.isSafari() || Util.isChromeOnIOS()) {
-                                configurator.output = "usdz";
-                            }
-
-                            if (Util.canSceneViewer()) {
-                                configurator.output = "glb";
-                            }
-
-                            const server: string = this.getAttribute("server") || "production";
-
-                            configurator.server = <any>server;
-
-                            return configurator.get().then((result: any) => {
-                                const rawAR: RawAR = new RawAR(result.filename);
-
-                                rawAR.init().then(accept).catch(reject);
-                            }).catch(reject);
-                        }
-
-                        return reject(new Error("ConfiguratorController.initAR() - invalid config-state does not have any product states"));
-                    }
-
-                    return reject(new Error("ConfiguratorController.initAR() - invalid config-state for configurator"));
-                }
-                catch (err) {
-                    return reject(err);
-                }
-            }
-
-            return reject(new Error("ConfiguratorController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
-        });
+        return reject(new Error("ConfiguratorController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
     }
 
     public removeRenderer(): boolean {
