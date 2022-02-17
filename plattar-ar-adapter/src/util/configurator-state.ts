@@ -59,22 +59,94 @@ export class ConfiguratorState {
      * @param productVariationID - The Product Variation ID to be used (as defined in Plattar CMS)
      * @param metaData - Arbitrary meta-data that can be used against certain operaions
      */
+    public setSceneProduct(sceneProductID: string, productVariationID: string, metaData: any | null | undefined = null): void {
+        this.addSceneProduct(sceneProductID, productVariationID, metaData);
+    }
+
+    /**
+     * Adds a new Scene Product/Variation combo with meta-data into the Configurator State
+     * 
+     * @param sceneProductID - The Scene Product ID to be used (as defined in Plattar CMS)
+     * @param productVariationID - The Product Variation ID to be used (as defined in Plattar CMS)
+     * @param metaData - Arbitrary meta-data that can be used against certain operaions
+     */
     public addSceneProduct(sceneProductID: string, productVariationID: string, metaData: any | null | undefined = null): void {
         if (sceneProductID && productVariationID) {
             const states: Array<Array<any>> = this._state.states;
             const meta = this._state.meta;
 
-            const newData: any = [];
+            let newData: any[] | null = null;
 
-            newData.splice(meta.scene_product_index, 0, sceneProductID);
-            newData.splice(meta.product_variation_index, 0, productVariationID);
+            const existingData: any[] | null = this.findSceneProductIndex(sceneProductID);
 
-            if (metaData) {
-                newData.splice(meta.meta_index, 0, metaData);
+            if (existingData) {
+                newData = existingData;
+            }
+            else {
+                newData = [];
+
+                // push the new data into the stack
+                states.push(newData);
             }
 
-            states.push(newData);
+            newData[meta.scene_product_index] = sceneProductID;
+            newData[meta.product_variation_index] = productVariationID;
+
+            if (metaData) {
+                newData[meta.meta_index] = metaData;
+            }
         }
+    }
+
+    /**
+     * Search and return the data index reference for the provided Scene Product ID
+     * if not found, will return null
+     * @param sceneProductID
+     */
+    public findSceneProductIndex(sceneProductID: string): any[] | null {
+        const states: Array<Array<any>> = this._state.states;
+
+        if (states.length > 0) {
+            const meta = this._state.meta;
+
+            const found = states.find((productState: Array<any>) => {
+                return productState[meta.scene_product_index] === sceneProductID;
+            });
+
+            return found ? found : null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Search and return the data for the provided Scene Product ID
+     * if not found, will return null
+     * @param sceneProductID
+     */
+    public findSceneProduct(sceneProductID: string): SceneProductData | null {
+        const found = this.findSceneProductIndex(sceneProductID);
+
+        if (found) {
+            const meta = this._state.meta;
+
+            const data: SceneProductData = {
+                scene_product_id: found[meta.scene_product_index],
+                product_variation_id: found[meta.product_variation_index],
+                meta_data: {
+                    augment: true
+                }
+            };
+
+            // include the meta-data
+            if (found.length === 3) {
+                data.meta_data.augment = found[meta.meta_index].augment || true;
+            }
+
+            return data;
+        }
+
+        return null;
     }
 
     /**
@@ -106,6 +178,45 @@ export class ConfiguratorState {
                 }
             });
         }
+    }
+
+    /**
+     * @returns Returns the first reference of data in the stack, otherwise returns null
+     */
+    public first(): SceneProductData | null {
+        const states: Array<Array<any>> = this._state.states;
+
+        if (states.length > 0) {
+            const meta = this._state.meta;
+
+            const found = states.find((productState: Array<any>) => {
+                const check = productState[meta.scene_product_index];
+
+                // ensure the data contains valid elements
+                return check !== null && check !== undefined;
+            });
+
+            if (!found) {
+                return null;
+            }
+
+            const data: SceneProductData = {
+                scene_product_id: found[meta.scene_product_index],
+                product_variation_id: found[meta.product_variation_index],
+                meta_data: {
+                    augment: true
+                }
+            };
+
+            // include the meta-data
+            if (found.length === 3) {
+                data.meta_data.augment = found[meta.meta_index].augment || true;
+            }
+
+            return data;
+        }
+
+        return null;
     }
 
     public get length(): number {
