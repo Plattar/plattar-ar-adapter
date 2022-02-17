@@ -1,3 +1,5 @@
+import { Product, Scene, SceneProduct } from "@plattar/plattar-api";
+
 interface ConfiguratorStateData {
     meta: {
         scene_product_index: 0,
@@ -223,10 +225,60 @@ export class ConfiguratorState {
         return this._state.states.length;
     }
 
+    /**
+     * Decodes and returns an instance of ConfiguratorState from a previously
+     * encoded state
+     * @param state - The previously encoded state as a Base64 String
+     * @returns - ConfiguratorState instance
+     */
     public static decode(state: string): ConfiguratorState {
         return new ConfiguratorState(state);
     }
 
+    /**
+     * Generates a new ConfiguratorState instance from all SceneProducts and default
+     * variations from the provided Scene ID
+     * @param sceneID - the Scene ID to generate 
+     * @returns - Promise that resolves into a ConfiguratorState instance
+     */
+    public static decodeScene(sceneID: string | null | undefined = null): Promise<ConfiguratorState> {
+        return new Promise<ConfiguratorState>((accept, reject) => {
+            const configState: ConfiguratorState = new ConfiguratorState();
+
+            if (!sceneID) {
+                return reject(new Error("ConfiguratorState.decodeScene(sceneID) - sceneID must be defined"));
+            }
+
+            const scene: Scene = new Scene(sceneID);
+            scene.include(SceneProduct);
+            scene.include(SceneProduct.include(Product));
+
+            scene.get().then((scene: Scene) => {
+                const sceneProducts: SceneProduct[] = scene.relationships.filter(SceneProduct);
+
+                // nothing to do if no AR components can be found
+                if (sceneProducts.length <= 0) {
+                    return accept(configState);
+                }
+
+                // add out scene models
+                sceneProducts.forEach((sceneProduct: SceneProduct) => {
+                    const product: Product | undefined = sceneProduct.relationships.find(Product);
+
+                    if (product && product.attributes.product_variation_id) {
+                        configState.setSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
+                    }
+                });
+
+                accept(configState);
+            }).catch(reject);
+        });
+    }
+
+    /**
+     * Encode and return the internal ConfiguratorState as a Base64 String
+     * @returns - Base64 String
+     */
     public encode(): string {
         return btoa(JSON.stringify(this._state));
     }
