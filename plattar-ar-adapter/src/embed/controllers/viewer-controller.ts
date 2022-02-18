@@ -2,6 +2,7 @@ import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { ProductAR } from "../../ar/product-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
+import { SceneProductData, ConfiguratorState } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 
@@ -187,12 +188,22 @@ export class ViewerController extends PlattarController {
 
             const sceneID: string | null = this.getAttribute("scene-id");
 
-            // otherwise, scene was set so use SceneAR
+            // use the first default product-variation id if available
             if (sceneID) {
-                return reject(new Error("ViewerController.initAR() - AR mode for scene-id not yet supported, use product-id or scene-product-id"));
+                return ConfiguratorState.decodeScene(sceneID).then((state: ConfiguratorState) => {
+                    const first: SceneProductData | null = state.first();
+
+                    if (first) {
+                        const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
+
+                        return sceneProductAR.init().then(accept).catch(reject);
+                    }
+
+                    return reject(new Error("ViewerController.initAR() - your scene does not contain any valid products"));
+                }).catch(reject);
             }
 
-            return reject(new Error("ViewerController.initAR() - minimum required attributes not set, use product-id or scene-product-id as a minimum"));
+            return reject(new Error("ViewerController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
         });
     }
 
