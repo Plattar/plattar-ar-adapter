@@ -68,6 +68,11 @@ export class ConfiguratorController extends PlattarController {
                 // optional attributes
                 const configState: string | null = this.getAttribute("config-state");
                 const showAR: string | null = this.getAttribute("show-ar");
+                const showUI: string | null = this.getAttribute("show-ui");
+
+                if (showUI && showUI === "true") {
+                    dst = Server.location().base + "configurator/dist/index.html?scene_id=" + sceneID;
+                }
 
                 if (configState) {
                     dst += "&config_state=" + configState;
