@@ -119,6 +119,7 @@ export class ConfiguratorController extends PlattarController {
                 // optional attributes
                 const configState: string | null = this.getAttribute("config-state");
                 const showAR: string | null = this.getAttribute("show-ar");
+                const showUI: string | null = this.getAttribute("show-ui");
 
                 if (configState) {
                     viewer.setAttribute("config-state", configState);
@@ -126,6 +127,10 @@ export class ConfiguratorController extends PlattarController {
 
                 if (showAR) {
                     viewer.setAttribute("show-ar", showAR);
+                }
+
+                if (showUI) {
+                    viewer.setAttribute("show-ui", showUI);
                 }
 
                 viewer.onload = () => {
