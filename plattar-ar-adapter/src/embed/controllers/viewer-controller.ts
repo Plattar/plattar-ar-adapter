@@ -82,6 +82,7 @@ export class ViewerController extends PlattarController {
                 // optional attributes
                 const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
+                const showAR: string | null = this.getAttribute("show-ar");
 
                 if (productID) {
                     dst += "&productId=" + productID;
@@ -89,6 +90,10 @@ export class ViewerController extends PlattarController {
 
                 if (variationID) {
                     dst += "&variationId=" + variationID;
+                }
+
+                if (showAR) {
+                    dst += "&show_ar=" + showAR;
                 }
 
                 viewer.setAttribute("url", opt.url || dst);
@@ -133,6 +138,7 @@ export class ViewerController extends PlattarController {
                 // optional attributes
                 const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
+                const showAR: string | null = this.getAttribute("show-ar");
 
                 if (productID) {
                     viewer.setAttribute("product-id", productID);
@@ -140,6 +146,10 @@ export class ViewerController extends PlattarController {
 
                 if (variationID) {
                     viewer.setAttribute("variation-id", variationID);
+                }
+
+                if (showAR) {
+                    viewer.setAttribute("show-ar", showAR);
                 }
 
                 viewer.onload = () => {
