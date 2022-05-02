@@ -112,10 +112,11 @@ export abstract class PlattarController {
                 viewer.setAttribute("qr-type", opt.qrType);
             }
 
-            const qrOptions: string = atob(JSON.stringify(opt));
+            const qrOptions: string = btoa(JSON.stringify(opt));
 
             let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
 
+            const sceneID: string | null = this.getAttribute("scene-id");
             const configState: string | null = this.getAttribute("config-state");
             const embedType: string | null = this.getAttribute("embed-type");
             const productID: string | null = this.getAttribute("product-id");
@@ -145,6 +146,10 @@ export abstract class PlattarController {
 
             if (arMode) {
                 dst += "&ar_mode=" + arMode;
+            }
+
+            if (sceneID) {
+                dst += "&scene_id=" + sceneID;
             }
 
             viewer.setAttribute("url", opt.url || dst);
