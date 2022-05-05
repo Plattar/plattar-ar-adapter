@@ -9,10 +9,6 @@ import { ControllerState, PlattarController } from "./plattar-controller";
  */
 export class ProductController extends PlattarController {
 
-    private _state: ControllerState = ControllerState.None;
-    private _element: HTMLElement | null = null;
-    private _prevQROpt: any = null;
-
     constructor(parent: HTMLElement) {
         super(parent);
     }
@@ -43,7 +39,7 @@ export class ProductController extends PlattarController {
         }
     }
 
-    public startQRCode(options: any): Promise<HTMLElement> {
+    public startViewerQRCode(options: any): Promise<HTMLElement> {
         return new Promise<HTMLElement>((accept, reject) => {
             // remove the old renderer instance if any
             this.removeRenderer();
