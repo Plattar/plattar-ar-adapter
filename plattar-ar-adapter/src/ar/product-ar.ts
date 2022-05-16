@@ -158,8 +158,20 @@ export class ProductAR extends LauncherAR {
 
                 // check android
                 if (Util.canSceneViewer()) {
-                    this._ar = new SceneViewer();
-                    this._ar.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.original_filename;
+                    const arviewer = new SceneViewer();
+                    arviewer.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.original_filename;
+
+                    const scene: Scene | undefined = product.relationships.find(Scene);
+
+                    if (scene) {
+                        const sceneOpt: any = scene.attributes.custom_json || {};
+
+                        if (sceneOpt.anchor === "vertical") {
+                            arviewer.isVertical = true;
+                        }
+                    }
+
+                    this._ar = arviewer;
 
                     return accept(this);
                 }
