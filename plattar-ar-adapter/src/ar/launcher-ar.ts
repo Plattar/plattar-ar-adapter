@@ -1,5 +1,16 @@
+export interface LauncherAROptions {
+    anchor: "horizontal" | "vertical" | "vto" | "horizontal_vertical"
+}
+
 export abstract class LauncherAR {
-    constructor() { }
+    private readonly _opt: LauncherAROptions;
+
+    constructor() {
+        this._opt = {
+            anchor: "horizontal_vertical"
+        }
+    }
+
     public abstract init(): Promise<LauncherAR>;
     public abstract start(): void;
 
@@ -19,5 +30,12 @@ export abstract class LauncherAR {
                 return accept();
             }).catch(reject);
         });
+    }
+
+    /**
+     * AR Options used for launching AR
+     */
+    public get options(): LauncherAROptions {
+        return this._opt;
     }
 }

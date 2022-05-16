@@ -156,6 +156,7 @@ export class SceneAR extends LauncherAR {
                     return this._ComposeScene(scene, "glb").then((modelUrl: string) => {
                         const arviewer = new SceneViewer();
                         arviewer.modelUrl = modelUrl;
+                        arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
 
                         if (sceneOpt.anchor === "vertical") {
                             arviewer.isVertical = true;

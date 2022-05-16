@@ -160,6 +160,7 @@ export class ProductAR extends LauncherAR {
                 if (Util.canSceneViewer()) {
                     const arviewer = new SceneViewer();
                     arviewer.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.original_filename;
+                    arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
 
                     const scene: Scene | undefined = product.relationships.find(Scene);
 
