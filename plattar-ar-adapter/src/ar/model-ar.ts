@@ -102,8 +102,10 @@ export class ModelAR extends LauncherAR {
 
                 // check android
                 if (Util.canSceneViewer()) {
-                    this._ar = new SceneViewer();
-                    this._ar.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.original_filename;
+                    const arviewer = new SceneViewer();
+                    arviewer.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.original_filename;
+                    arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
+                    this._ar = arviewer;
 
                     return accept(this);
                 }
