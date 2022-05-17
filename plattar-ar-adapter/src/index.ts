@@ -2,6 +2,8 @@ export * as PlattarWeb from "@plattar/plattar-web";
 export * as PlattarQRCode from "@plattar/plattar-qrcode";
 
 export * as version from "./version";
+export { LauncherAR } from "./ar/launcher-ar";
+export { LauncherAROptions } from "./ar/launcher-ar";
 export { ProductAR } from "./ar/product-ar";
 export { SceneProductAR } from "./ar/scene-product-ar";
 export { SceneAR } from "./ar/scene-ar";

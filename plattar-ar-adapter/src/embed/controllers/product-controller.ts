@@ -9,10 +9,6 @@ import { ControllerState, PlattarController } from "./plattar-controller";
  */
 export class ProductController extends PlattarController {
 
-    private _state: ControllerState = ControllerState.None;
-    private _element: HTMLElement | null = null;
-    private _prevQROpt: any = null;
-
     constructor(parent: HTMLElement) {
         super(parent);
     }
@@ -43,7 +39,7 @@ export class ProductController extends PlattarController {
         }
     }
 
-    public startQRCode(options: any): Promise<HTMLElement> {
+    public startViewerQRCode(options: any): Promise<HTMLElement> {
         return new Promise<HTMLElement>((accept, reject) => {
             // remove the old renderer instance if any
             this.removeRenderer();
@@ -76,11 +72,16 @@ export class ProductController extends PlattarController {
 
                 // optional attributes
                 const variationID: string | null = this.getAttribute("variation-id");
+                const showAR: string | null = this.getAttribute("show-ar");
 
                 let dst: string = Server.location().base + "renderer/product.html?product_id=" + productID;
 
                 if (variationID) {
                     dst += "&variation_id=" + variationID;
+                }
+
+                if (showAR) {
+                    dst += "&show_ar=" + showAR;
                 }
 
                 viewer.setAttribute("url", opt.url || dst);
@@ -124,9 +125,14 @@ export class ProductController extends PlattarController {
 
                 // optional attributes
                 const variationID: string | null = this.getAttribute("variation-id");
+                const showAR: string | null = this.getAttribute("show-ar");
 
                 if (variationID) {
                     viewer.setAttribute("variation-id", variationID);
+                }
+
+                if (showAR) {
+                    viewer.setAttribute("show-ar", showAR);
                 }
 
                 viewer.onload = () => {

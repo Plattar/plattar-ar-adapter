@@ -1,8 +1,8 @@
 import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { ProductAR } from "../../ar/product-ar";
+import { SceneAR } from "../../ar/scene-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
-import { SceneProductData, ConfiguratorState } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 
@@ -10,10 +10,6 @@ import { ControllerState, PlattarController } from "./plattar-controller";
  * Manages an instance of the <plattar-viewer> HTML Element
  */
 export class ViewerController extends PlattarController {
-
-    private _state: ControllerState = ControllerState.None;
-    private _element: HTMLElement | null = null;
-    private _prevQROpt: any = null;
 
     constructor(parent: HTMLElement) {
         super(parent);
@@ -46,7 +42,7 @@ export class ViewerController extends PlattarController {
         }
     }
 
-    public startQRCode(options: any): Promise<HTMLElement> {
+    public startViewerQRCode(options: any): Promise<HTMLElement> {
         return new Promise<HTMLElement>((accept, reject) => {
             // remove the old renderer instance if any
             this.removeRenderer();
@@ -82,6 +78,7 @@ export class ViewerController extends PlattarController {
                 // optional attributes
                 const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
+                const showAR: string | null = this.getAttribute("show-ar");
 
                 if (productID) {
                     dst += "&productId=" + productID;
@@ -89,6 +86,10 @@ export class ViewerController extends PlattarController {
 
                 if (variationID) {
                     dst += "&variationId=" + variationID;
+                }
+
+                if (showAR) {
+                    dst += "&show_ar=" + showAR;
                 }
 
                 viewer.setAttribute("url", opt.url || dst);
@@ -133,6 +134,7 @@ export class ViewerController extends PlattarController {
                 // optional attributes
                 const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
+                const showAR: string | null = this.getAttribute("show-ar");
 
                 if (productID) {
                     viewer.setAttribute("product-id", productID);
@@ -140,6 +142,10 @@ export class ViewerController extends PlattarController {
 
                 if (variationID) {
                     viewer.setAttribute("variation-id", variationID);
+                }
+
+                if (showAR) {
+                    viewer.setAttribute("show-ar", showAR);
                 }
 
                 viewer.onload = () => {
@@ -188,19 +194,13 @@ export class ViewerController extends PlattarController {
 
             const sceneID: string | null = this.getAttribute("scene-id");
 
-            // use the first default product-variation id if available
+            // fallback to using default SceneAR implementation
             if (sceneID) {
-                return ConfiguratorState.decodeScene(sceneID).then((state: ConfiguratorState) => {
-                    const first: SceneProductData | null = state.first();
+                const sceneAR: SceneAR = new SceneAR(sceneID);
 
-                    if (first) {
-                        const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
+                sceneAR.init().then(accept).catch(reject);
 
-                        return sceneProductAR.init().then(accept).catch(reject);
-                    }
-
-                    return reject(new Error("ViewerController.initAR() - your scene does not contain any valid products"));
-                }).catch(reject);
+                return;
             }
 
             return reject(new Error("ViewerController.initAR() - minimum required attributes not set, use scene-id as a minimum"));

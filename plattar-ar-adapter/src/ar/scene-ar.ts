@@ -154,8 +154,15 @@ export class SceneAR extends LauncherAR {
                 // check android
                 if (Util.canSceneViewer()) {
                     return this._ComposeScene(scene, "glb").then((modelUrl: string) => {
-                        this._ar = new SceneViewer();
-                        this._ar.modelUrl = modelUrl;
+                        const arviewer = new SceneViewer();
+                        arviewer.modelUrl = modelUrl;
+                        arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
+
+                        if (sceneOpt.anchor === "vertical") {
+                            arviewer.isVertical = true;
+                        }
+
+                        this._ar = arviewer;
 
                         return accept(this);
                     }).catch(reject);

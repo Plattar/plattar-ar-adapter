@@ -79,8 +79,10 @@ export class RawAR extends LauncherAR {
             // check android
             if (Util.canSceneViewer()) {
                 if (lowerLoc.endsWith("glb") || lowerLoc.endsWith("gltf")) {
-                    this._ar = new SceneViewer();
-                    this._ar.modelUrl = modelLocation;
+                    const arviewer = new SceneViewer();
+                    arviewer.modelUrl = modelLocation;
+                    arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
+                    this._ar = arviewer;
 
                     return accept(this);
                 }
