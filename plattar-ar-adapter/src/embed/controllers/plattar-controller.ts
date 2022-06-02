@@ -122,6 +122,7 @@ export abstract class PlattarController {
             const productID: string | null = this.getAttribute("product-id");
             const sceneProductID: string | null = this.getAttribute("scene-product-id");
             const variationID: string | null = this.getAttribute("variation-id");
+            const variationSKU: string | null = this.getAttribute("variation-sku");
             const arMode: string | null = this.getAttribute("ar-mode");
 
             if (configState) {
@@ -142,6 +143,10 @@ export abstract class PlattarController {
 
             if (variationID) {
                 dst += "&variation_id=" + variationID;
+            }
+
+            if (variationSKU) {
+                dst += "&variation_sku=" + variationSKU;
             }
 
             if (arMode) {

@@ -78,6 +78,7 @@ export class ViewerController extends PlattarController {
                 // optional attributes
                 const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
                 const showAR: string | null = this.getAttribute("show-ar");
 
                 if (productID) {
@@ -86,6 +87,10 @@ export class ViewerController extends PlattarController {
 
                 if (variationID) {
                     dst += "&variationId=" + variationID;
+                }
+
+                if (variationSKU) {
+                    dst += "&variationSku=" + variationSKU;
                 }
 
                 if (showAR) {
@@ -134,6 +139,7 @@ export class ViewerController extends PlattarController {
                 // optional attributes
                 const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
                 const showAR: string | null = this.getAttribute("show-ar");
 
                 if (productID) {
@@ -142,6 +148,10 @@ export class ViewerController extends PlattarController {
 
                 if (variationID) {
                     viewer.setAttribute("variation-id", variationID);
+                }
+
+                if (variationSKU) {
+                    viewer.setAttribute("variation-sku", variationSKU);
                 }
 
                 if (showAR) {
@@ -175,8 +185,9 @@ export class ViewerController extends PlattarController {
             // use product-id if available
             if (productID) {
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
 
-                const product: ProductAR = new ProductAR(productID, variationID);
+                const product: ProductAR = new ProductAR(productID, variationID, variationSKU);
 
                 return product.init().then(accept).catch(reject);
             }
@@ -186,8 +197,9 @@ export class ViewerController extends PlattarController {
             // use scene-product-id if available
             if (sceneProductID) {
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
 
-                const product: SceneProductAR = new SceneProductAR(sceneProductID, variationID);
+                const product: SceneProductAR = new SceneProductAR(sceneProductID, variationID, variationSKU);
 
                 return product.init().then(accept).catch(reject);
             }
