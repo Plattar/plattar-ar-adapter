@@ -14,8 +14,8 @@ export class SceneProductAR extends ProductAR {
     // this is evaluated in the init() function
     private _attachedProductID: string | null = null;
 
-    constructor(sceneProductID: string | undefined | null = null, variationID: string | undefined | null = null) {
-        super(sceneProductID, variationID);
+    constructor(sceneProductID: string | undefined | null = null, variationID: string | undefined | null = null, variationSKU: string | undefined | null = null) {
+        super(sceneProductID, variationID, variationSKU);
 
         if (!sceneProductID) {
             throw new Error("SceneProductAR.constructor(sceneProductID, variationID) - sceneProductID must be defined");

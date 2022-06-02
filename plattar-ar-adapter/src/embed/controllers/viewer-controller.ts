@@ -3,6 +3,7 @@ import { LauncherAR } from "../../ar/launcher-ar";
 import { ProductAR } from "../../ar/product-ar";
 import { SceneAR } from "../../ar/scene-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
+import { ConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 
@@ -78,6 +79,7 @@ export class ViewerController extends PlattarController {
                 // optional attributes
                 const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
                 const showAR: string | null = this.getAttribute("show-ar");
 
                 if (productID) {
@@ -86,6 +88,10 @@ export class ViewerController extends PlattarController {
 
                 if (variationID) {
                     dst += "&variationId=" + variationID;
+                }
+
+                if (variationSKU) {
+                    dst += "&variationSku=" + variationSKU;
                 }
 
                 if (showAR) {
@@ -134,6 +140,7 @@ export class ViewerController extends PlattarController {
                 // optional attributes
                 const productID: string | null = (this.getAttribute("product-id") || this.getAttribute("scene-product-id"));
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
                 const showAR: string | null = this.getAttribute("show-ar");
 
                 if (productID) {
@@ -142,6 +149,10 @@ export class ViewerController extends PlattarController {
 
                 if (variationID) {
                     viewer.setAttribute("variation-id", variationID);
+                }
+
+                if (variationSKU) {
+                    viewer.setAttribute("variation-sku", variationSKU);
                 }
 
                 if (showAR) {
@@ -175,8 +186,9 @@ export class ViewerController extends PlattarController {
             // use product-id if available
             if (productID) {
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
 
-                const product: ProductAR = new ProductAR(productID, variationID);
+                const product: ProductAR = new ProductAR(productID, variationID, variationSKU);
 
                 return product.init().then(accept).catch(reject);
             }
@@ -186,8 +198,9 @@ export class ViewerController extends PlattarController {
             // use scene-product-id if available
             if (sceneProductID) {
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
 
-                const product: SceneProductAR = new SceneProductAR(sceneProductID, variationID);
+                const product: SceneProductAR = new SceneProductAR(sceneProductID, variationID, variationSKU);
 
                 return product.init().then(accept).catch(reject);
             }
@@ -196,11 +209,30 @@ export class ViewerController extends PlattarController {
 
             // fallback to using default SceneAR implementation
             if (sceneID) {
-                const sceneAR: SceneAR = new SceneAR(sceneID);
+                // special case - check if scene only has a single product, if so
+                // we need to use provided variation-id or variation-sku to override
+                const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
 
-                sceneAR.init().then(accept).catch(reject);
+                // just do scene-ar if variation ID and variation SKU is not set
+                if (!variationID && !variationSKU) {
+                    const sceneAR: SceneAR = new SceneAR(sceneID);
 
-                return;
+                    return sceneAR.init().then(accept).catch(reject);
+                }
+
+                // otherwise decode scene
+                return ConfiguratorState.decodeScene(sceneID).then((state: ConfiguratorState) => {
+                    const firstProduct: SceneProductData | null = state.first();
+
+                    if (state.length > 1 || !firstProduct) {
+                        return reject(new Error("ViewerController.initAR() - single product required to override variation-id or variation-sku"));
+                    }
+
+                    const product: SceneProductAR = new SceneProductAR(firstProduct.scene_product_id, variationID, variationSKU);
+
+                    return product.init().then(accept).catch(reject);
+                }).catch(reject);
             }
 
             return reject(new Error("ViewerController.initAR() - minimum required attributes not set, use scene-id as a minimum"));

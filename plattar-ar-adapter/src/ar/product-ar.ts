@@ -17,13 +17,14 @@ export class ProductAR extends LauncherAR {
 
     // product and selected variation IDs
     private readonly _productID: string;
-    private readonly _variationID: string;
+    private readonly _variationID: string | null;
+    private readonly _variationSKU: string | null;
 
     // this thing controls the actual AR view
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
-    constructor(productID: string | undefined | null = null, variationID: string | undefined | null = null) {
+    constructor(productID: string | undefined | null = null, variationID: string | undefined | null = null, variationSKU: string | undefined | null = null) {
         super();
 
         if (!productID) {
@@ -31,7 +32,8 @@ export class ProductAR extends LauncherAR {
         }
 
         this._productID = productID;
-        this._variationID = variationID ? variationID : "default";
+        this._variationSKU = variationSKU;
+        this._variationID = variationID ? variationID : (variationSKU ? null : "default");
         this._ar = null;
     }
 
@@ -39,8 +41,12 @@ export class ProductAR extends LauncherAR {
         return this._productID;
     }
 
-    public get variationID(): string {
+    public get variationID(): string | null {
         return this._variationID;
+    }
+
+    public get variationSKU(): string | null {
+        return this._variationSKU;
     }
 
     private _SetupAnalytics(product: Product, variation: ProductVariation): void {
@@ -102,17 +108,33 @@ export class ProductAR extends LauncherAR {
 
             product.get().then((product: Product) => {
                 // find the required variation from our product
-                const variationID: string | undefined = this.variationID ? (this.variationID === "default" ? product.attributes.product_variation_id : this.variationID) : product.attributes.product_variation_id;
+                const variationID: string | null | undefined = this.variationID ? (this.variationID === "default" ? product.attributes.product_variation_id : this.variationID) : null;
+                const variationSKU: string | null = this.variationSKU;
 
-                if (!variationID) {
-                    return reject(new Error("ProductAR.init() - cannot proceed as variation was not defined correctly"));
+                if (!variationID && !variationSKU) {
+                    return reject(new Error("ProductAR.init() - cannot proceed as variation-id or variation-sku was not set correctly"));
                 }
 
-                const variation: ProductVariation | undefined = product.relationships.find(ProductVariation, variationID);
+                let variation: ProductVariation | undefined = undefined;
+
+                if (variationID) {
+                    variation = product.relationships.find(ProductVariation, variationID);
+                }
+
+                // if no variation was found with variationID - try searching variation sku
+                if (!variation && variationSKU) {
+                    const variations = product.relationships.filter(ProductVariation);
+
+                    if (variations) {
+                        variation = variations.find((element: ProductVariation) => {
+                            return element.attributes.sku === variationSKU;
+                        });
+                    }
+                }
 
                 // make sure our variation is actually available before moving forward
                 if (!variation) {
-                    return reject(new Error("ProductAR.init() - cannot proceed as variation with id " + variationID + " cannot be found"));
+                    return reject(new Error("ProductAR.init() - cannot proceed as variation with id " + variationID + " or sku " + variationSKU + " cannot be found"));
                 }
 
                 // otherwise both the product and variation are available

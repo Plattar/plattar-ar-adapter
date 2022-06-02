@@ -72,12 +72,17 @@ export class ProductController extends PlattarController {
 
                 // optional attributes
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
                 const showAR: string | null = this.getAttribute("show-ar");
 
                 let dst: string = Server.location().base + "renderer/product.html?product_id=" + productID;
 
                 if (variationID) {
-                    dst += "&variation_id=" + variationID;
+                    dst += "&variationId=" + variationID;
+                }
+
+                if (variationSKU) {
+                    dst += "&variationSku=" + variationSKU;
                 }
 
                 if (showAR) {
@@ -125,10 +130,15 @@ export class ProductController extends PlattarController {
 
                 // optional attributes
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
                 const showAR: string | null = this.getAttribute("show-ar");
 
                 if (variationID) {
                     viewer.setAttribute("variation-id", variationID);
+                }
+
+                if (variationSKU) {
+                    viewer.setAttribute("variation-sku", variationSKU);
                 }
 
                 if (showAR) {
@@ -161,8 +171,9 @@ export class ProductController extends PlattarController {
 
             if (productID) {
                 const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
 
-                const product: ProductAR = new ProductAR(productID, variationID);
+                const product: ProductAR = new ProductAR(productID, variationID, variationSKU);
 
                 return product.init().then(accept).catch(reject);
             }
