@@ -3,6 +3,7 @@ import { LauncherAR } from "../../ar/launcher-ar";
 import { ProductAR } from "../../ar/product-ar";
 import { SceneAR } from "../../ar/scene-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
+import { ConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 
@@ -208,11 +209,30 @@ export class ViewerController extends PlattarController {
 
             // fallback to using default SceneAR implementation
             if (sceneID) {
-                const sceneAR: SceneAR = new SceneAR(sceneID);
+                // special case - check if scene only has a single product, if so
+                // we need to use provided variation-id or variation-sku to override
+                const variationID: string | null = this.getAttribute("variation-id");
+                const variationSKU: string | null = this.getAttribute("variation-sku");
 
-                sceneAR.init().then(accept).catch(reject);
+                // just do scene-ar if variation ID and variation SKU is not set
+                if (!variationID && !variationSKU) {
+                    const sceneAR: SceneAR = new SceneAR(sceneID);
 
-                return;
+                    return sceneAR.init().then(accept).catch(reject);
+                }
+
+                // otherwise decode scene
+                return ConfiguratorState.decodeScene(sceneID).then((state: ConfiguratorState) => {
+                    const firstProduct: SceneProductData | null = state.first();
+
+                    if (state.length > 1 || !firstProduct) {
+                        return reject(new Error("ViewerController.initAR() - single product required to override variation-id or variation-sku"));
+                    }
+
+                    const product: SceneProductAR = new SceneProductAR(firstProduct.scene_product_id, variationID, variationSKU);
+
+                    return product.init().then(accept).catch(reject);
+                }).catch(reject);
             }
 
             return reject(new Error("ViewerController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
