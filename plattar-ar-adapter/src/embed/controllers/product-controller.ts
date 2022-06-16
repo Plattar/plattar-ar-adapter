@@ -47,7 +47,7 @@ export class ProductController extends PlattarController {
             const productID: string | null = this.getAttribute("product-id");
 
             if (productID) {
-                const opt: any = options || PlattarController.DEFAULT_QR_OPTIONS;
+                const opt: any = options || this._GetDefaultQROptions();
 
                 const viewer: HTMLElement = document.createElement("plattar-qrcode");
 
@@ -69,6 +69,8 @@ export class ProductController extends PlattarController {
                 if (opt.qrType) {
                     viewer.setAttribute("qr-type", opt.qrType);
                 }
+
+                viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
 
                 // optional attributes
                 const variationID: string | null = this.getAttribute("variation-id");

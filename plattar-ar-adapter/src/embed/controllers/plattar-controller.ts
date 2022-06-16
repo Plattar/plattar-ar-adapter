@@ -15,10 +15,11 @@ export abstract class PlattarController {
     /**
      * Default QR Code rendering options
      */
-    public static get DEFAULT_QR_OPTIONS(): any {
+    protected _GetDefaultQROptions(): any {
         return {
-            color: "#101721",
-            qrType: "default",
+            color: this.getAttribute("qr-color") || "#101721",
+            qrType: this.getAttribute("qr-style") || "default",
+            shorten: this.getAttribute("qr-shorten") || false,
             margin: 0
         }
     };
@@ -89,7 +90,7 @@ export abstract class PlattarController {
             // remove the old renderer instance if any
             this.removeRenderer();
 
-            const opt: any = options || PlattarController.DEFAULT_QR_OPTIONS;
+            const opt: any = options || this._GetDefaultQROptions();
 
             const viewer: HTMLElement = document.createElement("plattar-qrcode");
 
@@ -111,6 +112,8 @@ export abstract class PlattarController {
             if (opt.qrType) {
                 viewer.setAttribute("qr-type", opt.qrType);
             }
+
+            viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
 
             const qrOptions: string = btoa(JSON.stringify(opt));
 

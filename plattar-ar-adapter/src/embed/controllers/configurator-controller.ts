@@ -36,7 +36,7 @@ export class ConfiguratorController extends PlattarController {
             const sceneID: string | null = this.getAttribute("scene-id");
 
             if (sceneID) {
-                const opt: any = options || PlattarController.DEFAULT_QR_OPTIONS;
+                const opt: any = options || this._GetDefaultQROptions();
 
                 const viewer: HTMLElement = document.createElement("plattar-qrcode");
 
@@ -58,6 +58,8 @@ export class ConfiguratorController extends PlattarController {
                 if (opt.qrType) {
                     viewer.setAttribute("qr-type", opt.qrType);
                 }
+
+                viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
 
                 let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + sceneID;
 
