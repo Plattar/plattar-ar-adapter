@@ -1,5 +1,5 @@
 import { Analytics } from "@plattar/plattar-analytics";
-import { Product, Project, Scene, SceneProduct, Server } from "@plattar/plattar-api";
+import { Product, Project, Scene, SceneModel, SceneProduct, Server } from "@plattar/plattar-api";
 import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
 import ARViewer from "../viewers/ar-viewer";
@@ -69,9 +69,10 @@ export class SceneAR extends LauncherAR {
     private _ComposeScene(scene: Scene, output: "glb" | "usdz" | "vto"): Promise<string> {
         return new Promise<string>((accept, reject) => {
             const sceneProducts: SceneProduct[] = scene.relationships.filter(SceneProduct);
+            const sceneModels: SceneModel[] = scene.relationships.filter(SceneModel);
 
             // nothing to do if no AR components can be found
-            if (sceneProducts.length <= 0) {
+            if ((sceneProducts.length + sceneModels.length) <= 0) {
                 return reject(new Error("SceneAR.ComposeScene() - cannot proceed as scene does not contain AR components"));
             }
 
@@ -81,14 +82,31 @@ export class SceneAR extends LauncherAR {
             configurator.server = <any>Server.location().type;
             configurator.output = output;
 
-            // add out scene models
+            let totalARObjectCount: number = 0;
+
+            // add our scene products
             sceneProducts.forEach((sceneProduct: SceneProduct) => {
                 const product: Product | undefined = sceneProduct.relationships.find(Product);
 
-                if (product && product.attributes.product_variation_id) {
+                if (sceneProduct.attributes.include_in_augment && product && product.attributes.product_variation_id) {
                     configurator.addSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
+
+                    totalARObjectCount++;
                 }
             });
+
+            // add our scene models
+            sceneModels.forEach((sceneModel: SceneModel) => {
+                if (sceneModel.attributes.include_in_augment) {
+                    configurator.addModel(sceneModel.id);
+                    totalARObjectCount++;
+                }
+            });
+
+            // ensure we have actually added AR objects
+            if (totalARObjectCount <= 0) {
+                return reject(new Error("SceneAR.ComposeScene() - cannot proceed as scene does not contain any enabled AR components"));
+            }
 
             return configurator.get().then((result: any) => {
                 accept(result.filename);
@@ -113,6 +131,7 @@ export class SceneAR extends LauncherAR {
             scene.include(Project);
             scene.include(SceneProduct);
             scene.include(SceneProduct.include(Product));
+            scene.include(SceneModel);
 
             scene.get().then((scene: Scene) => {
                 this._SetupAnalytics(scene);
