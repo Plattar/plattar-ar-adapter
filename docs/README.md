@@ -12,7 +12,7 @@ The software is open source and maintained by the Plattar team. Souce code can b
 
 - [Installation](installation/installation.md)
 
-#### Integrations
+#### Web Integrations
 
 - [360 Viewer Integration](integrations/360-integration.md)
 - [Configurator Integration](integrations/configurator-integration.md)
