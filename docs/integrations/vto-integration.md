@@ -404,3 +404,11 @@ This scene contains multiple products with variations that can be configured usi
 
 </html>
 ```
+
+### Codepan Live Example
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="VTO Integration" src="https://codepen.io/plattar/embed/MWGoMLB?default-tab=html%2Cresult" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/plattar/pen/MWGoMLB">
+  VTO Integration</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>

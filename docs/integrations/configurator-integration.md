@@ -260,3 +260,11 @@ This scene contains multiple products with multiple variations that can be confi
 ```
 
 <img width="500" alt="The Example Scene should look like the following image" src="https://stoplight.io/api/v1/projects/cHJqOjEwODA2Nw/images/2DMkUJTYglE">
+
+### Codepan Live Example
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="Configurator Integration" src="https://codepen.io/plattar/embed/VwxWJgL?default-tab=html%2Cresult" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/plattar/pen/VwxWJgL">
+  Configurator Integration</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>

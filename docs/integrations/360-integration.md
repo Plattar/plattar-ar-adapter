@@ -134,3 +134,11 @@ This scene contains a single product with multiple variations that can be config
 ```
 
 <img width="500" alt="The Example Scene should look like the following image" src="https://stoplight.io/api/v1/projects/cHJqOjEwODA2Nw/images/f6MUkGU6lgE">
+
+### Codepan Live Example
+
+<iframe height="300" style="width: 100%;" scrolling="no" title="360 Integration" src="https://codepen.io/plattar/embed/vYjZqvL?default-tab=html%2Cresult" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/plattar/pen/vYjZqvL">
+  360 Integration</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>
