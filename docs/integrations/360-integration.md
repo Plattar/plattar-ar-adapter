@@ -1,4 +1,4 @@
-[Back to Main](../../README.md)
+[Back to Main](../README.md)
 
 ### 360 Viewer Integrations with AR
 

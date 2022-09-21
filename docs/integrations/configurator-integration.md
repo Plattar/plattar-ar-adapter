@@ -1,4 +1,4 @@
-[Back to Main](../../README.md)
+[Back to Main](../README.md)
 
 ### Configurator Integrations with AR
 
