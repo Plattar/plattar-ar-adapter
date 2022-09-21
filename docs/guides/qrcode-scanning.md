@@ -1,3 +1,5 @@
+[Back to Main](../../README.md)
+
 ### QRCode Scanning Options
 
 The plattar-ar-adapter SDK is bundled with functionality that allows redirecting a user towards an AR experience when scanning a QR Code. Previously this QR Code would lead a user towards a mobile friendly version of the Plattar Renderer that would have additional functionality to launch an AR Experience.

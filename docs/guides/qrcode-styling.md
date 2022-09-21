@@ -1,3 +1,5 @@
+[Back to Main](../../README.md)
+
 ### QRCode Styling Options
 
 With the introduction of `plattar-ar-adapter` version `1.132.1` there is now several options that allows styling the auto-generated QR Code by changing its design, color and visual complexity.

@@ -1,3 +1,5 @@
+[Back to Main](../../README.md)
+
 ### QRCode Routing Options
 
 The default implementation of the QR Code Renderer bundled with the plattar-ar-adapter SDK is designed to route a user to a mobile version of an experience hosted by Plattar. These experiences vary based on Scene ID, Product ID or Variation ID.

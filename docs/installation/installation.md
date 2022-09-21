@@ -1,3 +1,5 @@
+[Back to Main](../../README.md)
+
 ### Dependencies
 
 [plattar-ar-adapter](https://github.com/Plattar/plattar-ar-adapter) SDK has dependencies on the following open-source projects.

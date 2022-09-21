@@ -1,3 +1,5 @@
+[Back to Main](../../README.md)
+
 ### Default AR Button
 
 With the introduction of `plattar-ar-adapter` version `1.132.1` there is now an option that allows disabling the default AR launch button in Plattar Viewers and Configurators.
