@@ -30,39 +30,6 @@ https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar
 npm install @plattar/plattar-ar-adapter
 ```
 
-### _Examples_
+### _Documentation and Examples_
 
--   Launch AR for Plattar Products & Variations
-
-```typescript
-import {ProductAR} from "@plattar/plattar-ar-adapter";
-
-// grab your product/variation ID from the Plattar CMS
-const productID:string = "{YOUR_PRODUCT_ID}";
-const variationID:string = "{YOUR_VARIATION_ID}";
-
-const webAR:ProductAR = new ProductAR(productID, variationID);
-
-webAR.init().then((ar:ProductAR) => {
-    ar.start();
-}).catch((err) => {
-    console.error("AR Not Available");
-});
-```
-
--   Launch AR for Plattar Scenes
-
-```typescript
-import {SceneAR} from "@plattar/plattar-ar-adapter";
-
-// grab your scene ID from the Plattar CMS
-const sceneID:string = "{YOUR_SCENE_ID}";
-
-const webAR:SceneAR = new SceneAR(sceneID);
-
-webAR.init().then((ar:SceneAR) => {
-    ar.start();
-}).catch((err) => {
-    console.error("AR Not Available");
-});
-```
+- Visit [Documentation](https://plattar.github.io/plattar-ar-adapter) page for usage, guides and code examples
