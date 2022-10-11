@@ -1,4 +1,4 @@
-[Back to Main](../README.md)
+[Back to Main](./)
 
 ### Working with user-defined SKU field
 
