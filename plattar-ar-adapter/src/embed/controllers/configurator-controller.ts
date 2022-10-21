@@ -231,7 +231,7 @@ export class ConfiguratorController extends PlattarController {
             }
 
             (<any>viewer).messenger.getARFile(output).then((result: any) => {
-                const rawAR: RawAR = new RawAR(result.filename);
+                const rawAR: RawAR = new RawAR(result.filename, sceneID);
 
                 return rawAR.init().then(accept).catch(reject);
             }).catch(reject);
@@ -267,7 +267,7 @@ export class ConfiguratorController extends PlattarController {
                 });
 
                 configurator.get().then((result: any) => {
-                    const rawAR: RawAR = new RawAR(result.filename);
+                    const rawAR: RawAR = new RawAR(result.filename, sceneID);
 
                     rawAR.init().then(accept).catch(reject);
                 }).catch(reject);
