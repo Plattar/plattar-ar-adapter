@@ -1,3 +1,5 @@
+import { Analytics } from "@plattar/plattar-analytics";
+import { Project, Scene, Server } from "@plattar/plattar-api";
 import { Util } from "../util/util";
 import ARViewer from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
@@ -11,12 +13,16 @@ import { LauncherAR } from "./launcher-ar";
 export class RawAR extends LauncherAR {
     // model location
     private readonly _modelLocation: string;
+    private readonly _sceneID: string | null;
 
     // this thing controls the actual AR view
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
-    constructor(modelLocation: string | undefined | null = null) {
+    // analytics instance
+    private _analytics: Analytics | null = null;
+
+    constructor(modelLocation: string | undefined | null = null, sceneID: string | undefined | null = null) {
         super();
 
         if (!modelLocation) {
@@ -27,6 +33,7 @@ export class RawAR extends LauncherAR {
 
         if (lowerLoc.endsWith("usdz") || lowerLoc.endsWith("glb") || lowerLoc.endsWith("gltf") || lowerLoc.endsWith("reality")) {
             this._modelLocation = modelLocation;
+            this._sceneID = sceneID;
             this._ar = null;
         }
         else {
@@ -36,6 +43,42 @@ export class RawAR extends LauncherAR {
 
     public get modelLocation(): string {
         return this._modelLocation;
+    }
+
+    private _SetupAnalytics(): Promise<void> {
+        return new Promise<void>((accept, _reject) => {
+            const sceneID: string | null = this._sceneID;
+
+            if (!sceneID) {
+                return accept();
+            }
+
+            const scene: Scene = new Scene(sceneID);
+            scene.include(Project);
+
+            scene.get().then((scene: Scene) => {
+                const analytics: Analytics = new Analytics(scene.attributes.application_id);
+                analytics.origin = <any>Server.location().type;
+
+                this._analytics = analytics;
+
+                analytics.data.push("type", "scene-ar");
+                analytics.data.push("sceneId", scene.id);
+                analytics.data.push("sceneTitle", scene.attributes.title);
+
+                const application: Project | undefined = scene.relationships.find(Project);
+
+                // setup application stuff (if any)
+                if (application) {
+                    analytics.data.push("applicationId", application.id);
+                    analytics.data.push("applicationTitle", application.attributes.title);
+                }
+
+                accept();
+            }).catch((_err) => {
+                accept();
+            });
+        });
     }
 
     /**
@@ -51,48 +94,51 @@ export class RawAR extends LauncherAR {
                 return reject(new Error("RawAR.init() - cannot proceed as AR not available in context"));
             }
 
-            const modelLocation: string = this._modelLocation;
-            const lowerLoc = modelLocation.toLowerCase();
+            // send the analytics (if any)
+            this._SetupAnalytics().then(() => {
+                const modelLocation: string = this._modelLocation;
+                const lowerLoc = modelLocation.toLowerCase();
 
-            // we need to define our AR module here
-            // we are in Safari/Quicklook mode here
-            if (Util.isSafari() || Util.isChromeOnIOS()) {
-                // load the reality experience if dealing with reality file
-                if (lowerLoc.endsWith("reality") && Util.canRealityViewer()) {
-                    this._ar = new RealityViewer();
-                    this._ar.modelUrl = modelLocation;
+                // we need to define our AR module here
+                // we are in Safari/Quicklook mode here
+                if (Util.isSafari() || Util.isChromeOnIOS()) {
+                    // load the reality experience if dealing with reality file
+                    if (lowerLoc.endsWith("reality") && Util.canRealityViewer()) {
+                        this._ar = new RealityViewer();
+                        this._ar.modelUrl = modelLocation;
 
-                    return accept(this);
+                        return accept(this);
+                    }
+
+                    // load the usdz experience if dealing with usdz file
+                    if (lowerLoc.endsWith("usdz") && Util.canQuicklook()) {
+                        this._ar = new QuicklookViewer();
+                        this._ar.modelUrl = modelLocation;
+
+                        return accept(this);
+                    }
+
+                    return reject(new Error("RawAR.init() - cannot proceed as model is not a .usdz or .reality file"));
                 }
 
-                // load the usdz experience if dealing with usdz file
-                if (lowerLoc.endsWith("usdz") && Util.canQuicklook()) {
-                    this._ar = new QuicklookViewer();
-                    this._ar.modelUrl = modelLocation;
+                // check android
+                if (Util.canSceneViewer()) {
+                    if (lowerLoc.endsWith("glb") || lowerLoc.endsWith("gltf")) {
+                        const arviewer = new SceneViewer();
+                        arviewer.modelUrl = modelLocation;
+                        arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
+                        this._ar = arviewer;
 
-                    return accept(this);
+                        return accept(this);
+                    }
+
+                    return reject(new Error("RawAR.init() - cannot proceed as model is not a .glb or .gltf file"));
                 }
 
-                return reject(new Error("RawAR.init() - cannot proceed as model is not a .usdz or .reality file"));
-            }
-
-            // check android
-            if (Util.canSceneViewer()) {
-                if (lowerLoc.endsWith("glb") || lowerLoc.endsWith("gltf")) {
-                    const arviewer = new SceneViewer();
-                    arviewer.modelUrl = modelLocation;
-                    arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
-                    this._ar = arviewer;
-
-                    return accept(this);
-                }
-
-                return reject(new Error("RawAR.init() - cannot proceed as model is not a .glb or .gltf file"));
-            }
-
-            // otherwise, we didn't have AR available - it should never really reach this stage as this should be caught
-            // earlier in the process
-            return reject(new Error("RawAR.init() - could not initialise AR correctly, check values"));
+                // otherwise, we didn't have AR available - it should never really reach this stage as this should be caught
+                // earlier in the process
+                return reject(new Error("RawAR.init() - could not initialise AR correctly, check values"));
+            });
         });
     }
 
@@ -102,6 +148,18 @@ export class RawAR extends LauncherAR {
     public start(): void {
         if (!this._ar) {
             throw new Error("RawAR.start() - cannot proceed as AR instance is null");
+        }
+
+        const analytics: Analytics | null = this._analytics;
+
+        if (analytics) {
+            analytics.data.push("device", this._ar.device);
+            analytics.data.push("eventCategory", this._ar.nodeType);
+            analytics.data.push("eventAction", "Start Scene Augment");
+
+            analytics.write();
+
+            analytics.startRecordEngagement();
         }
 
         // this was initialised via the init() function
