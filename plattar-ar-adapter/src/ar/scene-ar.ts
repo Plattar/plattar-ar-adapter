@@ -98,21 +98,25 @@ export class SceneAR extends LauncherAR {
                 const selection: SceneVariationSelection = this._variationSelection;
 
                 // we have a specific product selection
-                if (sceneProduct.attributes.include_in_augment && product && (product.id === selection.productID && selection.variationID)) {
-                    configurator.addSceneProduct(sceneProduct.id, selection.variationID);
-
-                    totalARObjectCount++;
-                }
-                else if (sceneProduct.attributes.include_in_augment && product) {
-                    if ((sceneProduct.id === selection.sceneProductID) && selection.variationID) {
+                if (sceneProduct.attributes.include_in_augment) {
+                    // check if this product is the one we want (from selection optionally)
+                    if (product && (product.id === selection.productID) && selection.variationID) {
                         configurator.addSceneProduct(sceneProduct.id, selection.variationID);
 
                         totalARObjectCount++;
                     }
-                    else if (product.attributes.product_variation_id) {
-                        configurator.addSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
+                    else if (product) {
+                        // check if this scene-product is the one we want (from selection)
+                        if ((sceneProduct.id === selection.sceneProductID) && selection.variationID) {
+                            configurator.addSceneProduct(sceneProduct.id, selection.variationID);
 
-                        totalARObjectCount++;
+                            totalARObjectCount++;
+                        }
+                        else if (product.attributes.product_variation_id) {
+                            configurator.addSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
+
+                            totalARObjectCount++;
+                        }
                     }
                 }
             });
