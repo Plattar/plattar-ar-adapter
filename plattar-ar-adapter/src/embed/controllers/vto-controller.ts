@@ -65,6 +65,9 @@ export class VTOController extends PlattarController {
                 // optional attributes
                 const configState: string | null = this.getAttribute("config-state");
                 const showAR: string | null = this.getAttribute("show-ar");
+                const productID: string | null = this.getAttribute("product-id");
+                const sceneProductID: string | null = this.getAttribute("scene-product-id");
+                const variationID: string | null = this.getAttribute("variation-id");
 
                 if (configState) {
                     dst += "&config_state=" + configState;
@@ -72,6 +75,18 @@ export class VTOController extends PlattarController {
 
                 if (showAR) {
                     dst += "&show_ar=" + showAR;
+                }
+
+                if (productID) {
+                    dst += "&product_id=" + productID;
+                }
+
+                if (sceneProductID) {
+                    dst += "&scene_product_id=" + sceneProductID;
+                }
+
+                if (variationID) {
+                    dst += "&variation_id=" + variationID;
                 }
 
                 viewer.setAttribute("url", opt.url || dst);
@@ -116,6 +131,9 @@ export class VTOController extends PlattarController {
                 // optional attributes
                 const configState: string | null = this.getAttribute("config-state");
                 const showAR: string | null = this.getAttribute("show-ar");
+                const productID: string | null = this.getAttribute("product-id");
+                const sceneProductID: string | null = this.getAttribute("scene-product-id");
+                const variationID: string | null = this.getAttribute("variation-id");
 
                 if (configState) {
                     viewer.setAttribute("config-state", configState);
@@ -123,6 +141,18 @@ export class VTOController extends PlattarController {
 
                 if (showAR) {
                     viewer.setAttribute("show-ar", showAR);
+                }
+
+                if (productID) {
+                    viewer.setAttribute("product-id", productID);
+                }
+
+                if (sceneProductID) {
+                    viewer.setAttribute("scene-product-id", sceneProductID);
+                }
+
+                if (variationID) {
+                    viewer.setAttribute("variation-id", variationID);
                 }
 
                 viewer.onload = () => {
@@ -261,7 +291,15 @@ export class VTOController extends PlattarController {
         // otherwise no config-state or viewer is active
         // fallback to using default SceneAR implementation
         if (sceneID) {
-            const sceneAR: SceneAR = new SceneAR(sceneID);
+            const productID: string | null = this.getAttribute("product-id");
+            const sceneProductID: string | null = this.getAttribute("scene-product-id");
+            const variationID: string | null = this.getAttribute("variation-id");
+
+            const sceneAR: SceneAR = new SceneAR(sceneID, {
+                productID: productID ? productID : undefined,
+                sceneProductID: sceneProductID ? sceneProductID : undefined,
+                variationID: variationID ? variationID : undefined
+            });
 
             sceneAR.init().then(accept).catch(reject);
 
