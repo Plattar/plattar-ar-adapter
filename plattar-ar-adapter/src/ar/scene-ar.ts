@@ -8,6 +8,12 @@ import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
 
+export interface SceneVariationSelection {
+    readonly sceneProductID?: string;
+    readonly productID?: string;
+    readonly variationID?: string;
+}
+
 /**
  * Performs AR functionality related to Plattar Scenes
  */
@@ -18,12 +24,13 @@ export class SceneAR extends LauncherAR {
 
     // scene and selected variation IDs
     private readonly _sceneID: string;
+    private readonly _variationSelection: SceneVariationSelection;
 
     // this thing controls the actual AR view
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
-    constructor(sceneID: string | undefined | null = null) {
+    constructor(sceneID: string | undefined | null = null, variationSelection: SceneVariationSelection | undefined | null = null) {
         super();
 
         if (!sceneID) {
@@ -31,6 +38,7 @@ export class SceneAR extends LauncherAR {
         }
 
         this._sceneID = sceneID;
+        this._variationSelection = variationSelection || {};
         this._ar = null;
     }
 
@@ -87,11 +95,29 @@ export class SceneAR extends LauncherAR {
             // add our scene products
             sceneProducts.forEach((sceneProduct: SceneProduct) => {
                 const product: Product | undefined = sceneProduct.relationships.find(Product);
+                const selection: SceneVariationSelection = this._variationSelection;
 
-                if (sceneProduct.attributes.include_in_augment && product && product.attributes.product_variation_id) {
-                    configurator.addSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
+                // we have a specific product selection
+                if (sceneProduct.attributes.include_in_augment) {
+                    // check if this product is the one we want (from selection optionally)
+                    if (product && (product.id === selection.productID) && selection.variationID) {
+                        configurator.addSceneProduct(sceneProduct.id, selection.variationID);
 
-                    totalARObjectCount++;
+                        totalARObjectCount++;
+                    }
+                    else if (product) {
+                        // check if this scene-product is the one we want (from selection)
+                        if ((sceneProduct.id === selection.sceneProductID) && selection.variationID) {
+                            configurator.addSceneProduct(sceneProduct.id, selection.variationID);
+
+                            totalARObjectCount++;
+                        }
+                        else if (product.attributes.product_variation_id) {
+                            configurator.addSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
+
+                            totalARObjectCount++;
+                        }
+                    }
                 }
             });
 
