@@ -2,75 +2,60 @@
  * Static Utility Functions
  */
 export class Util {
-
     public static canAugment(): boolean {
-        const userAgent: string = navigator.userAgent;
-
-        // test google chrome on IOS and standard IOS test
-        if ((/CriOS/i.test(userAgent) || /Macintosh|iPad|iPhone|iPod/.test(userAgent)) && !(<any>window).MSStream) {
-            // inside facebook browser
-            if (/\bFB[\w_]+\//.test(userAgent)) {
-                return false;
-            }
-
-            // inside instagram browser
-            if (/\bInstagram/i.test(userAgent)) {
-                return false;
-            }
-
-            return Util.canQuicklook();
-        }
-        else if (/android/i.test(userAgent)) {
-            return true;
-        }
-
-        return false;
+        return Util.canQuicklook() || Util.canSceneViewer();
     }
 
     public static canQuicklook(): boolean {
-        const tempAnchor: HTMLAnchorElement = document.createElement("a");
+        if (Util.isIOS()) {
+            const isWKWebView: boolean = Boolean((window && <any>window).webkit && (<any>window).webkit.messageHandlers);
 
-        return tempAnchor.relList &&
-            tempAnchor.relList.supports &&
-            tempAnchor.relList.supports("ar");
+            if (isWKWebView) {
+                return Boolean(/CriOS\/|EdgiOS\/|FxiOS\/|GSA\/|DuckDuckGo\//.test(navigator.userAgent));
+            }
+
+            const tempAnchor: HTMLAnchorElement = document.createElement("a");
+
+            return tempAnchor.relList && tempAnchor.relList.supports && tempAnchor.relList.supports("ar");
+        }
+
+        return false;
     }
 
     public static canSceneViewer(): boolean {
-        return Util.canAugment() && /android/i.test(navigator.userAgent);
+        return Util.isAndroid() && !Util.isFirefox() && !Util.isOculus();
     }
 
     public static canRealityViewer(): boolean {
-        if (!Util.canAugment()) {
-            return false;
-        }
-
-        if (/Macintosh|iPad|iPhone|iPod/.test(navigator.userAgent) && !(<any>window).MSStream) {
-            if (Util.isSafari() && Util.getIOSVersion()[0] >= 13) {
-                return true;
-            }
-        }
-
-        return false;
+        return Util.isIOS() && Util.getIOSVersion()[0] >= 13;
     }
 
-    public static isSafari(): boolean {
-        if (navigator.vendor && navigator.userAgent) {
-            return navigator.vendor.indexOf("Apple") > -1 &&
-                navigator.userAgent.indexOf("CriOS") === -1 &&
-                navigator.userAgent.indexOf("FxiOS") === -1;
-        }
-
-        return false;
+    public static isSafariOnIOS(): boolean {
+        return Util.isIOS() && Util.isSafari();
     }
 
     public static isChromeOnIOS(): boolean {
-        const userAgent: string = navigator.userAgent;
+        return Util.isIOS() && /CriOS\//.test(navigator.userAgent);
+    }
 
-        if (userAgent) {
-            return Util.canAugment() && /CriOS/i.test(userAgent);
-        }
+    public static isIOS(): boolean {
+        return (/iPad|iPhone|iPod/.test(navigator.userAgent) && !(self as any).MSStream) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    }
 
-        return false;
+    public static isAndroid(): boolean {
+        return /android/i.test(navigator.userAgent);
+    }
+
+    public static isFirefox(): boolean {
+        return /firefox/i.test(navigator.userAgent);
+    }
+
+    public static isOculus(): boolean {
+        return /OculusBrowser/.test(navigator.userAgent);
+    }
+
+    public static isSafari(): boolean {
+        return /Safari\//.test(navigator.userAgent);
     }
 
     public static getIOSVersion(): number[] {
