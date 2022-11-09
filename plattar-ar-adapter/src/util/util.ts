@@ -55,7 +55,7 @@ export class Util {
     }
 
     public static isSafari(): boolean {
-        return /Safari\//.test(navigator.userAgent);
+        return Util.isIOS() && /Safari\//.test(navigator.userAgent);
     }
 
     public static getIOSVersion(): number[] {
