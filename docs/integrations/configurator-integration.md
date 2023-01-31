@@ -78,6 +78,12 @@ These messenger functions are available when the node has `embed-type="configura
 selectSceneProductVariation(sceneProductID:string, variationID:string);
 ```
 
+- Changes the Variation for the provided Product. The Variation ID must be a member of an active Product attached to an internal Scene Product. The Variation ID must belong to the Product.
+
+```js
+selectProductVariation(productID:string, variationID:string);
+```
+
 - Generates and returns the current internal configuration state of the Scene. This configuration state can be used in conjunction with the `config-state` attribute to re-load a previously selected configuration.
 
 ```js
