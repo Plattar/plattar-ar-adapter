@@ -1,15 +1,15 @@
-import ARViewer from "./ar-viewer";
+import { ARViewer, DeviceType, NodeType } from "./ar-viewer";
 
 export default class RealityViewer extends ARViewer {
     constructor() {
         super();
     }
 
-    public get nodeType(): string {
+    public get nodeType(): NodeType {
         return "Reality Viewer";
     }
 
-    public get device(): string {
+    public get device(): DeviceType {
         return "ios";
     }
 

@@ -1,4 +1,4 @@
-import ARViewer from "./ar-viewer";
+import { ARViewer, DeviceType, NodeType } from "./ar-viewer";
 
 export default class SceneViewer extends ARViewer {
     public araction: string | null = null;
@@ -11,11 +11,11 @@ export default class SceneViewer extends ARViewer {
         this.isVertical = false;
     }
 
-    public get nodeType(): string {
+    public get nodeType(): NodeType {
         return "Scene Viewer";
     }
 
-    public get device(): string {
+    public get device(): DeviceType {
         return "android";
     }
 

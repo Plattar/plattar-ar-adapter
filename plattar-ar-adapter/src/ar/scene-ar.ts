@@ -2,7 +2,7 @@ import { Analytics } from "@plattar/plattar-analytics";
 import { Product, Project, Scene, SceneModel, SceneProduct, Server } from "@plattar/plattar-api";
 import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
-import ARViewer from "../viewers/ar-viewer";
+import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
