@@ -19,7 +19,7 @@ export abstract class PlattarController {
         return {
             color: this.getAttribute("qr-color") || "#101721",
             qrType: this.getAttribute("qr-style") || "default",
-            shorten: this.getAttribute("qr-shorten") || false,
+            shorten: this.getAttribute("qr-shorten") || true,
             margin: 0
         }
     };
