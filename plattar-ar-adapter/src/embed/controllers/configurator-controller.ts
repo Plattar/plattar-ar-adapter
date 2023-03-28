@@ -17,17 +17,6 @@ export class ConfiguratorController extends PlattarController {
         super(parent);
     }
 
-    public onAttributesUpdated(): void {
-        const state: ControllerState = this._state;
-
-        // re-render the QR Code when attributes have changed
-        if (state === ControllerState.QRCode) {
-            this.startQRCode(this._prevQROpt);
-
-            return;
-        }
-    }
-
     public startViewerQRCode(options: any): Promise<HTMLElement> {
         return new Promise<HTMLElement>((accept, reject) => {
             // remove the old renderer instance if any

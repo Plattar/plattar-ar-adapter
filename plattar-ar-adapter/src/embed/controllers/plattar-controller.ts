@@ -1,5 +1,6 @@
 import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
+import { QRCodeController } from "../qrcode/qrcode-controller";
 
 export enum ControllerState {
     None,
@@ -12,37 +13,24 @@ export enum ControllerState {
  */
 export abstract class PlattarController {
 
-    /**
-     * Default QR Code rendering options
-     */
-    protected _GetDefaultQROptions(): any {
-        return {
-            color: this.getAttribute("qr-color") || "#101721",
-            qrType: this.getAttribute("qr-style") || "default",
-            shorten: this.getAttribute("qr-shorten") || true,
-            margin: 0
-        }
-    };
-
     private readonly _parent: HTMLElement;
+    private readonly _qrcode: QRCodeController;
+
     protected _state: ControllerState = ControllerState.None;
     protected _element: HTMLElement | null = null;
-    protected _prevQROpt: any = null;
 
     constructor(parent: HTMLElement) {
         this._parent = parent;
+        this._qrcode = new QRCodeController(this);
     }
 
     /**
      * Called by the parent when a HTML Attribute has changed and the controller
      * requires an update
      */
-    public abstract onAttributesUpdated(): void;
-
-    /**
-     * Start the underlying Plattar Renderer for this Controller
-     */
-    public abstract startRenderer(): Promise<HTMLElement>;
+    public onAttributesUpdated(): void {
+        this._qrcode.refresh();
+    }
 
     /**
      * Initialise and start AR mode if available
@@ -56,12 +44,6 @@ export abstract class PlattarController {
             }).catch(reject);
         });
     }
-
-    /**
-     * Start Rendering a QR Code with the provided options
-     * @param options (optional) - The QR Code Options
-     */
-    public abstract startViewerQRCode(options: any | undefined | null): Promise<HTMLElement>;
 
     /**
      * Decide which QR Code to render according to the qr-type attribute
@@ -87,35 +69,11 @@ export abstract class PlattarController {
      */
     public startARQRCode(options: any): Promise<HTMLElement> {
         return new Promise<HTMLElement>((accept, reject) => {
-            // remove the old renderer instance if any
-            this.removeRenderer();
+            const qrcode: QRCodeController = this._qrcode;
 
-            const opt: any = options || this._GetDefaultQROptions();
+            qrcode.options = options;
 
-            const viewer: HTMLElement = document.createElement("plattar-qrcode");
-
-            // required attributes with defaults for plattar-viewer node
-            const width: string = this.getAttribute("width") || "500px";
-            const height: string = this.getAttribute("height") || "500px";
-
-            viewer.setAttribute("width", width);
-            viewer.setAttribute("height", height);
-
-            if (opt.color) {
-                viewer.setAttribute("color", opt.color);
-            }
-
-            if (opt.margin) {
-                viewer.setAttribute("margin", "" + opt.margin);
-            }
-
-            if (opt.qrType) {
-                viewer.setAttribute("qr-type", opt.qrType);
-            }
-
-            viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
-
-            const qrOptions: string = btoa(JSON.stringify(opt));
+            const qrOptions: string = qrcode.optionsBase64;
 
             let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
 
@@ -160,19 +118,22 @@ export abstract class PlattarController {
                 dst += "&scene_id=" + sceneID;
             }
 
-            viewer.setAttribute("url", opt.url || dst);
+            qrcode.url = dst;
 
-            viewer.onload = () => {
-                return accept(viewer);
-            };
-
-            this._element = viewer;
-            this._state = ControllerState.QRCode;
-            this._prevQROpt = opt;
-
-            this.append(viewer);
+            qrcode.show();
         });
     }
+
+    /**
+     * Start the underlying Plattar Renderer for this Controller
+     */
+    public abstract startRenderer(): Promise<HTMLElement>;
+
+    /**
+     * Start Rendering a QR Code with the provided options
+     * @param options (optional) - The QR Code Options
+     */
+    public abstract startViewerQRCode(options: any | undefined | null): Promise<HTMLElement>;
 
     /**
      * Initialise and return a launcher that can be used to start AR
