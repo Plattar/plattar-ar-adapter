@@ -5,6 +5,7 @@ import { ProductController } from "./controllers/product-controller";
 import { ViewerController } from "./controllers/viewer-controller";
 import { ConfiguratorController } from "./controllers/configurator-controller";
 import { VTOController } from "./controllers/vto-controller";
+import { QRCodeController } from "./qrcode/qrcode-controller";
 
 /**
  * This tracks the current embed type
@@ -144,13 +145,43 @@ export default class PlattarEmbed extends HTMLElement {
         });
     }
 
-    public startQRCode(options: any | undefined | null = null): Promise<HTMLElement> {
-        return new Promise<HTMLElement>((accept, reject) => {
+    public startQRCode(options: any | undefined | null = null): Promise<QRCodeController> {
+        return new Promise<QRCodeController>((accept, reject) => {
             if (!this._controller) {
                 return reject(new Error("PlattarEmbed.startQRCode() - cannot execute as controller has not loaded yet"));
             }
 
             return this._controller.startQRCode(options).then(accept).catch(reject);
+        });
+    }
+
+    public showQRCode(options: any | undefined | null = null): Promise<QRCodeController> {
+        return new Promise<QRCodeController>((accept, reject) => {
+            if (!this._controller) {
+                return reject(new Error("PlattarEmbed.showQRCode() - cannot execute as controller has not loaded yet"));
+            }
+
+            return this._controller.showQRCode(options).then(accept).catch(reject);
+        });
+    }
+
+    public hideQRCode(): Promise<QRCodeController> {
+        return new Promise<QRCodeController>((accept, reject) => {
+            if (!this._controller) {
+                return reject(new Error("PlattarEmbed.hideQRCode() - cannot execute as controller has not loaded yet"));
+            }
+
+            return this._controller.hideQRCode().then(accept).catch(reject);
+        });
+    }
+
+    public refreshQRCode(): Promise<QRCodeController> {
+        return new Promise<QRCodeController>((accept, reject) => {
+            if (!this._controller) {
+                return reject(new Error("PlattarEmbed.refreshQRCode() - cannot execute as controller has not loaded yet"));
+            }
+
+            return this._controller.refreshQRCode().then(accept).catch(reject);
         });
     }
 

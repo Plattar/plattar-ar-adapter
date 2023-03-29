@@ -1,4 +1,4 @@
-import ARViewer from "./ar-viewer";
+import { ARViewer, DeviceType, NodeType } from "./ar-viewer";
 
 export default class QuicklookViewer extends ARViewer {
     public araction: string | null = null;
@@ -11,11 +11,11 @@ export default class QuicklookViewer extends ARViewer {
         this.arcallback = () => { };
     }
 
-    public get nodeType(): string {
+    public get nodeType(): NodeType {
         return "Quick Look";
     }
 
-    public get device(): string {
+    public get device(): DeviceType {
         return "ios";
     }
 

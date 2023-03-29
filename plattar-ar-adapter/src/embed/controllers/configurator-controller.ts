@@ -6,100 +6,46 @@ import { SceneAR } from "../../ar/scene-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
 import { ConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
-import { ControllerState, PlattarController } from "./plattar-controller";
+import { QRCodeOptions } from "../qrcode/qrcode-controller";
+import { PlattarController } from "./plattar-controller";
 
 /**
  * Manages an instance of the <plattar-configurator> HTML Element
  */
 export class ConfiguratorController extends PlattarController {
 
+    private _element: HTMLElement | null = null;
+
     constructor(parent: HTMLElement) {
         super(parent);
     }
 
-    public onAttributesUpdated(): void {
-        const state: ControllerState = this._state;
+    public override getViewerQRCodeURL(options: QRCodeOptions): string {
+        const sceneID: string | null = this.getAttribute("scene-id");
 
-        // re-render the QR Code when attributes have changed
-        if (state === ControllerState.QRCode) {
-            this.startQRCode(this._prevQROpt);
+        let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + sceneID;
 
-            return;
+        // optional attributes
+        const configState: string | null = this.getAttribute("config-state");
+        const showAR: string | null = this.getAttribute("show-ar");
+        const showUI: string | null = this.getAttribute("show-ui");
+
+        if (showUI && showUI === "true") {
+            dst = Server.location().base + "configurator/dist/index.html?scene_id=" + sceneID;
         }
+
+        if (configState) {
+            dst += "&config_state=" + configState;
+        }
+
+        if (showAR) {
+            dst += "&show_ar=" + showAR;
+        }
+
+        return dst;
     }
 
-    public startViewerQRCode(options: any): Promise<HTMLElement> {
-        return new Promise<HTMLElement>((accept, reject) => {
-            // remove the old renderer instance if any
-            this.removeRenderer();
-
-            const sceneID: string | null = this.getAttribute("scene-id");
-
-            if (sceneID) {
-                const opt: any = options || this._GetDefaultQROptions();
-
-                const viewer: HTMLElement = document.createElement("plattar-qrcode");
-
-                // required attributes with defaults for plattar-viewer node
-                const width: string = this.getAttribute("width") || "500px";
-                const height: string = this.getAttribute("height") || "500px";
-
-                viewer.setAttribute("width", width);
-                viewer.setAttribute("height", height);
-
-                if (opt.color) {
-                    viewer.setAttribute("color", opt.color);
-                }
-
-                if (opt.margin) {
-                    viewer.setAttribute("margin", "" + opt.margin);
-                }
-
-                if (opt.qrType) {
-                    viewer.setAttribute("qr-type", opt.qrType);
-                }
-
-                viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
-
-                let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + sceneID;
-
-                // optional attributes
-                const configState: string | null = this.getAttribute("config-state");
-                const showAR: string | null = this.getAttribute("show-ar");
-                const showUI: string | null = this.getAttribute("show-ui");
-
-                if (showUI && showUI === "true") {
-                    dst = Server.location().base + "configurator/dist/index.html?scene_id=" + sceneID;
-                }
-
-                if (configState) {
-                    dst += "&config_state=" + configState;
-                }
-
-                if (showAR) {
-                    dst += "&show_ar=" + showAR;
-                }
-
-                viewer.setAttribute("url", opt.url || dst);
-
-                viewer.onload = () => {
-                    return accept(viewer);
-                };
-
-                this.append(viewer);
-
-                this._element = viewer;
-                this._state = ControllerState.QRCode;
-                this._prevQROpt = opt;
-
-                return;
-            }
-
-            return reject(new Error("ConfiguratorController.startQRCode() - minimum required attributes not set, use scene-id as a minimum"));
-        });
-    }
-
-    public startRenderer(): Promise<HTMLElement> {
+    public override startRenderer(): Promise<HTMLElement> {
         return new Promise<HTMLElement>((accept, reject) => {
             // remove the old renderer instance if any
             this.removeRenderer();
@@ -113,6 +59,8 @@ export class ConfiguratorController extends PlattarController {
                 const server: string = this.getAttribute("server") || "production";
 
                 const viewer: HTMLElement = document.createElement("plattar-configurator");
+                viewer.style.zIndex = "1";
+                viewer.style.display = "block";
 
                 viewer.setAttribute("width", width);
                 viewer.setAttribute("height", height);
@@ -143,7 +91,6 @@ export class ConfiguratorController extends PlattarController {
                 this.append(viewer);
 
                 this._element = viewer;
-                this._state = ControllerState.Renderer;
 
                 return;
             }
@@ -152,7 +99,7 @@ export class ConfiguratorController extends PlattarController {
         });
     }
 
-    public initAR(): Promise<LauncherAR> {
+    public override initAR(): Promise<LauncherAR> {
         return new Promise<LauncherAR>((accept, reject) => {
             if (!Util.canAugment()) {
                 return reject(new Error("ConfiguratorController.initAR() - cannot proceed as AR not available in context"));
@@ -291,7 +238,13 @@ export class ConfiguratorController extends PlattarController {
         return reject(new Error("ConfiguratorController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
     }
 
-    public removeRenderer(): boolean {
+    public override removeRenderer(): boolean {
+        if (this.qrcode.visible) {
+            this.hideQRCode();
+
+            return true;
+        }
+
         if (this._element) {
             this._element.remove();
             this._element = null;
@@ -302,7 +255,7 @@ export class ConfiguratorController extends PlattarController {
         return false;
     }
 
-    public get element(): HTMLElement | null {
+    public override get element(): HTMLElement | null {
         return this._element;
     }
 }

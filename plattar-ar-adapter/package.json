@@ -39,7 +39,7 @@
   "dependencies": {
     "@plattar/plattar-analytics": "^1.144.2",
     "@plattar/plattar-api": "^1.148.1",
-    "@plattar/plattar-qrcode": "1.147.1",
+    "@plattar/plattar-qrcode": "1.148.2",
     "@plattar/plattar-services": "^1.120.1",
     "@plattar/plattar-web": "^1.135.2"
   },
@@ -48,7 +48,7 @@
     "@babel/core": "^7.21.3",
     "@babel/preset-env": "^7.20.2",
     "browserify": "^17.0.0",
-    "typescript": "^4.9.5",
+    "typescript": "^5.0.2",
     "uglify-js": "^3.17.4"
   },
   "publishConfig": {
