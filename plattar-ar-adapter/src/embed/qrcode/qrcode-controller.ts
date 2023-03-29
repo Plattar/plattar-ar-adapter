@@ -25,6 +25,8 @@ export class QRCodeController {
         this._url = null;
 
         this._element.style.display = "none";
+        this._element.style.position = "absolute";
+        this._element.style.zIndex = "2";
         this._owner.append(this._element);
     }
 

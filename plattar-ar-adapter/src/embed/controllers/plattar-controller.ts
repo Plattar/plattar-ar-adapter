@@ -52,6 +52,13 @@ export abstract class PlattarController {
 
             qrcode.hide();
 
+            const renderer: HTMLElement | null = this.element;
+
+            // hide the renderer
+            if (renderer) {
+                renderer.style.display = "block";
+            }
+
             return accept(qrcode);
         });
     }
@@ -113,6 +120,13 @@ export abstract class PlattarController {
             qrcode.url = this.getTemplateQRCodeURL(qrcode.optionsBase64);
             qrcode.show();
 
+            const renderer: HTMLElement | null = this.element;
+
+            // hide the renderer
+            if (renderer) {
+                renderer.style.display = "none";
+            }
+
             return accept(qrcode);
         });
     }
@@ -128,6 +142,13 @@ export abstract class PlattarController {
             qrcode.options = options;
             qrcode.url = this.getViewerQRCodeURL(qrcode.options);
             qrcode.show();
+
+            const renderer: HTMLElement | null = this.element;
+
+            // hide the renderer
+            if (renderer) {
+                renderer.style.display = "none";
+            }
 
             return accept(qrcode);
         });

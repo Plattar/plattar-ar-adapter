@@ -78,6 +78,8 @@ export class ViewerController extends PlattarController {
                 const server: string = this.getAttribute("server") || "production";
 
                 const viewer: HTMLElement = document.createElement("plattar-viewer");
+                viewer.style.zIndex = "1";
+                viewer.style.display = "block";
 
                 viewer.setAttribute("width", width);
                 viewer.setAttribute("height", height);
@@ -187,7 +189,7 @@ export class ViewerController extends PlattarController {
 
     public override removeRenderer(): boolean {
         if (this.qrcode.visible) {
-            this.qrcode.hide();
+            this.hideQRCode();
 
             return true;
         }
