@@ -1,12 +1,6 @@
 import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
-import { QRCodeController } from "../qrcode/qrcode-controller";
-
-export enum ControllerState {
-    None,
-    Renderer,
-    QRCode
-}
+import { QRCodeController, QRCodeOptions } from "../qrcode/qrcode-controller";
 
 /**
  * All Plattar Controllers are derived from the same interface
@@ -15,9 +9,6 @@ export abstract class PlattarController {
 
     private readonly _parent: HTMLElement;
     private readonly _qrcode: QRCodeController;
-
-    protected _state: ControllerState = ControllerState.None;
-    protected _element: HTMLElement | null = null;
 
     constructor(parent: HTMLElement) {
         this._parent = parent;
@@ -29,7 +20,7 @@ export abstract class PlattarController {
      * requires an update
      */
     public onAttributesUpdated(): void {
-        this._qrcode.refresh();
+        this.refreshQRCode();
     }
 
     /**
@@ -46,11 +37,58 @@ export abstract class PlattarController {
     }
 
     /**
+     * Calls startARQRCode() functionality
+     */
+    public showQRCode(options: any): Promise<QRCodeController> {
+        return this.startARQRCode(options);
+    }
+
+    /**
+     * Hides a previously visible QRCode (if any)
+     */
+    public hideQRCode(): Promise<QRCodeController> {
+        return new Promise<QRCodeController>((accept, _reject) => {
+            const qrcode: QRCodeController = this._qrcode;
+
+            qrcode.hide();
+
+            return accept(qrcode);
+        });
+    }
+
+    /**
+     * Refresh the state of the QRCode (if visible). This is also called
+     * automatically when plattar-embed attributes change
+     */
+    public refreshQRCode(): Promise<QRCodeController> {
+        return new Promise<QRCodeController>((accept, _reject) => {
+            const qrcode: QRCodeController = this._qrcode;
+
+            if (qrcode.visible) {
+                const qrType: string = this.getAttribute("qr-type") || "viewer";
+
+                switch (qrType.toLowerCase()) {
+                    case "ar":
+                        qrcode.url = this.getTemplateQRCodeURL(qrcode.optionsBase64);
+                    case "viewer":
+                    default:
+                        qrcode.url = this.getViewerQRCodeURL(qrcode.options);
+                }
+
+                // refresh/re-render qr-code with updated url/attributes
+                qrcode.refresh();
+            }
+
+            return accept(qrcode);
+        });
+    }
+
+    /**
      * Decide which QR Code to render according to the qr-type attribute
      * @param options 
      * @returns 
      */
-    public startQRCode(options: any): Promise<HTMLElement> {
+    public startQRCode(options: any): Promise<QRCodeController> {
         const qrType: string = this.getAttribute("qr-type") || "viewer";
 
         switch (qrType.toLowerCase()) {
@@ -67,73 +105,90 @@ export abstract class PlattarController {
      * @param options 
      * @returns 
      */
-    public startARQRCode(options: any): Promise<HTMLElement> {
-        return new Promise<HTMLElement>((accept, reject) => {
+    public startARQRCode(options: any): Promise<QRCodeController> {
+        return new Promise<QRCodeController>((accept, reject) => {
             const qrcode: QRCodeController = this._qrcode;
 
             qrcode.options = options;
-
-            const qrOptions: string = qrcode.optionsBase64;
-
-            let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
-
-            const sceneID: string | null = this.getAttribute("scene-id");
-            const configState: string | null = this.getAttribute("config-state");
-            const embedType: string | null = this.getAttribute("embed-type");
-            const productID: string | null = this.getAttribute("product-id");
-            const sceneProductID: string | null = this.getAttribute("scene-product-id");
-            const variationID: string | null = this.getAttribute("variation-id");
-            const variationSKU: string | null = this.getAttribute("variation-sku");
-            const arMode: string | null = this.getAttribute("ar-mode");
-
-            if (configState) {
-                dst += "&config_state=" + configState;
-            }
-
-            if (embedType) {
-                dst += "&embed_type=" + embedType;
-            }
-
-            if (productID) {
-                dst += "&product_id=" + productID;
-            }
-
-            if (sceneProductID) {
-                dst += "&scene_product_id=" + sceneProductID;
-            }
-
-            if (variationID) {
-                dst += "&variation_id=" + variationID;
-            }
-
-            if (variationSKU) {
-                dst += "&variation_sku=" + variationSKU;
-            }
-
-            if (arMode) {
-                dst += "&ar_mode=" + arMode;
-            }
-
-            if (sceneID) {
-                dst += "&scene_id=" + sceneID;
-            }
-
-            qrcode.url = dst;
-
+            qrcode.url = this.getTemplateQRCodeURL(qrcode.optionsBase64);
             qrcode.show();
+
+            return accept(qrcode);
         });
     }
-
-    /**
-     * Start the underlying Plattar Renderer for this Controller
-     */
-    public abstract startRenderer(): Promise<HTMLElement>;
 
     /**
      * Start Rendering a QR Code with the provided options
      * @param options (optional) - The QR Code Options
      */
-    public abstract startViewerQRCode(options: any | undefined | null): Promise<HTMLElement>;
+    public startViewerQRCode(options: any): Promise<QRCodeController> {
+        return new Promise<QRCodeController>((accept, reject) => {
+            const qrcode: QRCodeController = this._qrcode;
+
+            qrcode.options = options;
+            qrcode.url = this.getViewerQRCodeURL(qrcode.options);
+            qrcode.show();
+
+            return accept(qrcode);
+        });
+    }
+
+    public getTemplateQRCodeURL(qrOptionsBase64: string): string {
+        let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptionsBase64;
+
+        const sceneID: string | null = this.getAttribute("scene-id");
+        const configState: string | null = this.getAttribute("config-state");
+        const embedType: string | null = this.getAttribute("embed-type");
+        const productID: string | null = this.getAttribute("product-id");
+        const sceneProductID: string | null = this.getAttribute("scene-product-id");
+        const variationID: string | null = this.getAttribute("variation-id");
+        const variationSKU: string | null = this.getAttribute("variation-sku");
+        const arMode: string | null = this.getAttribute("ar-mode");
+
+        if (configState) {
+            dst += "&config_state=" + configState;
+        }
+
+        if (embedType) {
+            dst += "&embed_type=" + embedType;
+        }
+
+        if (productID) {
+            dst += "&product_id=" + productID;
+        }
+
+        if (sceneProductID) {
+            dst += "&scene_product_id=" + sceneProductID;
+        }
+
+        if (variationID) {
+            dst += "&variation_id=" + variationID;
+        }
+
+        if (variationSKU) {
+            dst += "&variation_sku=" + variationSKU;
+        }
+
+        if (arMode) {
+            dst += "&ar_mode=" + arMode;
+        }
+
+        if (sceneID) {
+            dst += "&scene_id=" + sceneID;
+        }
+
+        return dst;
+    }
+
+    /**
+     * compiles and returns the url to be used for viewer QR Codes
+     */
+    public abstract getViewerQRCodeURL(options: QRCodeOptions): string;
+
+    /**
+     * Start the underlying Plattar Renderer for this Controller
+     */
+    public abstract startRenderer(): Promise<HTMLElement>;
 
     /**
      * Initialise and return a launcher that can be used to start AR
@@ -155,6 +210,13 @@ export abstract class PlattarController {
      */
     public get parent(): HTMLElement {
         return this._parent;
+    }
+
+    /**
+     * Returns the internal QRCode Renderer Controller
+     */
+    public get qrcode(): QRCodeController {
+        return this._qrcode;
     }
 
     /**

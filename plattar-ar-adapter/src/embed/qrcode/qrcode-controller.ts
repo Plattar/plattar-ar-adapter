@@ -68,6 +68,10 @@ export class QRCodeController {
         return btoa(JSON.stringify(this.options));
     }
 
+    public get visible(): boolean {
+        return this._isVisible;
+    }
+
     public show(options: QRCodeOptions | null = null): boolean {
         const result: boolean = this.refresh(options);
 
