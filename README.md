@@ -6,9 +6,11 @@
 [![NPM](https://img.shields.io/npm/v/@plattar/plattar-ar-adapter)](https://www.npmjs.com/package/@plattar/plattar-ar-adapter)
 [![License](https://img.shields.io/npm/l/@plattar/plattar-ar-adapter)](https://www.npmjs.com/package/@plattar/plattar-ar-adapter)
 
-_plattar-ar-adapter_ allows easy interfacing with Apple Quicklook and Google SceneViewer
+_plattar-ar-adapter_ SDK is a single solution for embedding Plattar 3D Viewers, Configurators and Augmented Reality (AR) functionality into existing websites.
 
-### _Quick Use_
+* * *
+
+### Quick Use
 
 -   ES2015 & ES2019 Builds via [jsDelivr](https://www.jsdelivr.com/)
 
@@ -22,14 +24,22 @@ https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2015/plattar-ar
 https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.js
 ```
 
-### _Installation_
+### Installation
 
--   Install using [npm](https://www.npmjs.com/package/@plattar/plattar-ar-adapter)
+Install using [npm](https://www.npmjs.com/package/@plattar/plattar-ar-adapter)
 
 ```console
 npm install @plattar/plattar-ar-adapter
 ```
 
-### _Documentation and Examples_
+### Building Locally
+
+Navigate to `plattar-ar-adapter` folder and run the following command
+
+```console
+npm run clean:build
+```
+
+### Documentation and Examples
 
 - Visit [Documentation](https://plattar.github.io/plattar-ar-adapter) page for usage, guides and code examples
