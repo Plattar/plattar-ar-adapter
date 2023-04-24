@@ -39,7 +39,7 @@
   "dependencies": {
     "@plattar/plattar-analytics": "^1.149.1",
     "@plattar/plattar-api": "^1.148.1",
-    "@plattar/plattar-qrcode": "1.150.1",
+    "@plattar/plattar-qrcode": "1.150.2",
     "@plattar/plattar-services": "^1.120.1",
     "@plattar/plattar-web": "^1.135.2"
   },
