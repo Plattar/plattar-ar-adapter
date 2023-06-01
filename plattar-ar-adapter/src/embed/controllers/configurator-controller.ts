@@ -4,7 +4,7 @@ import { LauncherAR } from "../../ar/launcher-ar";
 import { RawAR } from "../../ar/raw-ar";
 import { SceneAR } from "../../ar/scene-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
-import { ConfiguratorState, SceneProductData } from "../../util/configurator-state";
+import { ConfiguratorState, DecodedConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 
@@ -196,8 +196,8 @@ export class ConfiguratorController extends PlattarController {
 
         // otherwise fallback to using scene
         if (sceneID) {
-            ConfiguratorState.decodeScene(sceneID).then((state: ConfiguratorState) => {
-                const first: SceneProductData | null = state.first();
+            ConfiguratorState.decodeScene(sceneID).then((state: DecodedConfiguratorState) => {
+                const first: SceneProductData | null = state.state.first();
 
                 if (first) {
                     const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);

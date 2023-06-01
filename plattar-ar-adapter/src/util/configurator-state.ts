@@ -1,4 +1,4 @@
-import { Product, ProductVariation, Scene, SceneProduct } from "@plattar/plattar-api";
+import { Product, ProductVariation, Project, Scene, SceneProduct } from "@plattar/plattar-api";
 
 interface ConfiguratorStateData {
     meta: {
@@ -17,6 +17,11 @@ export interface SceneProductData {
 
 export interface SceneProductDataMeta {
     augment: boolean;
+}
+
+export interface DecodedConfiguratorState {
+    readonly scene: Scene;
+    readonly state: ConfiguratorState;
 }
 
 /**
@@ -229,6 +234,19 @@ export class ConfiguratorState {
     }
 
     /**
+     * Compose and return an array of all internal objects
+     */
+    public array(): Array<SceneProductData> {
+        const array: Array<SceneProductData> = new Array<SceneProductData>();
+
+        this.forEach((object: SceneProductData) => {
+            array.push(object);
+        });
+
+        return array;
+    }
+
+    /**
      * @returns Returns the first reference of data in the stack, otherwise returns null
      */
     public first(): SceneProductData | null {
@@ -287,7 +305,7 @@ export class ConfiguratorState {
      * @param sceneID - the Scene ID to generate 
      * @returns - Promise that resolves into a ConfiguratorState instance
      */
-    public static async decodeScene(sceneID: string | null | undefined = null): Promise<ConfiguratorState> {
+    public static async decodeScene(sceneID: string | null | undefined = null): Promise<DecodedConfiguratorState> {
         if (!sceneID) {
             throw new Error("ConfiguratorState.decodeScene(sceneID) - sceneID must be defined");
         }
@@ -295,6 +313,7 @@ export class ConfiguratorState {
         const configState: ConfiguratorState = new ConfiguratorState();
 
         const fscene: Scene = new Scene(sceneID);
+        fscene.include(Project);
         fscene.include(SceneProduct);
         fscene.include(SceneProduct.include(Product.include(ProductVariation)));
 
@@ -304,7 +323,10 @@ export class ConfiguratorState {
 
         // nothing to do if no AR components can be found
         if (sceneProducts.length <= 0) {
-            return configState;
+            return {
+                scene: scene,
+                state: configState
+            };
         }
 
         // add out scene models
@@ -329,7 +351,10 @@ export class ConfiguratorState {
             }
         });
 
-        return configState;
+        return {
+            scene: scene,
+            state: configState
+        };
     }
 
     /**
