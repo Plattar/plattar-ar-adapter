@@ -9,6 +9,7 @@ import { VTOController } from "./controllers/vto-controller";
  */
 enum EmbedType {
     Configurator,
+    Legacy,
     VTO,
     None
 }
@@ -43,7 +44,12 @@ export default class PlattarEmbed extends HTMLElement {
         const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
             mutations.forEach((mutation) => {
                 if (mutation.type === "attributes") {
-                    this._CreateEmbed();
+                    if (this._currentType !== EmbedType.Legacy) {
+                        this._CreateEmbed();
+                    }
+                    else {
+                        this._OnAttributesUpdated();
+                    }
                 }
             });
         });
@@ -51,9 +57,24 @@ export default class PlattarEmbed extends HTMLElement {
         observer.observe(this, {
             attributes: true
         });
+
+        this._CreateEmbed();
     }
 
+    private _CreateLegacyEmbed(): void {
+
+    }
+
+    // creates the embed
+    // this can also be called when attributes/state changes so embeds can be re-loaded
     private _CreateEmbed(): void {
+        // this route should not be used for legacy embeds - this is
+        // deletermined prior to calling this function
+        if (this._currentType === EmbedType.Legacy) {
+            this._CreateLegacyEmbed();
+            return;
+        }
+
         const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "configurator";
         const currentEmbed: EmbedType = this._currentType;
 
