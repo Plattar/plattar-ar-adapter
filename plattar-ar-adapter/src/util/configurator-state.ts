@@ -12,13 +12,15 @@ interface ConfiguratorStateData {
 export interface SceneProductData {
     scene_product_id: string;
     product_variation_id: string;
-    meta_data: {
-        augment: boolean;
-    }
+    meta_data: SceneProductDataMeta;
+}
+
+export interface SceneProductDataMeta {
+    augment: boolean;
 }
 
 /**
- * Manages a Configuratoion State of multiple Products with multiple Variations
+ * Manages a Configuration State of multiple Products with multiple Variations
  * Allows easily changing 
  */
 export class ConfiguratorState {
@@ -105,7 +107,7 @@ export class ConfiguratorState {
      * @param productVariationID - The Product Variation ID to be used (as defined in Plattar CMS)
      * @param metaData - Arbitrary meta-data that can be used against certain operaions
      */
-    public setSceneProduct(sceneProductID: string, productVariationID: string, metaData: any | null | undefined = null): void {
+    public setSceneProduct(sceneProductID: string, productVariationID: string, metaData: SceneProductDataMeta | null | undefined = null): void {
         this.addSceneProduct(sceneProductID, productVariationID, metaData);
     }
 
@@ -116,7 +118,7 @@ export class ConfiguratorState {
      * @param productVariationID - The Product Variation ID to be used (as defined in Plattar CMS)
      * @param metaData - Arbitrary meta-data that can be used against certain operaions
      */
-    public addSceneProduct(sceneProductID: string, productVariationID: string, metaData: any | null | undefined = null): void {
+    public addSceneProduct(sceneProductID: string, productVariationID: string, metaData: SceneProductDataMeta | null | undefined = null): void {
         if (sceneProductID && productVariationID) {
             const states: Array<Array<any>> = this._state.states;
             const meta = this._state.meta;
@@ -298,7 +300,7 @@ export class ConfiguratorState {
 
         const scene: Scene = await fscene.get();
 
-        const sceneProducts: SceneProduct[] = scene.relationships.filter(SceneProduct);
+        const sceneProducts: Array<SceneProduct> = scene.relationships.filter(SceneProduct);
 
         // nothing to do if no AR components can be found
         if (sceneProducts.length <= 0) {
@@ -311,7 +313,7 @@ export class ConfiguratorState {
 
             if (product) {
                 if (product.attributes.product_variation_id) {
-                    configState.setSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
+                    configState.setSceneProduct(sceneProduct.id, product.attributes.product_variation_id, { augment: sceneProduct.attributes.include_in_augment });
                 }
 
                 // add the variation to an acceptible range of values
