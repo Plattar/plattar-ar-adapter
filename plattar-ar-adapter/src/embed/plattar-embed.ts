@@ -1,8 +1,6 @@
 import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../ar/launcher-ar";
 import { PlattarController } from "./controllers/plattar-controller";
-import { ProductController } from "./controllers/product-controller";
-import { ViewerController } from "./controllers/viewer-controller";
 import { ConfiguratorController } from "./controllers/configurator-controller";
 import { VTOController } from "./controllers/vto-controller";
 
@@ -10,7 +8,6 @@ import { VTOController } from "./controllers/vto-controller";
  * This tracks the current embed type
  */
 enum EmbedType {
-    Viewer,
     Configurator,
     VTO,
     None
@@ -57,22 +54,18 @@ export default class PlattarEmbed extends HTMLElement {
     }
 
     private _CreateEmbed(): void {
-        const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "viewer";
+        const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "configurator";
         const currentEmbed: EmbedType = this._currentType;
 
         if (embedType) {
             switch (embedType.toLowerCase()) {
-                case "viewer":
-                    this._currentType = EmbedType.Viewer;
-                    break;
                 case "vto":
                     this._currentType = EmbedType.VTO;
                     break;
+                case "viewer":
                 case "configurator":
-                    this._currentType = EmbedType.Configurator;
-                    break;
                 default:
-                    this._currentType = EmbedType.Viewer;
+                    this._currentType = EmbedType.Configurator;
             }
         }
 
@@ -92,10 +85,14 @@ export default class PlattarEmbed extends HTMLElement {
 
         this._currentSceneID = sceneID;
 
+        // scene-id is the absolute minimum in order to initialise the embeds
+        if (!this._currentSceneID) {
+            return;
+        }
+
         // if the controller was removed due to state-change, we need to re-initialise it
         if (!this._controller) {
             switch (this._currentType) {
-                case EmbedType.Viewer:
                 case EmbedType.Configurator:
                     this._controller = new ConfiguratorController(this);
                     break;
