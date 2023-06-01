@@ -47,14 +47,10 @@ export abstract class PlattarController {
     /**
      * Initialise and start AR mode if available
      */
-    public startAR(): Promise<void> {
-        return new Promise<void>((accept, reject) => {
-            this.initAR().then((launcher: LauncherAR) => {
-                launcher.start();
+    public async startAR(): Promise<void> {
+        const launcher: LauncherAR = await this.initAR();
 
-                accept();
-            }).catch(reject);
-        });
+        launcher.start();
     }
 
     /**
@@ -68,7 +64,7 @@ export abstract class PlattarController {
      * @param options 
      * @returns 
      */
-    public startQRCode(options: any): Promise<HTMLElement> {
+    public async startQRCode(options: any): Promise<HTMLElement> {
         const qrType: string = this.getAttribute("qr-type") || "viewer";
 
         switch (qrType.toLowerCase()) {
