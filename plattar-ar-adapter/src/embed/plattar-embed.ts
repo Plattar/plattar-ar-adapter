@@ -12,7 +12,8 @@ import { VTOController } from "./controllers/vto-controller";
 enum EmbedType {
     Viewer,
     Configurator,
-    VTO
+    VTO,
+    None
 }
 
 /**
@@ -22,8 +23,9 @@ enum EmbedType {
 export default class PlattarEmbed extends HTMLElement {
 
     // this is the current embed type, viewer by default
-    private _currentType: EmbedType = EmbedType.Viewer;
+    private _currentType: EmbedType = EmbedType.None;
     private _controller: PlattarController | null = null;
+    private _currentSceneID: string | null = null;
 
     constructor() {
         super();
@@ -33,8 +35,30 @@ export default class PlattarEmbed extends HTMLElement {
         return this._controller ? this._controller.element : null;
     }
 
+    /**
+     * Begin observing all changes to this DOM element
+     */
     connectedCallback() {
+        // server cannot be changed once its set - defaults to production
+        const server: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
+        Server.create(Server.match(server || "production"));
+
+        const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === "attributes") {
+                    this._CreateEmbed();
+                }
+            });
+        });
+
+        observer.observe(this, {
+            attributes: true
+        });
+    }
+
+    private _CreateEmbed(): void {
         const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "viewer";
+        const currentEmbed: EmbedType = this._currentType;
 
         if (embedType) {
             switch (embedType.toLowerCase()) {
@@ -52,106 +76,80 @@ export default class PlattarEmbed extends HTMLElement {
             }
         }
 
-        const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === "attributes") {
-                    this._OnAttributesUpdated();
-                }
-            });
-        });
-
-        observer.observe(this, {
-            attributes: true
-        });
-
-        const server: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
-        Server.create(Server.match(server || "production"));
+        // check if the controller needs to be re-created
+        if ((currentEmbed !== this._currentType) && this._controller) {
+            this._controller.removeRenderer();
+            this._controller = null;
+        }
 
         const sceneID: string | null = this.hasAttribute("scene-id") ? this.getAttribute("scene-id") : null;
-        const productID: string | null = this.hasAttribute("product-id") ? this.getAttribute("product-id") : null;
 
-        // decide which controller to initialise
-        if (this._currentType === EmbedType.Viewer) {
-            // initialise product if scene-id is missing but product-id is defined
-            if (!sceneID && productID) {
-                this._controller = new ProductController(this);
+        // if the provided SceneID doesn't match, we need to remove the controller
+        if ((sceneID !== this._currentSceneID) && this._controller) {
+            this._controller.removeRenderer();
+            this._controller = null;
+        }
+
+        this._currentSceneID = sceneID;
+
+        // if the controller was removed due to state-change, we need to re-initialise it
+        if (!this._controller) {
+            switch (this._currentType) {
+                case EmbedType.Viewer:
+                case EmbedType.Configurator:
+                    this._controller = new ConfiguratorController(this);
+                    break;
+                case EmbedType.VTO:
+                    this._controller = new VTOController(this);
+                    break;
             }
-            else if (sceneID) {
-                this._controller = new ViewerController(this);
+
+            if (this._controller) {
+                const init: string | null = this.hasAttribute("init") ? this.getAttribute("init") : null;
+
+                switch (init) {
+                    case "viewer": this.startViewer();
+                        break;
+                    case "qrcode": this.startQRCode();
+                        break;
+                }
             }
         }
-        else if (this._currentType === EmbedType.Configurator) {
-            this._controller = new ConfiguratorController(this);
-        }
-        else if (this._currentType === EmbedType.VTO) {
-            this._controller = new VTOController(this);
-        }
-
-        const init: string | null = this.hasAttribute("init") ? this.getAttribute("init") : null;
-
-        if (init === "ar") {
-            this.startAR();
-        }
-        else if (init === "viewer") {
-            this.startViewer();
-        }
-        else if (init === "qrcode") {
-            this.startQRCode();
-        }
-        else if (init === "ar-fallback-qrcode") {
-            this.startAR().then(() => {
-                // nothing to do, launched successfully
-            }).catch((_err) => {
-                this.startQRCode();
-            });
-        }
-        else if (init === "ar-fallback-viewer") {
-            this.startAR().then(() => {
-                // nothing to do, launched successfully
-            }).catch((_err) => {
-                this.startViewer();
-            });
+        else {
+            this._OnAttributesUpdated();
         }
     }
 
-    public initAR(): Promise<LauncherAR> {
-        return new Promise<LauncherAR>((accept, reject) => {
-            if (!this._controller) {
-                return reject(new Error("PlattarEmbed.initAR() - cannot execute as controller has not loaded yet"));
-            }
+    public async initAR(): Promise<LauncherAR> {
+        if (!this._controller) {
+            throw new Error("PlattarEmbed.initAR() - cannot execute as controller has not loaded yet");
+        }
 
-            return this._controller.initAR().then(accept).catch(reject);
-        });
+        return this._controller.initAR();
     }
 
-    public startAR(): Promise<void> {
-        return new Promise<void>((accept, reject) => {
-            if (!this._controller) {
-                return reject(new Error("PlattarEmbed.startAR() - cannot execute as controller has not loaded yet"));
-            }
+    public async startAR(): Promise<void> {
+        if (!this._controller) {
+            throw new Error("PlattarEmbed.startAR() - cannot execute as controller has not loaded yet");
+        }
 
-            return this._controller.startAR().then(accept).catch(reject);
-        });
+        return this._controller.startAR()
     }
 
-    public startViewer(): Promise<HTMLElement> {
-        return new Promise<HTMLElement>((accept, reject) => {
-            if (!this._controller) {
-                return reject(new Error("PlattarEmbed.startViewer() - cannot execute as controller has not loaded yet"));
-            }
+    public async startViewer(): Promise<HTMLElement> {
+        if (!this._controller) {
+            throw new Error("PlattarEmbed.startViewer() - cannot execute as controller has not loaded yet");
+        }
 
-            return this._controller.startRenderer().then(accept).catch(reject);
-        });
+        return this._controller.startRenderer();
     }
 
-    public startQRCode(options: any | undefined | null = null): Promise<HTMLElement> {
-        return new Promise<HTMLElement>((accept, reject) => {
-            if (!this._controller) {
-                return reject(new Error("PlattarEmbed.startQRCode() - cannot execute as controller has not loaded yet"));
-            }
+    public async startQRCode(options: any | undefined | null = null): Promise<HTMLElement> {
+        if (!this._controller) {
+            throw new Error("PlattarEmbed.startQRCode() - cannot execute as controller has not loaded yet");
+        }
 
-            return this._controller.startQRCode(options).then(accept).catch(reject);
-        });
+        return this._controller.startQRCode(options);
     }
 
     /**
