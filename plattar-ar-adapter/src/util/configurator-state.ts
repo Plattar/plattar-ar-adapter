@@ -1,4 +1,4 @@
-import { Product, Scene, SceneProduct } from "@plattar/plattar-api";
+import { Product, ProductVariation, Scene, SceneProduct } from "@plattar/plattar-api";
 
 interface ConfiguratorStateData {
     meta: {
@@ -17,11 +17,23 @@ export interface SceneProductData {
     }
 }
 
+/**
+ * Manages a Configuratoion State of multiple Products with multiple Variations
+ * Allows easily changing 
+ */
 export class ConfiguratorState {
-
     private readonly _state: ConfiguratorStateData;
 
+    // This maps Variation ID against a Scene Product ID - populated by decodeScene() function
+    private readonly _mappedVariationIDValues: Map<string, string>;
+
+    // This maps Variation SKU against a Variation ID - populated by decodeScene() function
+    private readonly _mappedVariationSKUValues: Map<string, string>;
+
     constructor(state: string | null | undefined = null) {
+        this._mappedVariationIDValues = new Map<string, string>();
+        this._mappedVariationSKUValues = new Map<string, string>();
+
         const defaultState: ConfiguratorStateData = {
             meta: {
                 scene_product_index: 0,
@@ -52,6 +64,38 @@ export class ConfiguratorState {
         }
 
         this._state = defaultState;
+    }
+
+    /**
+     * Modifyes the SceneProduct that this Variation SKU belongs to and changes for
+     * purposes of Configuration
+     */
+    public setVariationSKU(productVariationSKU: string): void {
+        const variationID: string | undefined = this._mappedVariationSKUValues.get(productVariationSKU);
+
+        if (!variationID) {
+            console.warn("ConfiguratorState.setVariationSKU() - Variation SKU of " + productVariationSKU + " is not defined in any variations");
+
+            return;
+        }
+
+        this.setVariationID(variationID);
+    }
+
+    /**
+     * Modifyes the SceneProduct that this Variation belongs to and changes for
+     * purposes of Configuration
+     */
+    public setVariationID(productVariationID: string): void {
+        const sceneProductID: string | undefined = this._mappedVariationIDValues.get(productVariationID);
+
+        if (!sceneProductID) {
+            console.warn("ConfiguratorState.setVariationID() - Variation ID of " + productVariationID + " is not defined in any products");
+
+            return;
+        }
+
+        this.setSceneProduct(sceneProductID, productVariationID);
     }
 
     /**
@@ -241,38 +285,49 @@ export class ConfiguratorState {
      * @param sceneID - the Scene ID to generate 
      * @returns - Promise that resolves into a ConfiguratorState instance
      */
-    public static decodeScene(sceneID: string | null | undefined = null): Promise<ConfiguratorState> {
-        return new Promise<ConfiguratorState>((accept, reject) => {
-            const configState: ConfiguratorState = new ConfiguratorState();
+    public static async decodeScene(sceneID: string | null | undefined = null): Promise<ConfiguratorState> {
+        if (!sceneID) {
+            throw new Error("ConfiguratorState.decodeScene(sceneID) - sceneID must be defined");
+        }
 
-            if (!sceneID) {
-                return reject(new Error("ConfiguratorState.decodeScene(sceneID) - sceneID must be defined"));
-            }
+        const configState: ConfiguratorState = new ConfiguratorState();
 
-            const scene: Scene = new Scene(sceneID);
-            scene.include(SceneProduct);
-            scene.include(SceneProduct.include(Product));
+        const fscene: Scene = new Scene(sceneID);
+        fscene.include(SceneProduct);
+        fscene.include(SceneProduct.include(Product.include(ProductVariation)));
 
-            scene.get().then((scene: Scene) => {
-                const sceneProducts: SceneProduct[] = scene.relationships.filter(SceneProduct);
+        const scene: Scene = await fscene.get();
 
-                // nothing to do if no AR components can be found
-                if (sceneProducts.length <= 0) {
-                    return accept(configState);
+        const sceneProducts: SceneProduct[] = scene.relationships.filter(SceneProduct);
+
+        // nothing to do if no AR components can be found
+        if (sceneProducts.length <= 0) {
+            return configState;
+        }
+
+        // add out scene models
+        sceneProducts.forEach((sceneProduct: SceneProduct) => {
+            const product: Product | undefined = sceneProduct.relationships.find(Product);
+
+            if (product) {
+                if (product.attributes.product_variation_id) {
+                    configState.setSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
                 }
 
-                // add out scene models
-                sceneProducts.forEach((sceneProduct: SceneProduct) => {
-                    const product: Product | undefined = sceneProduct.relationships.find(Product);
+                // add the variation to an acceptible range of values
+                const variations: Array<ProductVariation> = product.relationships.filter(ProductVariation);
 
-                    if (product && product.attributes.product_variation_id) {
-                        configState.setSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
+                variations.forEach((variation: ProductVariation) => {
+                    configState._mappedVariationIDValues.set(variation.id, sceneProduct.id);
+
+                    if (variation.attributes.sku) {
+                        configState._mappedVariationSKUValues.set(variation.attributes.sku, variation.id);
                     }
                 });
-
-                accept(configState);
-            }).catch(reject);
+            }
         });
+
+        return configState;
     }
 
     /**
