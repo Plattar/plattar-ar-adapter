@@ -3,6 +3,7 @@ import { LauncherAR } from "../ar/launcher-ar";
 import { PlattarController } from "./controllers/plattar-controller";
 import { ConfiguratorController } from "./controllers/configurator-controller";
 import { VTOController } from "./controllers/vto-controller";
+import { ProductController } from "./controllers/product-controller";
 
 /**
  * This tracks the current embed type
@@ -58,23 +59,28 @@ export default class PlattarEmbed extends HTMLElement {
             attributes: true
         });
 
+        const sceneID: string | null = this.hasAttribute("scene-id") ? this.getAttribute("scene-id") : null;
+        const productID: string | null = this.hasAttribute("product-id") ? this.getAttribute("product-id") : null;
+
+        if (!sceneID && productID) {
+            this._currentType = EmbedType.Legacy;
+            this._CreateLegacyEmbed();
+
+            return;
+        }
+
         this._CreateEmbed();
     }
 
+    // this is only used for backwards-compatible legacy embed types typically
+    // embedding products with variations (without a scene-id)
     private _CreateLegacyEmbed(): void {
-
+        this._controller = new ProductController(this);
     }
 
     // creates the embed
     // this can also be called when attributes/state changes so embeds can be re-loaded
     private _CreateEmbed(): void {
-        // this route should not be used for legacy embeds - this is
-        // deletermined prior to calling this function
-        if (this._currentType === EmbedType.Legacy) {
-            this._CreateLegacyEmbed();
-            return;
-        }
-
         const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "configurator";
         const currentEmbed: EmbedType = this._currentType;
 
