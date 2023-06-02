@@ -25,6 +25,7 @@ export default class PlattarEmbed extends HTMLElement {
     private _currentType: EmbedType = EmbedType.None;
     private _controller: PlattarController | null = null;
     private _currentSceneID: string | null = null;
+    private _observer: MutationObserver | null = null;
 
     constructor() {
         super();
@@ -38,26 +39,35 @@ export default class PlattarEmbed extends HTMLElement {
      * Begin observing all changes to this DOM element
      */
     connectedCallback() {
+        this.create();
+    }
+
+    /**
+     * creates a brand new instance of this embed
+     */
+    public create(): void {
         // server cannot be changed once its set - defaults to production
         const server: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
         Server.create(Server.match(server || "production"));
 
-        const observer: MutationObserver = new MutationObserver((mutations: MutationRecord[]) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === "attributes") {
-                    if (this._currentType !== EmbedType.Legacy) {
-                        this._CreateEmbed();
+        if (!this._observer) {
+            this._observer = new MutationObserver((mutations: MutationRecord[]) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === "attributes") {
+                        if (this._currentType !== EmbedType.Legacy) {
+                            this._CreateEmbed();
+                        }
+                        else {
+                            this._OnAttributesUpdated();
+                        }
                     }
-                    else {
-                        this._OnAttributesUpdated();
-                    }
-                }
+                });
             });
-        });
 
-        observer.observe(this, {
-            attributes: true
-        });
+            this._observer.observe(this, {
+                attributes: true
+            });
+        }
 
         const sceneID: string | null = this.hasAttribute("scene-id") ? this.getAttribute("scene-id") : null;
         const productID: string | null = this.hasAttribute("product-id") ? this.getAttribute("product-id") : null;
@@ -72,14 +82,30 @@ export default class PlattarEmbed extends HTMLElement {
         this._CreateEmbed();
     }
 
-    // this is only used for backwards-compatible legacy embed types typically
-    // embedding products with variations (without a scene-id)
+    /**
+     * Destroys the active instance of this embed and resets internal state to default
+     */
+    public destroy(): void {
+        if (this._controller) {
+            this._controller.removeRenderer();
+            this._controller = null;
+        }
+
+        this._currentType = EmbedType.None;
+    }
+
+    /**
+     * this is only used for backwards-compatible legacy embed types typically
+     * embedding products with variations (without a scene-id)
+     */
     private _CreateLegacyEmbed(): void {
         this._controller = new ProductController(this);
     }
 
-    // creates the embed
-    // this can also be called when attributes/state changes so embeds can be re-loaded
+    /**
+     * creates the embed
+     * this can also be called when attributes/state changes so embeds can be re-loaded
+     */
     private _CreateEmbed(): void {
         const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "configurator";
         const currentEmbed: EmbedType = this._currentType;
