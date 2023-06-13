@@ -79,7 +79,12 @@ export class ConfiguratorAR extends LauncherAR {
 
         objects.forEach((object: SceneProductData) => {
             if (object.meta_data.augment) {
-                configurator.addSceneProduct(object.scene_product_id, object.product_variation_id);
+                if (object.meta_data.isSceneModel) {
+                    configurator.addModel(object.scene_product_id);
+                }
+                else {
+                    configurator.addSceneProduct(object.scene_product_id, object.product_variation_id);
+                }
 
                 totalARObjectCount++;
             }
