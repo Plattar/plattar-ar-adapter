@@ -3,7 +3,7 @@ import { LauncherAR } from "../../ar/launcher-ar";
 import { ProductAR } from "../../ar/product-ar";
 import { SceneAR } from "../../ar/scene-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
-import { ConfiguratorState, SceneProductData } from "../../util/configurator-state";
+import { ConfiguratorState, DecodedConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 
@@ -177,68 +177,65 @@ export class ViewerController extends PlattarController {
         });
     }
 
-    public initAR(): Promise<LauncherAR> {
-        return new Promise<LauncherAR>((accept, reject) => {
-            if (!Util.canAugment()) {
-                return reject(new Error("ViewerController.initAR() - cannot proceed as AR not available in context"));
+    public async initAR(): Promise<LauncherAR> {
+        if (!Util.canAugment()) {
+            throw new Error("ViewerController.initAR() - cannot proceed as AR not available in context");
+        }
+
+        const productID: string | null = this.getAttribute("product-id");
+
+        // use product-id if available
+        if (productID) {
+            const variationID: string | null = this.getAttribute("variation-id");
+            const variationSKU: string | null = this.getAttribute("variation-sku");
+
+            const product: ProductAR = new ProductAR(productID, variationID, variationSKU);
+
+            return product.init();
+        }
+
+        const sceneProductID: string | null = this.getAttribute("scene-product-id");
+
+        // use scene-product-id if available
+        if (sceneProductID) {
+            const variationID: string | null = this.getAttribute("variation-id");
+            const variationSKU: string | null = this.getAttribute("variation-sku");
+
+            const product: SceneProductAR = new SceneProductAR(sceneProductID, variationID, variationSKU);
+
+            return product.init();
+        }
+
+        const sceneID: string | null = this.getAttribute("scene-id");
+
+        // fallback to using default SceneAR implementation
+        if (sceneID) {
+            // special case - check if scene only has a single product, if so
+            // we need to use provided variation-id or variation-sku to override
+            const variationID: string | null = this.getAttribute("variation-id");
+            const variationSKU: string | null = this.getAttribute("variation-sku");
+
+            // just do scene-ar if variation ID and variation SKU is not set
+            if (!variationID && !variationSKU) {
+                const sceneAR: SceneAR = new SceneAR(sceneID);
+
+                return sceneAR.init();
             }
 
-            const productID: string | null = this.getAttribute("product-id");
+            const decoded: DecodedConfiguratorState = await ConfiguratorState.decodeScene(sceneID);
 
-            // use product-id if available
-            if (productID) {
-                const variationID: string | null = this.getAttribute("variation-id");
-                const variationSKU: string | null = this.getAttribute("variation-sku");
+            const firstProduct: SceneProductData | null = decoded.state.first();
 
-                const product: ProductAR = new ProductAR(productID, variationID, variationSKU);
-
-                return product.init().then(accept).catch(reject);
+            if (decoded.state.length > 1 || !firstProduct) {
+                throw new Error("ViewerController.initAR() - single product required to override variation-id or variation-sku");
             }
 
-            const sceneProductID: string | null = this.getAttribute("scene-product-id");
+            const product: SceneProductAR = new SceneProductAR(firstProduct.scene_product_id, variationID, variationSKU);
 
-            // use scene-product-id if available
-            if (sceneProductID) {
-                const variationID: string | null = this.getAttribute("variation-id");
-                const variationSKU: string | null = this.getAttribute("variation-sku");
+            return product.init();
+        }
 
-                const product: SceneProductAR = new SceneProductAR(sceneProductID, variationID, variationSKU);
-
-                return product.init().then(accept).catch(reject);
-            }
-
-            const sceneID: string | null = this.getAttribute("scene-id");
-
-            // fallback to using default SceneAR implementation
-            if (sceneID) {
-                // special case - check if scene only has a single product, if so
-                // we need to use provided variation-id or variation-sku to override
-                const variationID: string | null = this.getAttribute("variation-id");
-                const variationSKU: string | null = this.getAttribute("variation-sku");
-
-                // just do scene-ar if variation ID and variation SKU is not set
-                if (!variationID && !variationSKU) {
-                    const sceneAR: SceneAR = new SceneAR(sceneID);
-
-                    return sceneAR.init().then(accept).catch(reject);
-                }
-
-                // otherwise decode scene
-                return ConfiguratorState.decodeScene(sceneID).then((state: ConfiguratorState) => {
-                    const firstProduct: SceneProductData | null = state.first();
-
-                    if (state.length > 1 || !firstProduct) {
-                        return reject(new Error("ViewerController.initAR() - single product required to override variation-id or variation-sku"));
-                    }
-
-                    const product: SceneProductAR = new SceneProductAR(firstProduct.scene_product_id, variationID, variationSKU);
-
-                    return product.init().then(accept).catch(reject);
-                }).catch(reject);
-            }
-
-            return reject(new Error("ViewerController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
-        });
+        throw new Error("ViewerController.initAR() - minimum required attributes not set, use scene-id as a minimum");
     }
 
     public removeRenderer(): boolean {

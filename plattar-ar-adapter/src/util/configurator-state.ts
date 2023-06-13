@@ -1,4 +1,4 @@
-import { Product, ProductVariation, Project, Scene, SceneProduct } from "@plattar/plattar-api";
+import { Product, ProductVariation, Project, Scene, SceneModel, SceneProduct } from "@plattar/plattar-api";
 
 interface ConfiguratorStateData {
     meta: {
@@ -17,6 +17,7 @@ export interface SceneProductData {
 
 export interface SceneProductDataMeta {
     augment: boolean;
+    isSceneModel: boolean;
 }
 
 export interface DecodedConfiguratorState {
@@ -117,6 +118,42 @@ export class ConfiguratorState {
     }
 
     /**
+     * Adds a new SceneModel with meta-data into the Configurator State. Note that the SceneProductDataMeta will
+     * override the isSceneModel variable and assign to "true" automatically
+     * 
+     * @param SceneModelID - The SceneModel ID to add
+     * @param metaData - Arbitrary meta-data that can be used against certain operaions
+     */
+    public setSceneModel(SceneModelID: string, metaData: SceneProductDataMeta | null | undefined = null): void {
+        if (SceneModelID) {
+            metaData = metaData || { augment: true, isSceneModel: true };
+            metaData.isSceneModel = true;
+
+            const states: Array<Array<any>> = this._state.states;
+            const meta = this._state.meta;
+
+            let newData: any[] | null = null;
+
+            const existingData: any[] | null = this.findSceneProductIndex(SceneModelID);
+
+            if (existingData) {
+                newData = existingData;
+            }
+            else {
+                newData = [];
+
+                // push the new data into the stack
+                states.push(newData);
+            }
+
+            newData[meta.scene_product_index] = SceneModelID;
+            newData[meta.product_variation_index] = null;
+
+            newData[meta.meta_index] = metaData;
+        }
+    }
+
+    /**
      * Adds a new Scene Product/Variation combo with meta-data into the Configurator State
      * 
      * @param sceneProductID - The Scene Product ID to be used (as defined in Plattar CMS)
@@ -187,13 +224,15 @@ export class ConfiguratorState {
                 scene_product_id: found[meta.scene_product_index],
                 product_variation_id: found[meta.product_variation_index],
                 meta_data: {
-                    augment: true
+                    augment: true,
+                    isSceneModel: false
                 }
             };
 
             // include the meta-data
             if (found.length === 3) {
                 data.meta_data.augment = found[meta.meta_index].augment || true;
+                data.meta_data.isSceneModel = found[meta.meta_index].isSceneModel || false;
             }
 
             return data;
@@ -216,7 +255,8 @@ export class ConfiguratorState {
                         scene_product_id: productState[meta.scene_product_index],
                         product_variation_id: productState[meta.product_variation_index],
                         meta_data: {
-                            augment: true
+                            augment: true,
+                            isSceneModel: false
                         }
                     });
                 }
@@ -225,7 +265,8 @@ export class ConfiguratorState {
                         scene_product_id: productState[meta.scene_product_index],
                         product_variation_id: productState[meta.product_variation_index],
                         meta_data: {
-                            augment: productState[meta.meta_index].augment || true
+                            augment: productState[meta.meta_index].augment || true,
+                            isSceneModel: productState[meta.meta_index].isSceneModel || false
                         }
                     });
                 }
@@ -270,7 +311,8 @@ export class ConfiguratorState {
                 scene_product_id: found[meta.scene_product_index],
                 product_variation_id: found[meta.product_variation_index],
                 meta_data: {
-                    augment: true
+                    augment: true,
+                    isSceneModel: false
                 }
             };
 
@@ -315,27 +357,32 @@ export class ConfiguratorState {
         const fscene: Scene = new Scene(sceneID);
         fscene.include(Project);
         fscene.include(SceneProduct);
+        fscene.include(SceneModel);
         fscene.include(SceneProduct.include(Product.include(ProductVariation)));
 
         const scene: Scene = await fscene.get();
 
         const sceneProducts: Array<SceneProduct> = scene.relationships.filter(SceneProduct);
-
-        // nothing to do if no AR components can be found
-        if (sceneProducts.length <= 0) {
-            return {
-                scene: scene,
-                state: configState
-            };
-        }
+        const sceneModels: Array<SceneModel> = scene.relationships.filter(SceneModel);
 
         // add out scene models
+        sceneModels.forEach((sceneModel: SceneModel) => {
+            configState.setSceneModel(sceneModel.id, {
+                augment: sceneModel.attributes.include_in_augment,
+                isSceneModel: true
+            });
+        });
+
+        // add out scene products
         sceneProducts.forEach((sceneProduct: SceneProduct) => {
             const product: Product | undefined = sceneProduct.relationships.find(Product);
 
             if (product) {
                 if (product.attributes.product_variation_id) {
-                    configState.setSceneProduct(sceneProduct.id, product.attributes.product_variation_id, { augment: sceneProduct.attributes.include_in_augment });
+                    configState.setSceneProduct(sceneProduct.id, product.attributes.product_variation_id, {
+                        augment: sceneProduct.attributes.include_in_augment,
+                        isSceneModel: false
+                    });
                 }
 
                 // add the variation to an acceptible range of values
