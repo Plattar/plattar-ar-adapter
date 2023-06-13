@@ -4,6 +4,7 @@ import { PlattarController } from "./controllers/plattar-controller";
 import { ConfiguratorController } from "./controllers/configurator-controller";
 import { VTOController } from "./controllers/vto-controller";
 import { ProductController } from "./controllers/product-controller";
+import { ConfiguratorState, DecodedConfiguratorState } from "../util/configurator-state";
 
 /**
  * This tracks the current embed type
@@ -106,7 +107,7 @@ export default class PlattarEmbed extends HTMLElement {
      * creates the embed
      * this can also be called when attributes/state changes so embeds can be re-loaded
      */
-    private _CreateEmbed(): void {
+    private async _CreateEmbed(): Promise<void> {
         const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "configurator";
         const currentEmbed: EmbedType = this._currentType;
 
@@ -145,12 +146,14 @@ export default class PlattarEmbed extends HTMLElement {
 
         // if the controller was removed due to state-change, we need to re-initialise it
         if (!this._controller) {
+            const decodedState: DecodedConfiguratorState = await ConfiguratorState.decodeScene(sceneID);
+
             switch (this._currentType) {
                 case EmbedType.Configurator:
-                    this._controller = new ConfiguratorController(this);
+                    this._controller = new ConfiguratorController(this, decodedState);
                     break;
                 case EmbedType.VTO:
-                    this._controller = new VTOController(this);
+                    this._controller = new VTOController(this, decodedState);
                     break;
             }
 

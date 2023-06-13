@@ -1,16 +1,22 @@
-import { Server } from "@plattar/plattar-api";
+import { Scene, Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { ProductAR } from "../../ar/product-ar";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
+import { ConfiguratorState } from "../../util/configurator-state";
 
 /**
  * Manages an instance of the <plattar-product> HTML Element
+ * 
+ * NOTE: As of 14th June 2023, this is now a legacy Controller and only used in legacy embeds
+ * and should be deprecated from both documentation and previous integrations
  */
 export class ProductController extends PlattarController {
 
     constructor(parent: HTMLElement) {
-        super(parent);
+        // this is a hack against DecodedConfiguratorState that's now stored in PlattarController
+        // this is not used in legacy mode
+        super(parent, { scene: <Scene>(<any>null), state: <ConfiguratorState>(<any>null) });
     }
 
     public onAttributesUpdated(): void {

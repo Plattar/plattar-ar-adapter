@@ -13,10 +13,6 @@ import { ControllerState, PlattarController } from "./plattar-controller";
  */
 export class ConfiguratorController extends PlattarController {
 
-    constructor(parent: HTMLElement) {
-        super(parent);
-    }
-
     public onAttributesUpdated(): void {
         const state: ControllerState = this._state;
 

@@ -1,5 +1,6 @@
 import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
+import { DecodedConfiguratorState } from "../../util/configurator-state";
 
 export enum ControllerState {
     None,
@@ -25,12 +26,21 @@ export abstract class PlattarController {
     };
 
     private readonly _parent: HTMLElement;
+    private readonly _decodedConfigState: DecodedConfiguratorState;
     protected _state: ControllerState = ControllerState.None;
     protected _element: HTMLElement | null = null;
     protected _prevQROpt: any = null;
 
-    constructor(parent: HTMLElement) {
+    constructor(parent: HTMLElement, state: DecodedConfiguratorState) {
         this._parent = parent;
+        this._decodedConfigState = state;
+    }
+
+    /**
+     * Returns the currently decoded Configurator State created from Scene ID
+     */
+    public get decodedConfigState(): DecodedConfiguratorState {
+        return this._decodedConfigState;
     }
 
     /**
