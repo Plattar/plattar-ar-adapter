@@ -50,7 +50,7 @@ export abstract class PlattarController {
     public async startAR(): Promise<void> {
         const launcher: LauncherAR = await this.initAR();
 
-        launcher.start();
+        return launcher.start();
     }
 
     /**
