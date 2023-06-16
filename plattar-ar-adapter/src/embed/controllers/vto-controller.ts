@@ -6,6 +6,7 @@ import { RawAR } from "../../ar/raw-ar";
 import { DecodedConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
+import { ConfiguratorAR } from "../../ar/configurator-ar";
 
 /**
  * Manages an instance of the <plattar-configurator> HTML Element
@@ -192,104 +193,36 @@ export class VTOController extends PlattarController {
      */
     private async _InitARInherited(): Promise<LauncherAR> {
         const sceneID: string | null = this.getAttribute("scene-id");
-        const configState: string | null = this.getAttribute("config-state");
 
-        // use config-state if its available
-        if (sceneID && configState) {
-            const state: ConfiguratorState = ConfiguratorState.decode(configState);
-            const first: SceneProductData | null = state.first();
-
-            if (first) {
-                const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
-
-                return sceneProductAR.init();
-            }
-
-            throw new Error("VTOController.initAR() - invalid config-state does not have any product states");
+        if (!sceneID) {
+            throw new Error("VTOController.initAR() - inherited AR minimum required attributes not set, use scene-id as a minimum");
         }
 
-        // otherwise fallback to using scene
-        if (sceneID) {
-            const decoded: DecodedConfiguratorState = await ConfiguratorState.decodeScene(sceneID);
+        const state: ConfiguratorState = this.decodedConfigState.state;
+        const first: SceneProductData | null = state.first();
 
-            const first: SceneProductData | null = decoded.state.first();
+        if (first) {
+            const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
 
-            if (first) {
-                const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
-
-                return sceneProductAR.init();
-            }
-
-            throw new Error("VTOController.initAR() - invalid Scene does not have any product states");
+            return sceneProductAR.init();
         }
 
-        throw new Error("VTOController.initAR() - minimum required attributes not set, use scene-id as a minimum");
+        throw new Error("VTOController.initAR() - invalid decoded config-state does not have any product states");
     }
 
     /**
      * Private Function - This launches the Dynamic/Generated AR Mode
      */
     private async _InitARGenerated(): Promise<LauncherAR> {
-        // if scene ID is available and the state is a configurator viewer
-        // we can use the real-time configurator state to launch the AR view
-        const viewer: HTMLElement | null = this.element;
         const sceneID: string | null = this.getAttribute("scene-id");
 
-        if (viewer && sceneID && (<any>viewer).messenger) {
-            const result: any = await (<any>viewer).messenger.getARFile("vto");
-
-            const rawAR: RawAR = new RawAR(result.filename);
-
-            return rawAR.init();
+        if (!sceneID) {
+            throw new Error("VTOController.initAR() - generated AR minimum required attributes not set, use scene-id as a minimum");
         }
 
-        const configState: string | null = this.getAttribute("config-state");
+        const configAR: ConfiguratorAR = new ConfiguratorAR(this.decodedConfigState);
 
-        // otherwise scene ID is available to the viewer is not launched
-        // we can use the static configuration state to launch the AR view
-        if (sceneID && configState) {
-            const state: ConfiguratorState = ConfiguratorState.decode(configState);
-
-            if (state.length > 0) {
-                const server: string = this.getAttribute("server") || "production";
-
-                const configurator: Configurator = new Configurator();
-                configurator.server = <any>server;
-                configurator.output = "vto";
-
-                state.forEach((productState: SceneProductData) => {
-                    if (productState.meta_data.augment === true) {
-                        configurator.addSceneProduct(productState.scene_product_id, productState.product_variation_id);
-                    }
-                });
-
-                const result: any = await configurator.get();
-
-                const rawAR: RawAR = new RawAR(result.filename);
-
-                return rawAR.init();
-            }
-
-            throw new Error("VTOController.initAR() - invalid config-state does not have any product states");
-        }
-
-        // otherwise no config-state or viewer is active
-        // fallback to using default SceneAR implementation
-        if (sceneID) {
-            const productID: string | null = this.getAttribute("product-id");
-            const sceneProductID: string | null = this.getAttribute("scene-product-id");
-            const variationID: string | null = this.getAttribute("variation-id");
-
-            const sceneAR: SceneAR = new SceneAR(sceneID, {
-                productID: productID ? productID : undefined,
-                sceneProductID: sceneProductID ? sceneProductID : undefined,
-                variationID: variationID ? variationID : undefined
-            });
-
-            return sceneAR.init();
-        }
-
-        throw new Error("VTOController.initAR() - minimum required attributes not set, use scene-id as a minimum");
+        return configAR.init();
     }
 
     public removeRenderer(): boolean {
