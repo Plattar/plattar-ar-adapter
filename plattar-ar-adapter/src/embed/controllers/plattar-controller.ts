@@ -126,7 +126,7 @@ export abstract class PlattarController {
             let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
 
             const sceneID: string | null = this.getAttribute("scene-id");
-            const configState: string | null = this.getAttribute("config-state");
+            const configState: string = this.decodedConfigState.state.encode();
             const embedType: string | null = this.getAttribute("embed-type");
             const productID: string | null = this.getAttribute("product-id");
             const sceneProductID: string | null = this.getAttribute("scene-product-id");

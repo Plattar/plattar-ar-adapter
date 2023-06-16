@@ -345,6 +345,33 @@ export class ConfiguratorState {
     }
 
     /**
+     * Decodes a previously generated state
+     * @param sceneID 
+     * @param state 
+     * @returns 
+     */
+    public static async decodeState(sceneID: string | null | undefined = null, state: string | null | undefined = null): Promise<DecodedConfiguratorState> {
+        if (!sceneID || !state) {
+            throw new Error("ConfiguratorState.decodeState(sceneID, state) - sceneID and state must be defined");
+        }
+
+        const configState: ConfiguratorState = new ConfiguratorState(state);
+
+        const fscene: Scene = new Scene(sceneID);
+        fscene.include(Project);
+        fscene.include(SceneProduct);
+        fscene.include(SceneModel);
+        fscene.include(SceneProduct.include(Product.include(ProductVariation)));
+
+        const scene: Scene = await fscene.get();
+
+        return {
+            scene: scene,
+            state: configState
+        };
+    }
+
+    /**
      * Generates a new ConfiguratorState instance from all SceneProducts and default
      * variations from the provided Scene ID
      * @param sceneID - the Scene ID to generate 

@@ -146,7 +146,9 @@ export default class PlattarEmbed extends HTMLElement {
 
         // if the controller was removed due to state-change, we need to re-initialise it
         if (!this._controller) {
-            const decodedState: DecodedConfiguratorState = await ConfiguratorState.decodeScene(sceneID);
+            // decode either a previously defined/altered configuration state OR use a scene to generate a new state
+            const configState: string | null = this.getAttribute("config-state");
+            const decodedState: DecodedConfiguratorState = configState ? await ConfiguratorState.decodeState(sceneID, configState) : await ConfiguratorState.decodeScene(sceneID);
 
             switch (this._currentType) {
                 case EmbedType.Configurator:
