@@ -3,6 +3,7 @@ import { Product, ProductVariation, Project, Scene, SceneModel, SceneProduct } f
 interface ConfiguratorStateData {
     meta: {
         scene_product_index: 0,
+        scene_model_index: 0,
         product_variation_index: 1,
         meta_index: 2
     },
@@ -17,7 +18,7 @@ export interface SceneProductData {
 
 export interface SceneProductDataMeta {
     augment: boolean;
-    isSceneModel: boolean;
+    type: "sceneproduct" | "scenemodel";
 }
 
 export interface DecodedConfiguratorState {
@@ -45,6 +46,7 @@ export class ConfiguratorState {
         const defaultState: ConfiguratorStateData = {
             meta: {
                 scene_product_index: 0,
+                scene_model_index: 0,
                 product_variation_index: 1,
                 meta_index: 2,
             },
@@ -59,6 +61,7 @@ export class ConfiguratorState {
                 // set the meta data
                 if (parsedState.meta) {
                     defaultState.meta.scene_product_index = parsedState.meta.scene_product_index || 0;
+                    defaultState.meta.scene_model_index = parsedState.meta.scene_model_index || 0;
                     defaultState.meta.product_variation_index = parsedState.meta.product_variation_index || 1;
                     defaultState.meta.meta_index = parsedState.meta.meta_index || 2;
                 }
@@ -126,8 +129,8 @@ export class ConfiguratorState {
      */
     public setSceneModel(SceneModelID: string, metaData: SceneProductDataMeta | null | undefined = null): void {
         if (SceneModelID) {
-            metaData = metaData || { augment: true, isSceneModel: true };
-            metaData.isSceneModel = true;
+            metaData = metaData || { augment: true, type: "scenemodel" };
+            metaData.type = "scenemodel";
 
             const states: Array<Array<any>> = this._state.states;
             const meta = this._state.meta;
@@ -148,7 +151,6 @@ export class ConfiguratorState {
 
             newData[meta.scene_product_index] = SceneModelID;
             newData[meta.product_variation_index] = null;
-
             newData[meta.meta_index] = metaData;
         }
     }
@@ -162,6 +164,9 @@ export class ConfiguratorState {
      */
     public addSceneProduct(sceneProductID: string, productVariationID: string, metaData: SceneProductDataMeta | null | undefined = null): void {
         if (sceneProductID && productVariationID) {
+            metaData = metaData || { augment: true, type: "sceneproduct" };
+            metaData.type = "sceneproduct";
+
             const states: Array<Array<any>> = this._state.states;
             const meta = this._state.meta;
 
@@ -181,10 +186,7 @@ export class ConfiguratorState {
 
             newData[meta.scene_product_index] = sceneProductID;
             newData[meta.product_variation_index] = productVariationID;
-
-            if (metaData) {
-                newData[meta.meta_index] = metaData;
-            }
+            newData[meta.meta_index] = metaData;
         }
     }
 
@@ -225,14 +227,14 @@ export class ConfiguratorState {
                 product_variation_id: found[meta.product_variation_index],
                 meta_data: {
                     augment: true,
-                    isSceneModel: false
+                    type: "sceneproduct"
                 }
             };
 
             // include the meta-data
             if (found.length === 3) {
                 data.meta_data.augment = found[meta.meta_index].augment || true;
-                data.meta_data.isSceneModel = found[meta.meta_index].isSceneModel || false;
+                data.meta_data.type = found[meta.meta_index].type || "sceneproduct";
             }
 
             return data;
@@ -256,7 +258,7 @@ export class ConfiguratorState {
                         product_variation_id: productState[meta.product_variation_index],
                         meta_data: {
                             augment: true,
-                            isSceneModel: false
+                            type: "sceneproduct"
                         }
                     });
                 }
@@ -266,7 +268,7 @@ export class ConfiguratorState {
                         product_variation_id: productState[meta.product_variation_index],
                         meta_data: {
                             augment: productState[meta.meta_index].augment || true,
-                            isSceneModel: productState[meta.meta_index].isSceneModel || false
+                            type: productState[meta.meta_index].type || "sceneproduct"
                         }
                     });
                 }
@@ -312,13 +314,14 @@ export class ConfiguratorState {
                 product_variation_id: found[meta.product_variation_index],
                 meta_data: {
                     augment: true,
-                    isSceneModel: false
+                    type: "sceneproduct"
                 }
             };
 
             // include the meta-data
             if (found.length === 3) {
                 data.meta_data.augment = found[meta.meta_index].augment || true;
+                data.meta_data.type = found[meta.meta_index].type || "sceneproduct"
             }
 
             return data;
@@ -369,7 +372,7 @@ export class ConfiguratorState {
         sceneModels.forEach((sceneModel: SceneModel) => {
             configState.setSceneModel(sceneModel.id, {
                 augment: sceneModel.attributes.include_in_augment,
-                isSceneModel: true
+                type: "scenemodel"
             });
         });
 
@@ -381,7 +384,7 @@ export class ConfiguratorState {
                 if (product.attributes.product_variation_id) {
                     configState.setSceneProduct(sceneProduct.id, product.attributes.product_variation_id, {
                         augment: sceneProduct.attributes.include_in_augment,
-                        isSceneModel: false
+                        type: "sceneproduct"
                     });
                 }
 
