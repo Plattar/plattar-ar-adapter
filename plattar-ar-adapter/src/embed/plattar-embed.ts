@@ -104,6 +104,16 @@ export default class PlattarEmbed extends HTMLElement {
     }
 
     /**
+     * Generates a brand new Configurator State from the provided SceneID or inputted Configurator State
+     */
+    private async _CreateConfiguratorState(sceneID: string): Promise<DecodedConfiguratorState> {
+        const configState: string | null = this.getAttribute("config-state");
+        const decodedState: DecodedConfiguratorState = configState ? await ConfiguratorState.decodeState(sceneID, configState) : await ConfiguratorState.decodeScene(sceneID);
+
+        return decodedState;
+    }
+
+    /**
      * creates the embed
      * this can also be called when attributes/state changes so embeds can be re-loaded
      */
@@ -131,6 +141,10 @@ export default class PlattarEmbed extends HTMLElement {
 
         const sceneID: string | null = this.hasAttribute("scene-id") ? this.getAttribute("scene-id") : null;
 
+        if (!sceneID) {
+            throw new Error("PlattarEmbed.Create() - minimum scene-id attribute is missing, controller will not be initialised");
+        }
+
         // if the provided SceneID doesn't match, we need to remove the controller
         if ((sceneID !== this._currentSceneID) && this._controller) {
             this._controller.removeRenderer();
@@ -147,8 +161,7 @@ export default class PlattarEmbed extends HTMLElement {
         // if the controller was removed due to state-change, we need to re-initialise it
         if (!this._controller) {
             // decode either a previously defined/altered configuration state OR use a scene to generate a new state
-            const configState: string | null = this.getAttribute("config-state");
-            const decodedState: DecodedConfiguratorState = configState ? await ConfiguratorState.decodeState(sceneID, configState) : await ConfiguratorState.decodeScene(sceneID);
+            const decodedState: DecodedConfiguratorState = await this._CreateConfiguratorState(sceneID);
 
             switch (this._currentType) {
                 case EmbedType.Configurator:

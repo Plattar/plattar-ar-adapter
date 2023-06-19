@@ -1,9 +1,7 @@
 import { Server } from "@plattar/plattar-api";
-import { Configurator } from "@plattar/plattar-services";
-import { ConfiguratorState, SceneAR, SceneProductAR } from "../..";
+import { ConfiguratorState, SceneProductAR } from "../..";
 import { LauncherAR } from "../../ar/launcher-ar";
-import { RawAR } from "../../ar/raw-ar";
-import { DecodedConfiguratorState, SceneProductData } from "../../util/configurator-state";
+import { SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 import { ConfiguratorAR } from "../../ar/configurator-ar";
@@ -60,7 +58,7 @@ export class VTOController extends PlattarController {
                 let dst: string = Server.location().base + "renderer/facear.html?scene_id=" + sceneID;
 
                 // optional attributes
-                const configState: string | null = this.getAttribute("config-state");
+                const configState: string | null = this.decodedConfigState.state.encode();
                 const showAR: string | null = this.getAttribute("show-ar");
                 const productID: string | null = this.getAttribute("product-id");
                 const sceneProductID: string | null = this.getAttribute("scene-product-id");
@@ -126,7 +124,7 @@ export class VTOController extends PlattarController {
                 viewer.setAttribute("scene-id", sceneID);
 
                 // optional attributes
-                const configState: string | null = this.getAttribute("config-state");
+                const configState: string | null = this.decodedConfigState.state.encode();
                 const showAR: string | null = this.getAttribute("show-ar");
                 const productID: string | null = this.getAttribute("product-id");
                 const sceneProductID: string | null = this.getAttribute("scene-product-id");

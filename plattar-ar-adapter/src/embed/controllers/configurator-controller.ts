@@ -1,10 +1,7 @@
 import { Server } from "@plattar/plattar-api";
-import { Configurator } from "@plattar/plattar-services";
 import { LauncherAR } from "../../ar/launcher-ar";
-import { RawAR } from "../../ar/raw-ar";
-import { SceneAR } from "../../ar/scene-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
-import { ConfiguratorState, DecodedConfiguratorState, SceneProductData } from "../../util/configurator-state";
+import { ConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 import { ConfiguratorAR } from "../../ar/configurator-ar";
@@ -61,7 +58,7 @@ export class ConfiguratorController extends PlattarController {
                 let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + sceneID;
 
                 // optional attributes
-                const configState: string | null = this.getAttribute("config-state");
+                const configState: string | null = this.decodedConfigState.state.encode();
                 const showAR: string | null = this.getAttribute("show-ar");
                 const showUI: string | null = this.getAttribute("show-ui");
 
@@ -117,7 +114,7 @@ export class ConfiguratorController extends PlattarController {
                 viewer.setAttribute("scene-id", sceneID);
 
                 // optional attributes
-                const configState: string | null = this.getAttribute("config-state");
+                const configState: string | null = this.decodedConfigState.state.encode();
                 const showAR: string | null = this.getAttribute("show-ar");
                 const showUI: string | null = this.getAttribute("show-ui");
 
@@ -149,22 +146,20 @@ export class ConfiguratorController extends PlattarController {
         });
     }
 
-    public initAR(): Promise<LauncherAR> {
-        return new Promise<LauncherAR>((accept, reject) => {
-            if (!Util.canAugment()) {
-                return reject(new Error("ConfiguratorController.initAR() - cannot proceed as AR not available in context"));
-            }
+    public async initAR(): Promise<LauncherAR> {
+        if (!Util.canAugment()) {
+            throw new Error("ConfiguratorController.initAR() - cannot proceed as AR not available in context");
+        }
 
-            const arMode: string | null = this.getAttribute("ar-mode") || "generated";
+        const arMode: string | null = this.getAttribute("ar-mode") || "generated";
 
-            switch (arMode.toLowerCase()) {
-                case "inherited":
-                    return this._InitARInherited();
-                case "generated":
-                default:
-                    return this._InitARGenerated();
-            }
-        });
+        switch (arMode.toLowerCase()) {
+            case "inherited":
+                return this._InitARInherited();
+            case "generated":
+            default:
+                return this._InitARGenerated();
+        }
     }
 
     /**
