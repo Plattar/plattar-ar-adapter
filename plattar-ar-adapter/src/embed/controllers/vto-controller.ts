@@ -14,6 +14,24 @@ export class VTOController extends PlattarController {
     public override onAttributesUpdated(attributeName: string): void {
         const state: ControllerState = this._state;
 
+        if (attributeName === "variation-id") {
+            const variationIDs: string | null = this.getAttribute("variation-id");
+            const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
+
+            variationIDsList.forEach((variationID: string) => {
+                this.decodedConfigState.state.setVariationID(variationID);
+            });
+        }
+
+        if (attributeName === "variation-sku") {
+            const variationSKUs: string | null = this.getAttribute("variation-sku");
+            const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+
+            variationSKUList.forEach((variationSKU: string) => {
+                this.decodedConfigState.state.setVariationSKU(variationSKU);
+            });
+        }
+
         // re-render the QR Code when attributes have changed
         if (state === ControllerState.QRCode) {
             this.startQRCode(this._prevQROpt);
