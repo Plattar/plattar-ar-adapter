@@ -109,8 +109,27 @@ export default class PlattarEmbed extends HTMLElement {
      */
     private async _CreateConfiguratorState(sceneID: string): Promise<DecodedConfiguratorState> {
         const configState: string | null = this.getAttribute("config-state");
+
+        // get a list of variation ID's to use for initialising
+        const variationIDs: string | null = this.getAttribute("variation-id");
+        // get a list of variation SKU's to use for initialising
+        const variationSKUs: string | null = this.getAttribute("variation-sku");
+        // generate the decoded configurator state
         const decodedState: DecodedConfiguratorState = configState ? await ConfiguratorState.decodeState(sceneID, configState) : await ConfiguratorState.decodeScene(sceneID);
 
+        // change the ID's and SKU's (if any) of the default configuration state
+        const variationIDList: Array<string> = variationIDs ? variationIDs.split(",") : [];
+        const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+
+        variationIDList.forEach((variationID: string) => {
+            decodedState.state.setVariationID(variationID);
+        });
+
+        variationSKUList.forEach((variationSKU: string) => {
+            decodedState.state.setVariationSKU(variationSKU);
+        });
+
+        // return fully modified configuration state
         return decodedState;
     }
 
