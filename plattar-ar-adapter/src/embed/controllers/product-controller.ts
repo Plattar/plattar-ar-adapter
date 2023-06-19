@@ -19,7 +19,7 @@ export class ProductController extends PlattarController {
         super(parent, { scene: <Scene>(<any>null), state: <ConfiguratorState>(<any>null) });
     }
 
-    public onAttributesUpdated(): void {
+    public override onAttributesUpdated(attributeName: string): void {
         const state: ControllerState = this._state;
 
         // re-render the QR Code when attributes have changed

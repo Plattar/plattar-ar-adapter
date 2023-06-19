@@ -47,7 +47,7 @@ export abstract class PlattarController {
      * Called by the parent when a HTML Attribute has changed and the controller
      * requires an update
      */
-    public abstract onAttributesUpdated(): void;
+    public abstract onAttributesUpdated(attributeName: string): void;
 
     /**
      * Start the underlying Plattar Renderer for this Controller

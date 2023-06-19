@@ -11,7 +11,7 @@ import { ConfiguratorAR } from "../../ar/configurator-ar";
  */
 export class VTOController extends PlattarController {
 
-    public onAttributesUpdated(): void {
+    public override onAttributesUpdated(attributeName: string): void {
         const state: ControllerState = this._state;
 
         // re-render the QR Code when attributes have changed

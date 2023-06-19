@@ -53,13 +53,14 @@ export default class PlattarEmbed extends HTMLElement {
 
         if (!this._observer) {
             this._observer = new MutationObserver((mutations: MutationRecord[]) => {
-                mutations.forEach((mutation) => {
+                mutations.forEach((mutation: MutationRecord) => {
                     if (mutation.type === "attributes") {
+                        const attributeName: string = mutation.attributeName ? mutation.attributeName : "none";
                         if (this._currentType !== EmbedType.Legacy) {
-                            this._CreateEmbed();
+                            this._CreateEmbed(attributeName);
                         }
                         else {
-                            this._OnAttributesUpdated();
+                            this._OnAttributesUpdated(attributeName);
                         }
                     }
                 });
@@ -80,7 +81,7 @@ export default class PlattarEmbed extends HTMLElement {
             return;
         }
 
-        this._CreateEmbed();
+        this._CreateEmbed("none");
     }
 
     /**
@@ -117,7 +118,7 @@ export default class PlattarEmbed extends HTMLElement {
      * creates the embed
      * this can also be called when attributes/state changes so embeds can be re-loaded
      */
-    private async _CreateEmbed(): Promise<void> {
+    private async _CreateEmbed(attributeName: string): Promise<void> {
         const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "configurator";
         const currentEmbed: EmbedType = this._currentType;
 
@@ -141,10 +142,6 @@ export default class PlattarEmbed extends HTMLElement {
 
         const sceneID: string | null = this.hasAttribute("scene-id") ? this.getAttribute("scene-id") : null;
 
-        if (!sceneID) {
-            throw new Error("PlattarEmbed.Create() - minimum scene-id attribute is missing, controller will not be initialised");
-        }
-
         // if the provided SceneID doesn't match, we need to remove the controller
         if ((sceneID !== this._currentSceneID) && this._controller) {
             this._controller.removeRenderer();
@@ -161,7 +158,7 @@ export default class PlattarEmbed extends HTMLElement {
         // if the controller was removed due to state-change, we need to re-initialise it
         if (!this._controller) {
             // decode either a previously defined/altered configuration state OR use a scene to generate a new state
-            const decodedState: DecodedConfiguratorState = await this._CreateConfiguratorState(sceneID);
+            const decodedState: DecodedConfiguratorState = await this._CreateConfiguratorState(this._currentSceneID);
 
             switch (this._currentType) {
                 case EmbedType.Configurator:
@@ -184,7 +181,7 @@ export default class PlattarEmbed extends HTMLElement {
             }
         }
         else {
-            this._OnAttributesUpdated();
+            this._OnAttributesUpdated(attributeName);
         }
     }
 
@@ -237,9 +234,9 @@ export default class PlattarEmbed extends HTMLElement {
      * This is called by the observer if any of the embed attributes have changed
      * based on the state of the embed, we update the internal structure accordingly
      */
-    private _OnAttributesUpdated(): void {
+    private _OnAttributesUpdated(attributeName: string): void {
         if (this._controller) {
-            this._controller.onAttributesUpdated();
+            this._controller.onAttributesUpdated(attributeName);
         }
     }
 }
