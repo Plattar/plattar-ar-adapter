@@ -7,6 +7,7 @@ import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
+import version from "../version";
 
 export interface SceneVariationSelection {
     readonly sceneProductID?: string;
@@ -57,6 +58,7 @@ export class SceneAR extends LauncherAR {
             this._analytics = analytics;
 
             analytics.data.push("type", "scene-ar");
+            analytics.data.push("sdkVersion", version);
             analytics.data.push("sceneId", scene.id);
             analytics.data.push("sceneTitle", scene.attributes.title);
 

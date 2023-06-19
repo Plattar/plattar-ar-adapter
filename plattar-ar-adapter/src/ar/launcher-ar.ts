@@ -22,14 +22,10 @@ export abstract class LauncherAR {
      * Initialise and launch with a single function call. this is mostly for convenience.
      * Use .init() and .start() separately for fine-grained control
      */
-    public launch(): Promise<void> {
-        return new Promise<void>((accept, reject) => {
-            this.init().then((value: LauncherAR) => {
-                value.start();
+    public async launch(): Promise<void> {
+        const value: LauncherAR = await this.init();
 
-                return accept();
-            }).catch(reject);
-        });
+        return value.start();
     }
 
     /**

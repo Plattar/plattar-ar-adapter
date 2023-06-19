@@ -8,6 +8,7 @@ import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
 import { DecodedConfiguratorState, SceneProductData } from "../util/configurator-state";
+import version from "../version";
 
 /**
  * Performs AR functionality related to Plattar Scenes
@@ -45,6 +46,7 @@ export class ConfiguratorAR extends LauncherAR {
             this._analytics = analytics;
 
             analytics.data.push("type", "scene-ar");
+            analytics.data.push("sdkVersion", version);
             analytics.data.push("sceneId", scene.id);
             analytics.data.push("sceneTitle", scene.attributes.title);
 

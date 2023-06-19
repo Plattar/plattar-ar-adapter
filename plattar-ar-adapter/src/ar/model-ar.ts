@@ -6,6 +6,7 @@ import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
+import version from "../version";
 
 /**
  * Performs AT Functionality using Plattar FileModel types
@@ -48,6 +49,7 @@ export class ModelAR extends LauncherAR {
             analytics.origin = <any>Server.location().type;
 
             analytics.data.push("type", "model-ar");
+            analytics.data.push("sdkVersion", version);
             analytics.data.push("applicationId", project.id);
             analytics.data.push("applicationTitle", project.attributes.title);
             analytics.data.push("modelId", model.id);
