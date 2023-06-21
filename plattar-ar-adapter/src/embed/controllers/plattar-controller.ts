@@ -31,6 +31,9 @@ export abstract class PlattarController {
     protected _element: HTMLElement | null = null;
     protected _prevQROpt: any = null;
 
+    private _selectVariationObserver: any = null;
+    private _selectVariationSKUObserver: any = null;
+
     constructor(parent: HTMLElement, state: DecodedConfiguratorState) {
         this._parent = parent;
         this._decodedConfigState = state;
@@ -41,6 +44,49 @@ export abstract class PlattarController {
      */
     public get decodedConfigState(): DecodedConfiguratorState {
         return this._decodedConfigState;
+    }
+
+    /**
+     * Setup messenger observers to detect variation changes and apply to the internal
+     * configuration state
+     */
+    protected setupMessengerObservers(viewer: any): void {
+        this._selectVariationObserver = viewer.messengerInstance.observer.subscribe("selectVariation", (cd: any) => {
+            if (cd.type === "call") {
+                const args: string | Array<string> | undefined | null = cd.data[0];
+                const variations: Array<string> = args ? (Array.isArray(args) ? args : [args]) : [];
+
+                variations.forEach((variationID: string) => {
+                    this.decodedConfigState.state.setVariationID(variationID);
+                });
+            }
+        });
+
+        this._selectVariationSKUObserver = viewer.messengerInstance.observer.subscribe("selectVariationSKU", (cd: any) => {
+            if (cd.type === "call") {
+                const args: string | Array<string> | undefined | null = cd.data[0];
+                const variations: Array<string> = args ? (Array.isArray(args) ? args : [args]) : [];
+
+                variations.forEach((variationSKU: string) => {
+                    this.decodedConfigState.state.setVariationSKU(variationSKU);
+                });
+            }
+        });
+    }
+
+    /**
+     * Remove all pre-existing observers
+     */
+    protected removeMessengerObservers(): void {
+        if (this._selectVariationObserver) {
+            this._selectVariationObserver();
+            this._selectVariationObserver = null;
+        }
+
+        if (this._selectVariationSKUObserver) {
+            this._selectVariationSKUObserver();
+            this._selectVariationSKUObserver = null;
+        }
     }
 
     /**

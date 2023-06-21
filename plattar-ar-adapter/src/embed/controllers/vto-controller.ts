@@ -169,6 +169,8 @@ export class VTOController extends PlattarController {
                 }
 
                 viewer.onload = () => {
+                    this.setupMessengerObservers(viewer);
+
                     return accept(viewer);
                 };
 
@@ -248,6 +250,8 @@ export class VTOController extends PlattarController {
 
             return true;
         }
+
+        this.removeMessengerObservers();
 
         return false;
     }

@@ -149,6 +149,8 @@ export class ConfiguratorController extends PlattarController {
                 }
 
                 viewer.onload = () => {
+                    this.setupMessengerObservers(viewer);
+
                     return accept(viewer);
                 };
 
@@ -224,6 +226,8 @@ export class ConfiguratorController extends PlattarController {
 
             return true;
         }
+
+        this.removeMessengerObservers();
 
         return false;
     }
