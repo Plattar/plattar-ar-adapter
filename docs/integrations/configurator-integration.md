@@ -6,7 +6,7 @@ The plattar-ar-adapter SDK is bundled with functionality that allows integrating
 
 The Configurator exposes a set of interfaces and functionality that allows switching product states, loading existing configuration states and launching AR functionality for IOS and Android devices.
 
-As of version `1.154.1` The SDK makes configuration as the default embed type. 
+As of version `1.154.1` The SDK makes the Configurator as the default embed type. 
 
 ### Node Attributes
 
@@ -16,6 +16,22 @@ Scene ID is acquired from the Plattar CMS. Every Scene in the Plattar Ecosystem 
 
 ```html
 <plattar-embed scene-id="" />
+```
+
+- **variation-id** (optional)
+
+Comma separated list of Variation ID's that can be used to define a specific or particular configuration of Products. The Variation ID's can be aquired from the Plattar CMS.
+
+```html
+<plattar-embed scene-id="" variation-id="" />
+```
+
+- **variation-sku** (optional)
+
+Comma separated list of user-defined Variation SKU's that can be used to define a specific or particular configuration of Products. The Variation SKU's are both defined and aquired from the Plattar CMS.
+
+```html
+<plattar-embed scene-id="" variation-sku="" />
 ```
 
 - **show-ar** (optional)
