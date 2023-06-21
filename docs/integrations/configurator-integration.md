@@ -1,10 +1,12 @@
 [Back to Main](./)
 
-### Configurator Integrations with AR
+### Configurator/Viewer Integrations with AR
 
-The plattar-ar-adapter SDK is bundled with functionality that allows integrating a Plattar Configurator renderer into existing websites.
+The plattar-ar-adapter SDK is bundled with functionality that allows integrating a Plattar Configurator and 360 Viewer renderer into existing websites.
 
 The Configurator exposes a set of interfaces and functionality that allows switching product states, loading existing configuration states and launching AR functionality for IOS and Android devices.
+
+As of version `1.154.1` The SDK makes configuration as the default embed type. 
 
 ### Node Attributes
 
@@ -16,28 +18,12 @@ Scene ID is acquired from the Plattar CMS. Every Scene in the Plattar Ecosystem 
 <plattar-embed scene-id="" />
 ```
 
-- **embed-type** (required)
-
-The `embed-type` attribute should always equal to `configurator` for a configurator embed. This will expose the underlying interfaces and AR functionality.
-
-```html
-<plattar-embed scene-id="" embed-type="configurator" />
-```
-
-- **config-state** (optional)
-
-The `config-state` attribute allows loading a previously saved configuration state. Every configurator loads with an initial state as defined in the Plattar CMS however this state can be changed by the user as they interact with the Configurator. This attribute is `null` by default.
-
-```html
-<plattar-embed scene-id="" embed-type="configurator" config-state="" />
-```
-
 - **show-ar** (optional)
 
 The `show-ar` attribute will display a UI button that allows a user to launch an Android or IOS AR experience for a provided scene configuration. This attribute is ignored on desktop platforms. This attribute is `false` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" show-ar="true" />
+<plattar-embed scene-id="" show-ar="true" />
 ```
 
 - **width & height** (optional)
@@ -45,7 +31,7 @@ The `show-ar` attribute will display a UI button that allows a user to launch an
 The `width` and `height` attributes will scale the internal renderer and QR Code to the provided size. These attributes are `500px` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" width="700px" height="700px" />
+<plattar-embed scene-id="" width="700px" height="700px" />
 ```
 
 - **ar-mode** (optional)
@@ -57,7 +43,7 @@ An alternative mode is using `inherited` which will use the pre-generated/user-u
 This attribute is `generated` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" ar-mode="generated" />
+<plattar-embed scene-id="" ar-mode="generated" />
 ```
 
 - **show-ui** (optional)
@@ -65,29 +51,23 @@ This attribute is `generated` by default.
 The `show-ui` attribute allows embedding the configurator bundled with a Plattar designed default UI solution that allows users to switch product variations. This attribute is `false` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" show-ui="false" />
+<plattar-embed scene-id="" show-ui="false" />
 ```
 
-### Messenger Functions for Configurator
+### Renderer Functions for Configurator
 
-These messenger functions are available when the node has `embed-type="configurator"` enabled.
+The following renderer functions are available
 
-- Changes the Product Variation for the provided Scene Product and Variation. The Variation ID must be a member of the Scene Product.
+- Activates the provided Product Variation using a Variation ID. The Variation ID must be a member of a Scene Product in the Scene. The argument can be either a single Variation ID or an Array of Variation ID's.
 
 ```js
-selectSceneProductVariation(sceneProductID:string, variationID:string);
+selectVariation(variationID:string | Array<string>);
 ```
 
-- Changes the Variation for the provided Product. The Variation ID must be a member of an active Product attached to an internal Scene Product. The Variation ID must belong to the Product.
+- Activates the provided Product Variation using a user-defined Variation SKU. The Variation SKU must be a member of a Scene Product in the Scene. The argument can be either a single Variation SKU or an Array of Variation SKU's. 
 
 ```js
-selectProductVariation(productID:string, variationID:string);
-```
-
-- Generates and returns the current internal configuration state of the Scene. This configuration state can be used in conjunction with the `config-state` attribute to re-load a previously selected configuration.
-
-```js
-getConfigurationState();
+selectVariationSKU(variationSKU:string | Array<string>);
 ```
 
 ### The Scene ID
@@ -114,14 +94,14 @@ For multiple Scene integrations, the embed codes can be generated and exported d
 
 <img width="500" alt="" src="https://stoplight.io/api/v1/projects/cHJqOjEwODA2Nw/images/FLo5IfUbw1w">
 
-### Configurator Integration Example
+### Configurator/Viewer Integration Example with Variation Switching
 
 For the purposes of this example, we use a sample `scene-id` of `c49e5c30-469c-11ec-963f-ddbb1b50e719`.
 
 This scene contains multiple products with multiple variations that can be configured using a simple UI. It performs the following functionality.
 
-- Configure multiple products with variations using `selectSceneProductVariation` and a simple UI
-- Generate QR Code for launching AR Mode for Desktop against a specific configuration using `getConfigurationState`
+- Configure multiple products with variations using `selectVariation` and a simple UI
+- Generate QR Code for launching AR Mode for Desktop against a specific configuration
 - Launch AR Experience when viewed from mobile
 
 ```html title="Scene Configurator Integration Example using plattar-ar-adapter SDK"
