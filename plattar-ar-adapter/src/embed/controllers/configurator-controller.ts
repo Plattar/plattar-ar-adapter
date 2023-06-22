@@ -67,6 +67,7 @@ export class ConfiguratorController extends PlattarController {
         const opt: any = options || this._GetDefaultQROptions();
 
         const viewer: HTMLElement = document.createElement("plattar-qrcode");
+        this._element = viewer;
 
         // required attributes with defaults for plattar-viewer node
         const width: string = this.getAttribute("width") || "500px";
@@ -118,7 +119,6 @@ export class ConfiguratorController extends PlattarController {
 
         viewer.setAttribute("url", opt.url || dst);
 
-        this._element = viewer;
         this._state = ControllerState.QRCode;
         this._prevQROpt = opt;
 
@@ -147,6 +147,7 @@ export class ConfiguratorController extends PlattarController {
         const server: string = this.getAttribute("server") || "production";
 
         const viewer: HTMLElement = document.createElement("plattar-configurator");
+        this._element = viewer;
 
         viewer.setAttribute("width", width);
         viewer.setAttribute("height", height);
@@ -179,7 +180,6 @@ export class ConfiguratorController extends PlattarController {
             viewer.setAttribute("show-ui", showUI);
         }
 
-        this._element = viewer;
         this._state = ControllerState.Renderer;
 
         return new Promise<HTMLElement>((accept, reject) => {

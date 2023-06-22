@@ -175,6 +175,7 @@ export abstract class PlattarController {
         const opt: any = options || this._GetDefaultQROptions();
 
         const viewer: HTMLElement = document.createElement("plattar-qrcode");
+        this._element = viewer;
 
         // required attributes with defaults for plattar-viewer node
         const width: string = this.getAttribute("width") || "500px";
@@ -252,7 +253,6 @@ export abstract class PlattarController {
 
         viewer.setAttribute("url", opt.url || dst);
 
-        this._element = viewer;
         this._state = ControllerState.QRCode;
         this._prevQROpt = opt;
 
