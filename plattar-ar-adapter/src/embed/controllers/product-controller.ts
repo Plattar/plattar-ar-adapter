@@ -1,9 +1,9 @@
-import { Scene, Server } from "@plattar/plattar-api";
+import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { ProductAR } from "../../ar/product-ar";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
-import { ConfiguratorState } from "../../util/configurator-state";
+import { DecodedConfiguratorState } from "../../util/configurator-state";
 
 /**
  * Manages an instance of the <plattar-product> HTML Element
@@ -13,13 +13,17 @@ import { ConfiguratorState } from "../../util/configurator-state";
  */
 export class ProductController extends PlattarController {
 
+    public async getConfiguratorState(): Promise<DecodedConfiguratorState> {
+        throw new Error("ProductController.getConfiguratorState() - legacy embeds do not support configurator states");
+    }
+
     constructor(parent: HTMLElement) {
         // this is a hack against DecodedConfiguratorState that's now stored in PlattarController
         // this is not used in legacy mode
-        super(parent, { scene: <Scene>(<any>null), state: <ConfiguratorState>(<any>null) });
+        super(parent);
     }
 
-    public override onAttributesUpdated(attributeName: string): void {
+    public override async onAttributesUpdated(attributeName: string): Promise<void> {
         const state: ControllerState = this._state;
 
         // re-render the QR Code when attributes have changed
@@ -40,8 +44,6 @@ export class ProductController extends PlattarController {
                     viewer.messenger.selectVariation(variationID);
                 }
             }
-
-            return;
         }
     }
 

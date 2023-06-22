@@ -105,39 +105,10 @@ export default class PlattarEmbed extends HTMLElement {
     }
 
     /**
-     * Generates a brand new Configurator State from the provided SceneID or inputted Configurator State
-     */
-    private async _CreateConfiguratorState(sceneID: string): Promise<DecodedConfiguratorState> {
-        const configState: string | null = this.getAttribute("config-state");
-
-        // get a list of variation ID's to use for initialising
-        const variationIDs: string | null = this.getAttribute("variation-id");
-        // get a list of variation SKU's to use for initialising
-        const variationSKUs: string | null = this.getAttribute("variation-sku");
-        // generate the decoded configurator state
-        const decodedState: DecodedConfiguratorState = configState ? await ConfiguratorState.decodeState(sceneID, configState) : await ConfiguratorState.decodeScene(sceneID);
-
-        // change the ID's and SKU's (if any) of the default configuration state
-        const variationIDList: Array<string> = variationIDs ? variationIDs.split(",") : [];
-        const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
-
-        variationIDList.forEach((variationID: string) => {
-            decodedState.state.setVariationID(variationID);
-        });
-
-        variationSKUList.forEach((variationSKU: string) => {
-            decodedState.state.setVariationSKU(variationSKU);
-        });
-
-        // return fully modified configuration state
-        return decodedState;
-    }
-
-    /**
      * creates the embed
      * this can also be called when attributes/state changes so embeds can be re-loaded
      */
-    private async _CreateEmbed(attributeName: string): Promise<void> {
+    private _CreateEmbed(attributeName: string): void {
         const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "configurator";
         const currentEmbed: EmbedType = this._currentType;
 
@@ -176,15 +147,12 @@ export default class PlattarEmbed extends HTMLElement {
 
         // if the controller was removed due to state-change, we need to re-initialise it
         if (!this._controller) {
-            // decode either a previously defined/altered configuration state OR use a scene to generate a new state
-            const decodedState: DecodedConfiguratorState = await this._CreateConfiguratorState(this._currentSceneID);
-
             switch (this._currentType) {
                 case EmbedType.Configurator:
-                    this._controller = new ConfiguratorController(this, decodedState);
+                    this._controller = new ConfiguratorController(this);
                     break;
                 case EmbedType.VTO:
-                    this._controller = new VTOController(this, decodedState);
+                    this._controller = new VTOController(this);
                     break;
             }
 
