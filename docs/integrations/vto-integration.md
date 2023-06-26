@@ -24,28 +24,36 @@ The `embed-type` attribute should always equal to `vto` for a vto embed. This wi
 <plattar-embed scene-id="" embed-type="vto" />
 ```
 
-- **config-state** (optional)
+- **variation-id** (optional)
 
-The `config-state` attribute allows loading a previously saved configuration state. Every configurator loads with an initial state as defined in the Plattar CMS however this state can be changed by the user as they interact with the Configurator. This attribute is `null` by default.
+Comma separated list of Variation ID's that can be used to define a specific or particular configuration of Products. The Variation ID's can be aquired from the Plattar CMS.
 
 ```html
-<plattar-embed scene-id="" embed-type="vto" config-state="" />
+<plattar-embed scene-id="" variation-id="" />
+```
+
+- **variation-sku** (optional)
+
+Comma separated list of user-defined Variation SKU's that can be used to define a specific or particular configuration of Products. The Variation SKU's are both defined and aquired from the Plattar CMS.
+
+```html
+<plattar-embed scene-id="" variation-sku="" />
 ```
 
 - **show-ar** (optional)
 
-The `show-ar` attribute will display a UI button that allows a user to launch an IOS AR experience for a provided scene configuration. This attribute is ignored on desktop and android platforms. This attribute is `false` by default.
+The `show-ar` attribute will display a UI button that allows a user to launch an Android or IOS AR experience for a provided scene configuration. This attribute is ignored on desktop platforms. This attribute is `false` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="vto" show-ar="true" />
+<plattar-embed scene-id="" show-ar="true" />
 ```
 
 - **width & height** (optional)
 
-The `width` and `height` attributes will scale the internal renderer to the provided size. These attributes are `500px` by default.
+The `width` and `height` attributes will scale the internal renderer and QR Code to the provided size. These attributes are `500px` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="vto" width="700px" height="700px" />
+<plattar-embed scene-id="" width="700px" height="700px" />
 ```
 
 - **ar-mode** (optional)
@@ -57,23 +65,23 @@ An alternative mode is using `inherited` which will use the pre-generated/user-u
 This attribute is `generated` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="vto" ar-mode="generated" />
+<plattar-embed scene-id="" ar-mode="generated" />
 ```
 
 ### Messenger Functions for VTO
 
-These messenger functions are available when the node has `embed-type="vto"` enabled.
+The following renderer functions are available
 
-- Changes the Product Variation for the provided Scene Product and Variation. The Variation ID must be a member of the Scene Product.
+- Activates the provided Product Variation using a Variation ID. The Variation ID must be a member of a Scene Product in the Scene. The argument can be either a single Variation ID or an Array of Variation ID's.
 
 ```js
-selectSceneProductVariation(sceneProductID:string, variationID:string);
+selectVariation(variationID:string | Array<string>);
 ```
 
-- Generates and returns the current internal configuration state of the Scene. This configuration state can be used in conjunction with the `config-state` attribute to re-load a previous configuration.
+- Activates the provided Product Variation using a user-defined Variation SKU. The Variation SKU must be a member of a Scene Product in the Scene. The argument can be either a single Variation SKU or an Array of Variation SKU's. 
 
 ```js
-getConfigurationState();
+selectVariationSKU(variationSKU:string | Array<string>);
 ```
 
 ### The Scene ID
@@ -108,7 +116,7 @@ For the purposes of this example, we use a sample `scene-id` of `c0afc220-8a0f-1
 
 This scene contains multiple products with variations that can be configured using a simple UI. It performs the following functionality.
 
-- Configure products with variations using `selectSceneProductVariation` and a simple UI
+- Configure products with variations using `selectVariation` and a simple UI
 - Launch Reality VTO Experience for supported IOS Devices
 - Launch 360 Viewer Experience for IOS, Android and Desktop Devices
 - Launch VTO Experience for Desktop and Android Devices
