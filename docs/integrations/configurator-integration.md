@@ -133,22 +133,21 @@ This scene contains multiple products with multiple variations that can be confi
 <body>
     <form id="var_form" hidden>
         <b>Jacket Variation</b>
-        <select id="jacket_variation"
-            onchange="selectVariation('1a823d6e-f512-d2f3-a63e-1f04961990e7','jacket_variation')">
+        <select id="jacket_variation" onchange="selectVariation('jacket_variation')">
             <option>274e2500-469a-11ec-b41a-d13cb837ff25</option>
             <option>ae3d2820-469a-11ec-a9a8-8911082c07db</option>
             <option>14e29d60-4caf-11ec-820c-b9f13cbcd4ce</option>
         </select>
         <br>
         <b>Arm Bands</b>
-        <select id="arm_bands" onchange="selectVariation('5f3b0a61-2851-756e-f071-ea56488e0d87','arm_bands')">
+        <select id="arm_bands" onchange="selectVariation('arm_bands')">
             <option>c1faf310-469d-11ec-bd80-4bf29d3af627</option>
             <option>235ad470-469c-11ec-8806-5d3213072eb2</option>
             <option>eb388590-469b-11ec-ab71-27386f2be00b</option>
         </select>
         <br>
         <b>Badges</b>
-        <select id="badges" onchange="selectVariation('1356b6f2-7848-fa5e-dc3e-c1c8ab85440c', 'badges')">
+        <select id="badges" onchange="selectVariation('badges')">
             <option>d72dec70-469d-11ec-b69b-4b6b13740146</option>
             <option>cd19eed0-469b-11ec-bbee-9bf588efe3fc</option>
             <option>ac2716e0-469b-11ec-8731-15939e941cff</option>
@@ -156,7 +155,7 @@ This scene contains multiple products with multiple variations that can be confi
         </select>
         <br>
         <b>Chest Pockets</b>
-        <select id="chest_pockets" onchange="selectVariation('861e0412-b0e7-be56-a701-49815141cf02', 'chest_pockets')">
+        <select id="chest_pockets" onchange="selectVariation('chest_pockets')">
             <option>2f477530-469b-11ec-8316-1595e164dc32</option>
             <option>0b4f1be0-469b-11ec-bf54-230aaa9b198e</option>
             <option>625a7280-469b-11ec-840e-593a36373cc0</option>
@@ -166,17 +165,15 @@ This scene contains multiple products with multiple variations that can be confi
         </select>
         <br>
         <b>Velcro Cuff</b>
-        <select id="velcro_cuff" onchange="selectVariation('988074ac-7e1e-b69f-9141-746f6f71eb49', 'velcro_cuff')">
+        <select id="velcro_cuff" onchange="selectVariation('velcro_cuff')">
             <option>58fdefb0-4cb0-11ec-8210-6565844cb300</option>
             <option>71166d40-4cb0-11ec-a74d-57772fb7feee</option>
             <option>92b38d30-4cb0-11ec-86e3-a154d751f7c5</option>
             <option>b081f2e0-4cb0-11ec-9185-2b521eb35dc9</option>
         </select>
-        <p>Your Configuration State: <input type="text" id="config_state" size="60"></p>
         <button type="button" onclick="launchAR()">Launch AR</button>
     </form>
-    <plattar-embed id="embed" scene-id="c49e5c30-469c-11ec-963f-ddbb1b50e719" embed-type="configurator" show-ar="true"
-        init="viewer">
+    <plattar-embed id="embed" scene-id="c49e5c30-469c-11ec-963f-ddbb1b50e719" show-ar="true" init="viewer">
     </plattar-embed>
 
     <script>
@@ -188,15 +185,11 @@ This scene contains multiple products with multiple variations that can be confi
                 const form = document.getElementById("var_form");
 
                 form.removeAttribute("hidden");
-
-                const config = document.getElementById("config_state");
-
-                setConfigState();
             };
         }
 
         // this is called when the dropdowns change
-        function selectVariation(sceneProductID, id) {
+        async function selectVariation(id) {
             // these are the scene product ID's mapped into our ID's
             const dropdown = document.getElementById(id);
 
@@ -204,56 +197,41 @@ This scene contains multiple products with multiple variations that can be confi
             const selection = dropdown.options[dropdown.selectedIndex].text;
 
             // perform selection in the Plattar Viewer
-            embed.viewer.messenger.selectSceneProductVariation(sceneProductID, selection).then(() => {
-                // refresh the configuration state
-                setConfigState();
-            }).catch((err) => {
+            try {
+                await embed.viewer.messenger.selectVariation(selection);
+            }
+            catch (err) {
                 console.error(err);
-            });
-        }
-
-        // this sets the configuration state for the user
-        function setConfigState() {
-            const config = document.getElementById("config_state");
-
-            embed.viewer.messenger.getConfigurationState().then((state) => {
-                config.value = state;
-            }).catch((err) => {
-                console.error(err);
-            });
+            }
         }
 
         // this will attempt to launch AR Mode
         // if on desktop, a QR Code will be rendered instead
-        function launchAR() {
-            const config = document.getElementById("config_state");
-
-            // first, we re-set the previously saved configuration state
-            embed.setAttribute("config-state", config.value);
-
+        async function launchAR() {
             // then, we try to launch AR Mode if available
             if (PlattarARAdapter.Util.canAugment()) {
-                embed.startAR().then(() => {
-                    // nada
-                }).catch((err) => {
-                    renderQRCode();
-                });
+                try {
+                    await embed.startAR();
+                }
+                catch (err) {
+                    await renderQRCode();
+                }
             }
             else {
                 // fallback to rendering QR Code
-                renderQRCode();
+                await renderQRCode();
             }
         }
 
         // this will render a QR Code that takes the user to a specified
         // configuration
-        function renderQRCode() {
-            embed.startQRCode(
-            ).then(() => {
-                // nada
-            }).catch((err) => {
+        async function renderQRCode() {
+            try {
+                await embed.startQRCode();
+            }
+            catch (err) {
                 console.error(err);
-            });
+            }
         }
     </script>
 </body>

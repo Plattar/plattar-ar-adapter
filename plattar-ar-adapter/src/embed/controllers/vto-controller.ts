@@ -26,28 +26,54 @@ export class VTOController extends PlattarController {
     public override async onAttributesUpdated(attributeName: string): Promise<void> {
         const state: ControllerState = this._state;
 
-        if (attributeName === "variation-id") {
-            const configState: DecodedConfiguratorState = await this.getConfiguratorState();
-            const variationIDs: string | null = this.getAttribute("variation-id");
-            const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
+        if (state === ControllerState.Renderer) {
+            const viewer: any | null = this.element;
 
-            variationIDsList.forEach((variationID: string) => {
-                configState.state.setVariationID(variationID);
-            });
-        }
+            if (viewer) {
+                if (attributeName === "variation-id") {
+                    const variationIDs: string | null = this.getAttribute("variation-id");
+                    const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
 
-        if (attributeName === "variation-sku") {
-            const configState: DecodedConfiguratorState = await this.getConfiguratorState();
-            const variationSKUs: string | null = this.getAttribute("variation-sku");
-            const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+                    if (variationIDsList.length > 0) {
+                        await viewer.messenger.selectVariation(variationIDsList);
+                    }
+                }
 
-            variationSKUList.forEach((variationSKU: string) => {
-                configState.state.setVariationSKU(variationSKU);
-            });
+                if (attributeName === "variation-sku") {
+                    const variationSKUs: string | null = this.getAttribute("variation-sku");
+                    const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+
+                    if (variationSKUList.length > 0) {
+                        await viewer.messenger.selectVariationSKU(variationSKUList);
+                    }
+                }
+            }
+
+            return;
         }
 
         // re-render the QR Code when attributes have changed
         if (state === ControllerState.QRCode) {
+            if (attributeName === "variation-id") {
+                const configState: DecodedConfiguratorState = await this.getConfiguratorState();
+                const variationIDs: string | null = this.getAttribute("variation-id");
+                const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
+
+                variationIDsList.forEach((variationID: string) => {
+                    configState.state.setVariationID(variationID);
+                });
+            }
+
+            if (attributeName === "variation-sku") {
+                const configState: DecodedConfiguratorState = await this.getConfiguratorState();
+                const variationSKUs: string | null = this.getAttribute("variation-sku");
+                const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+
+                variationSKUList.forEach((variationSKU: string) => {
+                    configState.state.setVariationSKU(variationSKU);
+                });
+            }
+
             this.startQRCode(this._prevQROpt);
 
             return;
@@ -204,15 +230,13 @@ export class VTOController extends PlattarController {
         this._state = ControllerState.Renderer;
 
         return new Promise<HTMLElement>((accept, reject) => {
-            viewer.onload = () => {
-                if (configState) {
-                    this.setupMessengerObservers(viewer, configState);
-                }
-
-                return accept(viewer);
-            };
-
             this.append(viewer);
+
+            if (configState) {
+                this.setupMessengerObservers(viewer, configState);
+            }
+
+            return accept(viewer);
         });
     }
 
