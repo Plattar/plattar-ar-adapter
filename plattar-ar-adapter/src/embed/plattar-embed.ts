@@ -4,7 +4,6 @@ import { PlattarController } from "./controllers/plattar-controller";
 import { ConfiguratorController } from "./controllers/configurator-controller";
 import { VTOController } from "./controllers/vto-controller";
 import { ProductController } from "./controllers/product-controller";
-import { ConfiguratorState, DecodedConfiguratorState } from "../util/configurator-state";
 
 /**
  * This tracks the current embed type
