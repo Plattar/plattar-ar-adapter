@@ -77,7 +77,7 @@ The following renderer functions are available
 - Activates the provided Product Variation using a Variation ID. The Variation ID must be a member of a Scene Product in the Scene. The argument can be either a single Variation ID or an Array of Variation ID's.
 
 ```js
-selectVariation(variationID:string | Array<string>);
+selectVariationID(variationID:string | Array<string>);
 ```
 
 - Activates the provided Product Variation using a user-defined Variation SKU. The Variation SKU must be a member of a Scene Product in the Scene. The argument can be either a single Variation SKU or an Array of Variation SKU's. 
