@@ -198,7 +198,7 @@ This scene contains multiple products with multiple variations that can be confi
 
             // perform selection in the Plattar Viewer
             try {
-                await embed.viewer.messenger.selectVariation(selection);
+                await embed.viewer.messenger.selectVariationID(selection);
             }
             catch (err) {
                 console.error(err);

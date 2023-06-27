@@ -35,7 +35,7 @@ export class VTOController extends PlattarController {
                     const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
 
                     if (variationIDsList.length > 0) {
-                        await viewer.messenger.selectVariation(variationIDsList);
+                        await viewer.messenger.selectVariationID(variationIDsList);
                     }
                 }
 

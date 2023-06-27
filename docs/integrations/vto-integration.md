@@ -234,7 +234,7 @@ This scene contains multiple products with variations that can be configured usi
 
             // perform the variation selection
             if (embed) {
-                await embed.viewer.messenger.selectVariation(selection);
+                await embed.viewer.messenger.selectVariationID(selection);
             }
         }
     </script>
