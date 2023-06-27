@@ -1,7 +1,6 @@
 # .github/release.yml
 
 changelog:
-  exclude:
   categories:
     - title: Breaking Changes 🛠
       labels:
@@ -19,6 +18,6 @@ changelog:
     - title: Small Improvements
       labels:
         - code-cleanup
-    - title: Core Changes
+    - title: All Changes, Improvements and Bugfixes
       labels:
         - "*"
