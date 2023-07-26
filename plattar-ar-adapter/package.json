@@ -38,17 +38,17 @@
   "homepage": "https://www.plattar.com",
   "dependencies": {
     "@plattar/plattar-analytics": "^1.152.2",
-    "@plattar/plattar-api": "^1.148.1",
+    "@plattar/plattar-api": "^1.154.1",
     "@plattar/plattar-qrcode": "1.150.2",
     "@plattar/plattar-services": "^1.120.1",
-    "@plattar/plattar-web": "^1.154.2"
+    "@plattar/plattar-web": "^1.154.3"
   },
   "devDependencies": {
-    "@babel/cli": "^7.22.5",
-    "@babel/core": "^7.22.5",
-    "@babel/preset-env": "^7.22.5",
+    "@babel/cli": "^7.22.9",
+    "@babel/core": "^7.22.9",
+    "@babel/preset-env": "^7.22.9",
     "browserify": "^17.0.0",
-    "typescript": "^5.1.3",
+    "typescript": "^5.1.6",
     "uglify-js": "^3.17.4"
   },
   "publishConfig": {
