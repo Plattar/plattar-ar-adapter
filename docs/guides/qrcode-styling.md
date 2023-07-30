@@ -22,7 +22,7 @@ We introduce several new attributes that can be used to modify the styling of th
 <plattar-embed qr-style="dots" />
 ```
 
-- **qr-shorten** (optional) - accepts either `true` or `false` that will automatically simplify the complexity of the QR Code, making it easier to scan. Defaults to `false` when not supplied.
+- **qr-shorten** (optional) - accepts either `true` or `false` that will automatically simplify the complexity of the QR Code, making it easier to scan. Defaults to `true` when not supplied.
 
 ```html
 <plattar-embed qr-shorten="true" />

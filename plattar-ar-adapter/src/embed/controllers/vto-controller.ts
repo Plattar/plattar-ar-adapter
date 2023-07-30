@@ -1,312 +1,300 @@
 import { Server } from "@plattar/plattar-api";
-import { Configurator } from "@plattar/plattar-services";
-import { ConfiguratorState, SceneAR, SceneProductAR } from "../..";
+import { ConfiguratorState, SceneProductAR } from "../..";
 import { LauncherAR } from "../../ar/launcher-ar";
-import { RawAR } from "../../ar/raw-ar";
-import { SceneProductData } from "../../util/configurator-state";
+import { DecodedConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
+import { ConfiguratorAR } from "../../ar/configurator-ar";
 
 /**
  * Manages an instance of the <plattar-configurator> HTML Element
  */
 export class VTOController extends PlattarController {
 
-    constructor(parent: HTMLElement) {
-        super(parent);
+    private _cachedConfigState: Promise<DecodedConfiguratorState> | null = null;
+
+    public async getConfiguratorState(): Promise<DecodedConfiguratorState> {
+        if (this._cachedConfigState) {
+            return this._cachedConfigState;
+        }
+
+        this._cachedConfigState = this.createConfiguratorState();
+
+        return this._cachedConfigState;
     }
 
-    public onAttributesUpdated(): void {
+    public override async onAttributesUpdated(attributeName: string): Promise<void> {
         const state: ControllerState = this._state;
+
+        if (state === ControllerState.Renderer) {
+            const viewer: any | null = this.element;
+
+            if (viewer) {
+                if (attributeName === "variation-id") {
+                    const variationIDs: string | null = this.getAttribute("variation-id");
+                    const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
+
+                    if (variationIDsList.length > 0) {
+                        await viewer.messenger.selectVariationID(variationIDsList);
+                    }
+                }
+
+                if (attributeName === "variation-sku") {
+                    const variationSKUs: string | null = this.getAttribute("variation-sku");
+                    const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+
+                    if (variationSKUList.length > 0) {
+                        await viewer.messenger.selectVariationSKU(variationSKUList);
+                    }
+                }
+            }
+
+            return;
+        }
 
         // re-render the QR Code when attributes have changed
         if (state === ControllerState.QRCode) {
+            if (attributeName === "variation-id") {
+                const configState: DecodedConfiguratorState = await this.getConfiguratorState();
+                const variationIDs: string | null = this.getAttribute("variation-id");
+                const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
+
+                variationIDsList.forEach((variationID: string) => {
+                    configState.state.setVariationID(variationID);
+                });
+            }
+
+            if (attributeName === "variation-sku") {
+                const configState: DecodedConfiguratorState = await this.getConfiguratorState();
+                const variationSKUs: string | null = this.getAttribute("variation-sku");
+                const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+
+                variationSKUList.forEach((variationSKU: string) => {
+                    configState.state.setVariationSKU(variationSKU);
+                });
+            }
+
             this.startQRCode(this._prevQROpt);
 
             return;
         }
     }
 
-    public startViewerQRCode(options: any): Promise<HTMLElement> {
+    public async startViewerQRCode(options: any): Promise<HTMLElement> {
+        // remove the old renderer instance if any
+        this.removeRenderer();
+
+        const sceneID: string | null = this.getAttribute("scene-id");
+
+        if (!sceneID) {
+            throw new Error("VTOController.startQRCode() - minimum required attributes not set, use scene-id as a minimum");
+        }
+
+        const opt: any = options || this._GetDefaultQROptions();
+
+        const viewer: HTMLElement = document.createElement("plattar-qrcode");
+        this._element = viewer;
+
+        // required attributes with defaults for plattar-viewer node
+        const width: string = this.getAttribute("width") || "500px";
+        const height: string = this.getAttribute("height") || "500px";
+
+        viewer.setAttribute("width", width);
+        viewer.setAttribute("height", height);
+
+        if (opt.color) {
+            viewer.setAttribute("color", opt.color);
+        }
+
+        if (opt.margin) {
+            viewer.setAttribute("margin", "" + opt.margin);
+        }
+
+        if (opt.qrType) {
+            viewer.setAttribute("qr-type", opt.qrType);
+        }
+
+        viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
+
+        let dst: string = Server.location().base + "renderer/facear.html?scene_id=" + sceneID;
+
+        // optional attributes
+        let configState: DecodedConfiguratorState | null = null;
+
+        try {
+            configState = await this.getConfiguratorState();
+        }
+        catch (_err) {
+            // config state is not available
+            configState = null;
+        }
+
+        const showAR: string | null = this.getAttribute("show-ar");
+        const productID: string | null = this.getAttribute("product-id");
+        const sceneProductID: string | null = this.getAttribute("scene-product-id");
+        const variationID: string | null = this.getAttribute("variation-id");
+
+        if (configState) {
+            dst += "&config_state=" + configState.state.encode();
+        }
+
+        if (showAR) {
+            dst += "&show_ar=" + showAR;
+        }
+
+        if (productID) {
+            dst += "&product_id=" + productID;
+        }
+
+        if (sceneProductID) {
+            dst += "&scene_product_id=" + sceneProductID;
+        }
+
+        if (variationID) {
+            dst += "&variation_id=" + variationID;
+        }
+
+        viewer.setAttribute("url", opt.url || dst);
+
+        this._state = ControllerState.QRCode;
+        this._prevQROpt = opt;
+
         return new Promise<HTMLElement>((accept, reject) => {
-            // remove the old renderer instance if any
-            this.removeRenderer();
+            viewer.onload = () => {
+                return accept(viewer);
+            };
 
-            const sceneID: string | null = this.getAttribute("scene-id");
-
-            if (sceneID) {
-                const opt: any = options || this._GetDefaultQROptions();
-
-                const viewer: HTMLElement = document.createElement("plattar-qrcode");
-
-                // required attributes with defaults for plattar-viewer node
-                const width: string = this.getAttribute("width") || "500px";
-                const height: string = this.getAttribute("height") || "500px";
-
-                viewer.setAttribute("width", width);
-                viewer.setAttribute("height", height);
-
-                if (opt.color) {
-                    viewer.setAttribute("color", opt.color);
-                }
-
-                if (opt.margin) {
-                    viewer.setAttribute("margin", "" + opt.margin);
-                }
-
-                if (opt.qrType) {
-                    viewer.setAttribute("qr-type", opt.qrType);
-                }
-
-                viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
-
-                let dst: string = Server.location().base + "renderer/facear.html?scene_id=" + sceneID;
-
-                // optional attributes
-                const configState: string | null = this.getAttribute("config-state");
-                const showAR: string | null = this.getAttribute("show-ar");
-                const productID: string | null = this.getAttribute("product-id");
-                const sceneProductID: string | null = this.getAttribute("scene-product-id");
-                const variationID: string | null = this.getAttribute("variation-id");
-
-                if (configState) {
-                    dst += "&config_state=" + configState;
-                }
-
-                if (showAR) {
-                    dst += "&show_ar=" + showAR;
-                }
-
-                if (productID) {
-                    dst += "&product_id=" + productID;
-                }
-
-                if (sceneProductID) {
-                    dst += "&scene_product_id=" + sceneProductID;
-                }
-
-                if (variationID) {
-                    dst += "&variation_id=" + variationID;
-                }
-
-                viewer.setAttribute("url", opt.url || dst);
-
-                viewer.onload = () => {
-                    return accept(viewer);
-                };
-
-                this.append(viewer);
-
-                this._element = viewer;
-                this._state = ControllerState.QRCode;
-                this._prevQROpt = opt;
-
-                return;
-            }
-
-            return reject(new Error("VTOController.startQRCode() - minimum required attributes not set, use scene-id as a minimum"));
+            this.append(viewer);
         });
     }
 
-    public startRenderer(): Promise<HTMLElement> {
+    public async startRenderer(): Promise<HTMLElement> {
+        // remove the old renderer instance if any
+        this.removeRenderer();
+
+        const sceneID: string | null = this.getAttribute("scene-id");
+
+        if (!sceneID) {
+            throw new Error("VTOController.startRenderer() - minimum required attributes not set, use scene-id as a minimum")
+        }
+
+        // required attributes with defaults for plattar-facear node
+        const width: string = this.getAttribute("width") || "500px";
+        const height: string = this.getAttribute("height") || "500px";
+        const server: string = this.getAttribute("server") || "production";
+
+        const viewer: HTMLElement = document.createElement("plattar-facear");
+        this._element = viewer;
+
+        viewer.setAttribute("width", width);
+        viewer.setAttribute("height", height);
+        viewer.setAttribute("server", server);
+        viewer.setAttribute("scene-id", sceneID);
+
+        // optional attributes
+        let configState: DecodedConfiguratorState | null = null;
+
+        try {
+            configState = await this.getConfiguratorState();
+        }
+        catch (_err) {
+            // config state not available
+            configState = null;
+        }
+
+        const showAR: string | null = this.getAttribute("show-ar");
+        const productID: string | null = this.getAttribute("product-id");
+        const sceneProductID: string | null = this.getAttribute("scene-product-id");
+        const variationID: string | null = this.getAttribute("variation-id");
+
+        if (configState) {
+            viewer.setAttribute("config-state", configState.state.encode());
+        }
+
+        if (showAR) {
+            viewer.setAttribute("show-ar", showAR);
+        }
+
+        if (productID) {
+            viewer.setAttribute("product-id", productID);
+        }
+
+        if (sceneProductID) {
+            viewer.setAttribute("scene-product-id", sceneProductID);
+        }
+
+        if (variationID) {
+            viewer.setAttribute("variation-id", variationID);
+        }
+
+        this._state = ControllerState.Renderer;
+
         return new Promise<HTMLElement>((accept, reject) => {
-            // remove the old renderer instance if any
-            this.removeRenderer();
+            this.append(viewer);
 
-            const sceneID: string | null = this.getAttribute("scene-id");
-
-            if (sceneID) {
-                // required attributes with defaults for plattar-facear node
-                const width: string = this.getAttribute("width") || "500px";
-                const height: string = this.getAttribute("height") || "500px";
-                const server: string = this.getAttribute("server") || "production";
-
-                const viewer: HTMLElement = document.createElement("plattar-facear");
-
-                viewer.setAttribute("width", width);
-                viewer.setAttribute("height", height);
-                viewer.setAttribute("server", server);
-                viewer.setAttribute("scene-id", sceneID);
-
-                // optional attributes
-                const configState: string | null = this.getAttribute("config-state");
-                const showAR: string | null = this.getAttribute("show-ar");
-                const productID: string | null = this.getAttribute("product-id");
-                const sceneProductID: string | null = this.getAttribute("scene-product-id");
-                const variationID: string | null = this.getAttribute("variation-id");
-
-                if (configState) {
-                    viewer.setAttribute("config-state", configState);
-                }
-
-                if (showAR) {
-                    viewer.setAttribute("show-ar", showAR);
-                }
-
-                if (productID) {
-                    viewer.setAttribute("product-id", productID);
-                }
-
-                if (sceneProductID) {
-                    viewer.setAttribute("scene-product-id", sceneProductID);
-                }
-
-                if (variationID) {
-                    viewer.setAttribute("variation-id", variationID);
-                }
-
-                viewer.onload = () => {
-                    return accept(viewer);
-                };
-
-                this.append(viewer);
-
-                this._element = viewer;
-                this._state = ControllerState.Renderer;
-
-                return;
+            if (configState) {
+                this.setupMessengerObservers(viewer, configState);
             }
 
-            return reject(new Error("VTOController.startRenderer() - minimum required attributes not set, use scene-id as a minimum"));
+            return accept(viewer);
         });
     }
 
-    public initAR(): Promise<LauncherAR> {
-        return new Promise<LauncherAR>((accept, reject) => {
-            if (!Util.canAugment()) {
-                return reject(new Error("VTOController.initAR() - cannot proceed as VTO AR not available in context"));
-            }
+    public async initAR(): Promise<LauncherAR> {
+        if (!Util.canAugment()) {
+            throw new Error("VTOController.initAR() - cannot proceed as VTO AR not available in context");
+        }
 
-            if (!(Util.isSafari() || Util.isChromeOnIOS())) {
-                return reject(new Error("VTOController.initAR() - cannot proceed as VTO AR only available on IOS Mobile devices"));
-            }
+        if (!(Util.isSafari() || Util.isChromeOnIOS())) {
+            throw new Error("VTOController.initAR() - cannot proceed as VTO AR only available on IOS Mobile devices");
+        }
 
-            const arMode: string | null = this.getAttribute("ar-mode") || "generated";
+        const arMode: string | null = this.getAttribute("ar-mode") || "generated";
 
-            switch (arMode.toLowerCase()) {
-                case "inherited":
-                    this._InitARInherited(accept, reject);
-                    return;
-                case "generated":
-                default:
-                    this._InitARGenerated(accept, reject);
-            }
-        });
+        switch (arMode.toLowerCase()) {
+            case "inherited":
+                return this._InitARInherited();
+            case "generated":
+            default:
+                return this._InitARGenerated();
+        }
     }
 
     /**
      * Private Function - This launches the Static/Inherited AR Mode
      */
-    private _InitARInherited(accept: (value: LauncherAR | PromiseLike<LauncherAR>) => void, reject: (reason?: any) => void): void {
+    private async _InitARInherited(): Promise<LauncherAR> {
         const sceneID: string | null = this.getAttribute("scene-id");
-        const configState: string | null = this.getAttribute("config-state");
 
-        // use config-state if its available
-        if (sceneID && configState) {
-            const state: ConfiguratorState = ConfiguratorState.decode(configState);
-            const first: SceneProductData | null = state.first();
-
-            if (first) {
-                const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
-
-                sceneProductAR.init().then(accept).catch(reject);
-
-                return;
-            }
-
-            return reject(new Error("VTOController.initAR() - invalid config-state does not have any product states"));
+        if (!sceneID) {
+            throw new Error("VTOController.initAR() - inherited AR minimum required attributes not set, use scene-id as a minimum");
         }
 
-        // otherwise fallback to using scene
-        if (sceneID) {
-            ConfiguratorState.decodeScene(sceneID).then((state: ConfiguratorState) => {
-                const first: SceneProductData | null = state.first();
+        const state: ConfiguratorState = (await this.getConfiguratorState()).state;
+        const first: SceneProductData | null = state.first();
 
-                if (first) {
-                    const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
+        if (first) {
+            const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
 
-                    return sceneProductAR.init().then(accept).catch(reject);
-                }
-
-                return reject(new Error("VTOController.initAR() - invalid Scene does not have any product states"));
-            }).catch(reject);
-
-            return;
+            return sceneProductAR.init();
         }
 
-        return reject(new Error("VTOController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
+        throw new Error("VTOController.initAR() - invalid decoded config-state does not have any product states");
     }
 
     /**
      * Private Function - This launches the Dynamic/Generated AR Mode
      */
-    private _InitARGenerated(accept: (value: LauncherAR | PromiseLike<LauncherAR>) => void, reject: (reason?: any) => void): void {
-        // if scene ID is available and the state is a configurator viewer
-        // we can use the real-time configurator state to launch the AR view
-        const viewer: HTMLElement | null = this.element;
+    private async _InitARGenerated(): Promise<LauncherAR> {
         const sceneID: string | null = this.getAttribute("scene-id");
 
-        if (viewer && sceneID && (<any>viewer).messenger) {
-            (<any>viewer).messenger.getARFile("vto").then((result: any) => {
-                const rawAR: RawAR = new RawAR(result.filename);
-
-                return rawAR.init().then(accept).catch(reject);
-            }).catch(reject);
-
-            return;
+        if (!sceneID) {
+            throw new Error("VTOController.initAR() - generated AR minimum required attributes not set, use scene-id as a minimum");
         }
 
-        const configState: string | null = this.getAttribute("config-state");
+        const configAR: ConfiguratorAR = new ConfiguratorAR(await this.getConfiguratorState());
 
-        // otherwise scene ID is available to the viewer is not launched
-        // we can use the static configuration state to launch the AR view
-        if (sceneID && configState) {
-            const state: ConfiguratorState = ConfiguratorState.decode(configState);
-
-            if (state.length > 0) {
-                const server: string = this.getAttribute("server") || "production";
-
-                const configurator: Configurator = new Configurator();
-                configurator.server = <any>server;
-                configurator.output = "vto";
-
-                state.forEach((productState: SceneProductData) => {
-                    if (productState.meta_data.augment === true) {
-                        configurator.addSceneProduct(productState.scene_product_id, productState.product_variation_id);
-                    }
-                });
-
-                configurator.get().then((result: any) => {
-                    const rawAR: RawAR = new RawAR(result.filename);
-
-                    rawAR.init().then(accept).catch(reject);
-                }).catch(reject);
-
-                return;
-            }
-
-            return reject(new Error("VTOController.initAR() - invalid config-state does not have any product states"));
-        }
-
-        // otherwise no config-state or viewer is active
-        // fallback to using default SceneAR implementation
-        if (sceneID) {
-            const productID: string | null = this.getAttribute("product-id");
-            const sceneProductID: string | null = this.getAttribute("scene-product-id");
-            const variationID: string | null = this.getAttribute("variation-id");
-
-            const sceneAR: SceneAR = new SceneAR(sceneID, {
-                productID: productID ? productID : undefined,
-                sceneProductID: sceneProductID ? sceneProductID : undefined,
-                variationID: variationID ? variationID : undefined
-            });
-
-            sceneAR.init().then(accept).catch(reject);
-
-            return;
-        }
-
-        return reject(new Error("VTOController.initAR() - minimum required attributes not set, use scene-id as a minimum"));
+        return configAR.init();
     }
 
     public removeRenderer(): boolean {
@@ -316,6 +304,8 @@ export class VTOController extends PlattarController {
 
             return true;
         }
+
+        this.removeMessengerObservers();
 
         return false;
     }

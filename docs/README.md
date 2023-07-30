@@ -14,8 +14,7 @@ The software is open source and maintained by the Plattar team. Souce code can b
 
 #### Web Integrations
 
-- [360 Viewer Integration](integrations/360-integration.md)
-- [Configurator Integration](integrations/configurator-integration.md)
+- [360 Viewer & Configurator Integration](integrations/configurator-integration.md)
 - [VTO (Virtual Try-On) Integration](integrations/vto-integration.md)
 
 #### General Guides

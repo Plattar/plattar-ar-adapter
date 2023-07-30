@@ -1,10 +1,12 @@
 [Back to Main](./)
 
-### Configurator Integrations with AR
+### Configurator/Viewer Integrations with AR
 
-The plattar-ar-adapter SDK is bundled with functionality that allows integrating a Plattar Configurator renderer into existing websites.
+The plattar-ar-adapter SDK is bundled with functionality that allows integrating a Plattar Configurator and 360 Viewer renderer into existing websites.
 
 The Configurator exposes a set of interfaces and functionality that allows switching product states, loading existing configuration states and launching AR functionality for IOS and Android devices.
+
+As of version `1.154.1` The SDK makes the Configurator as the default embed type. 
 
 ### Node Attributes
 
@@ -16,20 +18,20 @@ Scene ID is acquired from the Plattar CMS. Every Scene in the Plattar Ecosystem 
 <plattar-embed scene-id="" />
 ```
 
-- **embed-type** (required)
+- **variation-id** (optional)
 
-The `embed-type` attribute should always equal to `configurator` for a configurator embed. This will expose the underlying interfaces and AR functionality.
+Comma separated list of Variation ID's that can be used to define a specific or particular configuration of Products. The Variation ID's can be aquired from the Plattar CMS.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" />
+<plattar-embed scene-id="" variation-id="" />
 ```
 
-- **config-state** (optional)
+- **variation-sku** (optional)
 
-The `config-state` attribute allows loading a previously saved configuration state. Every configurator loads with an initial state as defined in the Plattar CMS however this state can be changed by the user as they interact with the Configurator. This attribute is `null` by default.
+Comma separated list of user-defined Variation SKU's that can be used to define a specific or particular configuration of Products. The Variation SKU's are both defined and aquired from the Plattar CMS.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" config-state="" />
+<plattar-embed scene-id="" variation-sku="" />
 ```
 
 - **show-ar** (optional)
@@ -37,7 +39,7 @@ The `config-state` attribute allows loading a previously saved configuration sta
 The `show-ar` attribute will display a UI button that allows a user to launch an Android or IOS AR experience for a provided scene configuration. This attribute is ignored on desktop platforms. This attribute is `false` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" show-ar="true" />
+<plattar-embed scene-id="" show-ar="true" />
 ```
 
 - **width & height** (optional)
@@ -45,7 +47,7 @@ The `show-ar` attribute will display a UI button that allows a user to launch an
 The `width` and `height` attributes will scale the internal renderer and QR Code to the provided size. These attributes are `500px` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" width="700px" height="700px" />
+<plattar-embed scene-id="" width="700px" height="700px" />
 ```
 
 - **ar-mode** (optional)
@@ -57,7 +59,7 @@ An alternative mode is using `inherited` which will use the pre-generated/user-u
 This attribute is `generated` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" ar-mode="generated" />
+<plattar-embed scene-id="" ar-mode="generated" />
 ```
 
 - **show-ui** (optional)
@@ -65,29 +67,23 @@ This attribute is `generated` by default.
 The `show-ui` attribute allows embedding the configurator bundled with a Plattar designed default UI solution that allows users to switch product variations. This attribute is `false` by default.
 
 ```html
-<plattar-embed scene-id="" embed-type="configurator" show-ui="false" />
+<plattar-embed scene-id="" show-ui="false" />
 ```
 
-### Messenger Functions for Configurator
+### Renderer Functions for Configurator
 
-These messenger functions are available when the node has `embed-type="configurator"` enabled.
+The following renderer functions are available
 
-- Changes the Product Variation for the provided Scene Product and Variation. The Variation ID must be a member of the Scene Product.
+- Activates the provided Product Variation using a Variation ID. The Variation ID must be a member of a Scene Product in the Scene. The argument can be either a single Variation ID or an Array of Variation ID's.
 
 ```js
-selectSceneProductVariation(sceneProductID:string, variationID:string);
+selectVariationID(variationID:string | Array<string>);
 ```
 
-- Changes the Variation for the provided Product. The Variation ID must be a member of an active Product attached to an internal Scene Product. The Variation ID must belong to the Product.
+- Activates the provided Product Variation using a user-defined Variation SKU. The Variation SKU must be a member of a Scene Product in the Scene. The argument can be either a single Variation SKU or an Array of Variation SKU's. 
 
 ```js
-selectProductVariation(productID:string, variationID:string);
-```
-
-- Generates and returns the current internal configuration state of the Scene. This configuration state can be used in conjunction with the `config-state` attribute to re-load a previously selected configuration.
-
-```js
-getConfigurationState();
+selectVariationSKU(variationSKU:string | Array<string>);
 ```
 
 ### The Scene ID
@@ -114,14 +110,14 @@ For multiple Scene integrations, the embed codes can be generated and exported d
 
 <img width="500" alt="" src="https://stoplight.io/api/v1/projects/cHJqOjEwODA2Nw/images/FLo5IfUbw1w">
 
-### Configurator Integration Example
+### Configurator/Viewer Integration Example with Variation Switching
 
 For the purposes of this example, we use a sample `scene-id` of `c49e5c30-469c-11ec-963f-ddbb1b50e719`.
 
 This scene contains multiple products with multiple variations that can be configured using a simple UI. It performs the following functionality.
 
-- Configure multiple products with variations using `selectSceneProductVariation` and a simple UI
-- Generate QR Code for launching AR Mode for Desktop against a specific configuration using `getConfigurationState`
+- Configure multiple products with variations using `selectVariation` and a simple UI
+- Generate QR Code for launching AR Mode for Desktop against a specific configuration
 - Launch AR Experience when viewed from mobile
 
 ```html title="Scene Configurator Integration Example using plattar-ar-adapter SDK"
@@ -137,22 +133,21 @@ This scene contains multiple products with multiple variations that can be confi
 <body>
     <form id="var_form" hidden>
         <b>Jacket Variation</b>
-        <select id="jacket_variation"
-            onchange="selectVariation('1a823d6e-f512-d2f3-a63e-1f04961990e7','jacket_variation')">
+        <select id="jacket_variation" onchange="selectVariation('jacket_variation')">
             <option>274e2500-469a-11ec-b41a-d13cb837ff25</option>
             <option>ae3d2820-469a-11ec-a9a8-8911082c07db</option>
             <option>14e29d60-4caf-11ec-820c-b9f13cbcd4ce</option>
         </select>
         <br>
         <b>Arm Bands</b>
-        <select id="arm_bands" onchange="selectVariation('5f3b0a61-2851-756e-f071-ea56488e0d87','arm_bands')">
+        <select id="arm_bands" onchange="selectVariation('arm_bands')">
             <option>c1faf310-469d-11ec-bd80-4bf29d3af627</option>
             <option>235ad470-469c-11ec-8806-5d3213072eb2</option>
             <option>eb388590-469b-11ec-ab71-27386f2be00b</option>
         </select>
         <br>
         <b>Badges</b>
-        <select id="badges" onchange="selectVariation('1356b6f2-7848-fa5e-dc3e-c1c8ab85440c', 'badges')">
+        <select id="badges" onchange="selectVariation('badges')">
             <option>d72dec70-469d-11ec-b69b-4b6b13740146</option>
             <option>cd19eed0-469b-11ec-bbee-9bf588efe3fc</option>
             <option>ac2716e0-469b-11ec-8731-15939e941cff</option>
@@ -160,7 +155,7 @@ This scene contains multiple products with multiple variations that can be confi
         </select>
         <br>
         <b>Chest Pockets</b>
-        <select id="chest_pockets" onchange="selectVariation('861e0412-b0e7-be56-a701-49815141cf02', 'chest_pockets')">
+        <select id="chest_pockets" onchange="selectVariation('chest_pockets')">
             <option>2f477530-469b-11ec-8316-1595e164dc32</option>
             <option>0b4f1be0-469b-11ec-bf54-230aaa9b198e</option>
             <option>625a7280-469b-11ec-840e-593a36373cc0</option>
@@ -170,17 +165,15 @@ This scene contains multiple products with multiple variations that can be confi
         </select>
         <br>
         <b>Velcro Cuff</b>
-        <select id="velcro_cuff" onchange="selectVariation('988074ac-7e1e-b69f-9141-746f6f71eb49', 'velcro_cuff')">
+        <select id="velcro_cuff" onchange="selectVariation('velcro_cuff')">
             <option>58fdefb0-4cb0-11ec-8210-6565844cb300</option>
             <option>71166d40-4cb0-11ec-a74d-57772fb7feee</option>
             <option>92b38d30-4cb0-11ec-86e3-a154d751f7c5</option>
             <option>b081f2e0-4cb0-11ec-9185-2b521eb35dc9</option>
         </select>
-        <p>Your Configuration State: <input type="text" id="config_state" size="60"></p>
         <button type="button" onclick="launchAR()">Launch AR</button>
     </form>
-    <plattar-embed id="embed" scene-id="c49e5c30-469c-11ec-963f-ddbb1b50e719" embed-type="configurator" show-ar="true"
-        init="viewer">
+    <plattar-embed id="embed" scene-id="c49e5c30-469c-11ec-963f-ddbb1b50e719" show-ar="true" init="viewer">
     </plattar-embed>
 
     <script>
@@ -192,15 +185,11 @@ This scene contains multiple products with multiple variations that can be confi
                 const form = document.getElementById("var_form");
 
                 form.removeAttribute("hidden");
-
-                const config = document.getElementById("config_state");
-
-                setConfigState();
             };
         }
 
         // this is called when the dropdowns change
-        function selectVariation(sceneProductID, id) {
+        async function selectVariation(id) {
             // these are the scene product ID's mapped into our ID's
             const dropdown = document.getElementById(id);
 
@@ -208,56 +197,41 @@ This scene contains multiple products with multiple variations that can be confi
             const selection = dropdown.options[dropdown.selectedIndex].text;
 
             // perform selection in the Plattar Viewer
-            embed.viewer.messenger.selectSceneProductVariation(sceneProductID, selection).then(() => {
-                // refresh the configuration state
-                setConfigState();
-            }).catch((err) => {
+            try {
+                await embed.viewer.messenger.selectVariationID(selection);
+            }
+            catch (err) {
                 console.error(err);
-            });
-        }
-
-        // this sets the configuration state for the user
-        function setConfigState() {
-            const config = document.getElementById("config_state");
-
-            embed.viewer.messenger.getConfigurationState().then((state) => {
-                config.value = state;
-            }).catch((err) => {
-                console.error(err);
-            });
+            }
         }
 
         // this will attempt to launch AR Mode
         // if on desktop, a QR Code will be rendered instead
-        function launchAR() {
-            const config = document.getElementById("config_state");
-
-            // first, we re-set the previously saved configuration state
-            embed.setAttribute("config-state", config.value);
-
+        async function launchAR() {
             // then, we try to launch AR Mode if available
             if (PlattarARAdapter.Util.canAugment()) {
-                embed.startAR().then(() => {
-                    // nada
-                }).catch((err) => {
-                    renderQRCode();
-                });
+                try {
+                    await embed.startAR();
+                }
+                catch (err) {
+                    await renderQRCode();
+                }
             }
             else {
                 // fallback to rendering QR Code
-                renderQRCode();
+                await renderQRCode();
             }
         }
 
         // this will render a QR Code that takes the user to a specified
         // configuration
-        function renderQRCode() {
-            embed.startQRCode(
-            ).then(() => {
-                // nada
-            }).catch((err) => {
+        async function renderQRCode() {
+            try {
+                await embed.startQRCode();
+            }
+            catch (err) {
                 console.error(err);
-            });
+            }
         }
     </script>
 </body>

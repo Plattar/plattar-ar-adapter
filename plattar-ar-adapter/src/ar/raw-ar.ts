@@ -6,6 +6,7 @@ import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
+import version from "../version";
 
 /**
  * Allows launching AR Experiences provided a single remote 3D Model file
@@ -63,6 +64,7 @@ export class RawAR extends LauncherAR {
                 this._analytics = analytics;
 
                 analytics.data.push("type", "scene-ar");
+                analytics.data.push("sdkVersion", version);
                 analytics.data.push("sceneId", scene.id);
                 analytics.data.push("sceneTitle", scene.attributes.title);
 

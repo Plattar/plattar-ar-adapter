@@ -1,5 +1,6 @@
 import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
+import { ConfiguratorState, DecodedConfiguratorState } from "../../util/configurator-state";
 
 export enum ControllerState {
     None,
@@ -29,15 +30,58 @@ export abstract class PlattarController {
     protected _element: HTMLElement | null = null;
     protected _prevQROpt: any = null;
 
+    private _selectVariationObserver: any = null;
+    private _selectVariationSKUObserver: any = null;
+
     constructor(parent: HTMLElement) {
         this._parent = parent;
     }
 
     /**
+     * Generates a brand new Configurator State from the provided SceneID or inputted Configurator State
+     */
+    protected async createConfiguratorState(): Promise<DecodedConfiguratorState> {
+        // get our Scene ID
+        const sceneID: string | null = this.getAttribute("scene-id");
+
+        if (!sceneID) {
+            throw new Error("PlattarController.createConfiguratorState() - cannot create as required attribute scene-id is not defined");
+        }
+
+        const configState: string | null = this.getAttribute("config-state");
+        // get a list of variation ID's to use for initialising
+        const variationIDs: string | null = this.getAttribute("variation-id");
+        // get a list of variation SKU's to use for initialising
+        const variationSKUs: string | null = this.getAttribute("variation-sku");
+        // generate the decoded configurator state
+        const decodedState: DecodedConfiguratorState = configState ? await ConfiguratorState.decodeState(sceneID, configState) : await ConfiguratorState.decodeScene(sceneID);
+
+        // change the ID's and SKU's (if any) of the default configuration state
+        const variationIDList: Array<string> = variationIDs ? variationIDs.split(",") : [];
+        const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+
+        variationIDList.forEach((variationID: string) => {
+            decodedState.state.setVariationID(variationID);
+        });
+
+        variationSKUList.forEach((variationSKU: string) => {
+            decodedState.state.setVariationSKU(variationSKU);
+        });
+
+        // return fully modified configuration state
+        return decodedState;
+    }
+
+    /**
+     * Generates and returns a new instance of the ConfiguratorState for this node
+     */
+    public abstract getConfiguratorState(): Promise<DecodedConfiguratorState>;
+
+    /**
      * Called by the parent when a HTML Attribute has changed and the controller
      * requires an update
      */
-    public abstract onAttributesUpdated(): void;
+    public abstract onAttributesUpdated(attributeName: string): Promise<void>;
 
     /**
      * Start the underlying Plattar Renderer for this Controller
@@ -45,16 +89,55 @@ export abstract class PlattarController {
     public abstract startRenderer(): Promise<HTMLElement>;
 
     /**
+     * Setup messenger observers to detect variation changes and apply to the internal
+     * configuration state
+     */
+    protected setupMessengerObservers(viewer: any, configState: DecodedConfiguratorState): void {
+        this._selectVariationObserver = viewer.messengerInstance.observer.subscribe("selectVariation", (cd: any) => {
+            if (cd.type === "call") {
+                const args: string | Array<string> | undefined | null = cd.data[0];
+                const variations: Array<string> = args ? (Array.isArray(args) ? args : [args]) : [];
+
+                variations.forEach((variationID: string) => {
+                    configState.state.setVariationID(variationID);
+                });
+            }
+        });
+
+        this._selectVariationSKUObserver = viewer.messengerInstance.observer.subscribe("selectVariationSKU", (cd: any) => {
+            if (cd.type === "call") {
+                const args: string | Array<string> | undefined | null = cd.data[0];
+                const variations: Array<string> = args ? (Array.isArray(args) ? args : [args]) : [];
+
+                variations.forEach((variationSKU: string) => {
+                    configState.state.setVariationSKU(variationSKU);
+                });
+            }
+        });
+    }
+
+    /**
+     * Remove all pre-existing observers
+     */
+    protected removeMessengerObservers(): void {
+        if (this._selectVariationObserver) {
+            this._selectVariationObserver();
+            this._selectVariationObserver = null;
+        }
+
+        if (this._selectVariationSKUObserver) {
+            this._selectVariationSKUObserver();
+            this._selectVariationSKUObserver = null;
+        }
+    }
+
+    /**
      * Initialise and start AR mode if available
      */
-    public startAR(): Promise<void> {
-        return new Promise<void>((accept, reject) => {
-            this.initAR().then((launcher: LauncherAR) => {
-                launcher.start();
+    public async startAR(): Promise<void> {
+        const launcher: LauncherAR = await this.initAR();
 
-                accept();
-            }).catch(reject);
-        });
+        return launcher.start();
     }
 
     /**
@@ -68,7 +151,7 @@ export abstract class PlattarController {
      * @param options 
      * @returns 
      */
-    public startQRCode(options: any): Promise<HTMLElement> {
+    public async startQRCode(options: any): Promise<HTMLElement> {
         const qrType: string = this.getAttribute("qr-type") || "viewer";
 
         switch (qrType.toLowerCase()) {
@@ -85,92 +168,100 @@ export abstract class PlattarController {
      * @param options 
      * @returns 
      */
-    public startARQRCode(options: any): Promise<HTMLElement> {
+    public async startARQRCode(options: any): Promise<HTMLElement> {
+        // remove the old renderer instance if any
+        this.removeRenderer();
+
+        const opt: any = options || this._GetDefaultQROptions();
+
+        const viewer: HTMLElement = document.createElement("plattar-qrcode");
+        this._element = viewer;
+
+        // required attributes with defaults for plattar-viewer node
+        const width: string = this.getAttribute("width") || "500px";
+        const height: string = this.getAttribute("height") || "500px";
+
+        viewer.setAttribute("width", width);
+        viewer.setAttribute("height", height);
+
+        if (opt.color) {
+            viewer.setAttribute("color", opt.color);
+        }
+
+        if (opt.margin) {
+            viewer.setAttribute("margin", "" + opt.margin);
+        }
+
+        if (opt.qrType) {
+            viewer.setAttribute("qr-type", opt.qrType);
+        }
+
+        viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
+
+        const qrOptions: string = btoa(JSON.stringify(opt));
+
+        let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
+
+        let configState: string | null = null;
+        const sceneID: string | null = this.getAttribute("scene-id");
+        const embedType: string | null = this.getAttribute("embed-type");
+        const productID: string | null = this.getAttribute("product-id");
+        const sceneProductID: string | null = this.getAttribute("scene-product-id");
+        const variationID: string | null = this.getAttribute("variation-id");
+        const variationSKU: string | null = this.getAttribute("variation-sku");
+        const arMode: string | null = this.getAttribute("ar-mode");
+
+        try {
+            configState = (await this.getConfiguratorState()).state.encode()
+        }
+        catch (_err) {
+            // config state not available for some reason
+            configState = null;
+        }
+
+        if (configState) {
+            dst += "&config_state=" + configState;
+        }
+
+        if (embedType) {
+            dst += "&embed_type=" + embedType;
+        }
+
+        if (productID) {
+            dst += "&product_id=" + productID;
+        }
+
+        if (sceneProductID) {
+            dst += "&scene_product_id=" + sceneProductID;
+        }
+
+        if (variationID) {
+            dst += "&variation_id=" + variationID;
+        }
+
+        if (variationSKU) {
+            dst += "&variation_sku=" + variationSKU;
+        }
+
+        if (arMode) {
+            dst += "&ar_mode=" + arMode;
+        }
+
+        if (sceneID) {
+            dst += "&scene_id=" + sceneID;
+        }
+
+        viewer.setAttribute("url", opt.url || dst);
+
+        this._state = ControllerState.QRCode;
+        this._prevQROpt = opt;
+
         return new Promise<HTMLElement>((accept, reject) => {
-            // remove the old renderer instance if any
-            this.removeRenderer();
-
-            const opt: any = options || this._GetDefaultQROptions();
-
-            const viewer: HTMLElement = document.createElement("plattar-qrcode");
-
-            // required attributes with defaults for plattar-viewer node
-            const width: string = this.getAttribute("width") || "500px";
-            const height: string = this.getAttribute("height") || "500px";
-
-            viewer.setAttribute("width", width);
-            viewer.setAttribute("height", height);
-
-            if (opt.color) {
-                viewer.setAttribute("color", opt.color);
-            }
-
-            if (opt.margin) {
-                viewer.setAttribute("margin", "" + opt.margin);
-            }
-
-            if (opt.qrType) {
-                viewer.setAttribute("qr-type", opt.qrType);
-            }
-
-            viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
-
-            const qrOptions: string = btoa(JSON.stringify(opt));
-
-            let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
-
-            const sceneID: string | null = this.getAttribute("scene-id");
-            const configState: string | null = this.getAttribute("config-state");
-            const embedType: string | null = this.getAttribute("embed-type");
-            const productID: string | null = this.getAttribute("product-id");
-            const sceneProductID: string | null = this.getAttribute("scene-product-id");
-            const variationID: string | null = this.getAttribute("variation-id");
-            const variationSKU: string | null = this.getAttribute("variation-sku");
-            const arMode: string | null = this.getAttribute("ar-mode");
-
-            if (configState) {
-                dst += "&config_state=" + configState;
-            }
-
-            if (embedType) {
-                dst += "&embed_type=" + embedType;
-            }
-
-            if (productID) {
-                dst += "&product_id=" + productID;
-            }
-
-            if (sceneProductID) {
-                dst += "&scene_product_id=" + sceneProductID;
-            }
-
-            if (variationID) {
-                dst += "&variation_id=" + variationID;
-            }
-
-            if (variationSKU) {
-                dst += "&variation_sku=" + variationSKU;
-            }
-
-            if (arMode) {
-                dst += "&ar_mode=" + arMode;
-            }
-
-            if (sceneID) {
-                dst += "&scene_id=" + sceneID;
-            }
-
-            viewer.setAttribute("url", opt.url || dst);
+            this.append(viewer);
 
             viewer.onload = () => {
                 return accept(viewer);
             };
-
-            this._element = viewer;
-            this._state = ControllerState.QRCode;
-            this._prevQROpt = opt;
-
-            this.append(viewer);
         });
     }
 

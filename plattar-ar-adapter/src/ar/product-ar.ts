@@ -6,6 +6,7 @@ import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
+import version from "../version";
 
 /**
  * Performs AR functionality related to Plattar Products and Variation types
@@ -62,6 +63,7 @@ export class ProductAR extends LauncherAR {
             this._analytics = analytics;
 
             analytics.data.push("type", "product-ar");
+            analytics.data.push("sdkVersion", version);
             analytics.data.push("sceneId", scene.id);
             analytics.data.push("sceneTitle", scene.attributes.title);
 
