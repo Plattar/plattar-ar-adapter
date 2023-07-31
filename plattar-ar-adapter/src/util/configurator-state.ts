@@ -37,11 +37,11 @@ export class ConfiguratorState {
     private readonly _mappedVariationIDValues: Map<string, string>;
 
     // This maps Variation SKU against a Variation ID - populated by decodeScene() function
-    private readonly _mappedVariationSKUValues: Map<string, string>;
+    private readonly _mappedVariationSKUValues: Map<string, Array<string>>;
 
     constructor(state: string | null | undefined = null) {
         this._mappedVariationIDValues = new Map<string, string>();
-        this._mappedVariationSKUValues = new Map<string, string>();
+        this._mappedVariationSKUValues = new Map<string, Array<string>>();
 
         const defaultState: ConfiguratorStateData = {
             meta: {
@@ -82,15 +82,17 @@ export class ConfiguratorState {
      * purposes of Configuration
      */
     public setVariationSKU(productVariationSKU: string): void {
-        const variationID: string | undefined = this._mappedVariationSKUValues.get(productVariationSKU);
+        const variationIDs: Array<string> | undefined = this._mappedVariationSKUValues.get(productVariationSKU);
 
-        if (!variationID) {
+        if (!variationIDs) {
             console.warn("ConfiguratorState.setVariationSKU() - Variation SKU of " + productVariationSKU + " is not defined in any variations");
 
             return;
         }
 
-        this.setVariationID(variationID);
+        variationIDs.forEach((variationID: string) => {
+            this.setVariationID(variationID);
+        });
     }
 
     /**
@@ -422,7 +424,14 @@ export class ConfiguratorState {
                     configState._mappedVariationIDValues.set(variation.id, sceneProduct.id);
 
                     if (variation.attributes.sku) {
-                        configState._mappedVariationSKUValues.set(variation.attributes.sku, variation.id);
+                        const existingSKUs: Array<string> | undefined = configState._mappedVariationSKUValues.get(variation.attributes.sku);
+
+                        if (existingSKUs) {
+                            existingSKUs.push(variation.id);
+                        }
+                        else {
+                            configState._mappedVariationSKUValues.set(variation.attributes.sku, [variation.id]);
+                        }
                     }
                 });
             }
