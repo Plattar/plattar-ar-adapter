@@ -70,10 +70,9 @@ export default class PlattarEmbed extends HTMLElement {
             });
         }
 
-        const sceneID: string | null = this.hasAttribute("scene-id") ? this.getAttribute("scene-id") : null;
         const productID: string | null = this.hasAttribute("product-id") ? this.getAttribute("product-id") : null;
 
-        if (!sceneID && productID) {
+        if (productID) {
             this._currentType = EmbedType.Legacy;
             this._CreateLegacyEmbed();
 
@@ -101,6 +100,15 @@ export default class PlattarEmbed extends HTMLElement {
      */
     private _CreateLegacyEmbed(): void {
         this._controller = new ProductController(this);
+
+        const init: string | null = this.hasAttribute("init") ? this.getAttribute("init") : null;
+
+        switch (init) {
+            case "viewer": this.startViewer();
+                break;
+            case "qrcode": this.startQRCode();
+                break;
+        }
     }
 
     /**
