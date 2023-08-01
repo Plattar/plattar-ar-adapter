@@ -118,6 +118,100 @@ export class ProductController extends PlattarController {
         });
     }
 
+    /**
+     * Displays a QR Code that sends the user direct to AR
+     * @param options 
+     * @returns 
+     */
+    public override startARQRCode(options: any): Promise<HTMLElement> {
+        return new Promise<HTMLElement>((accept, reject) => {
+            // remove the old renderer instance if any
+            this.removeRenderer();
+
+            const opt: any = options || this._GetDefaultQROptions();
+
+            const viewer: HTMLElement = document.createElement("plattar-qrcode");
+
+            // required attributes with defaults for plattar-viewer node
+            const width: string = this.getAttribute("width") || "500px";
+            const height: string = this.getAttribute("height") || "500px";
+
+            viewer.setAttribute("width", width);
+            viewer.setAttribute("height", height);
+
+            if (opt.color) {
+                viewer.setAttribute("color", opt.color);
+            }
+
+            if (opt.margin) {
+                viewer.setAttribute("margin", "" + opt.margin);
+            }
+
+            if (opt.qrType) {
+                viewer.setAttribute("qr-type", opt.qrType);
+            }
+
+            viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
+
+            const qrOptions: string = btoa(JSON.stringify(opt));
+
+            let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
+
+            const sceneID: string | null = this.getAttribute("scene-id");
+            const configState: string | null = this.getAttribute("config-state");
+            const embedType: string | null = this.getAttribute("embed-type");
+            const productID: string | null = this.getAttribute("product-id");
+            const sceneProductID: string | null = this.getAttribute("scene-product-id");
+            const variationID: string | null = this.getAttribute("variation-id");
+            const variationSKU: string | null = this.getAttribute("variation-sku");
+            const arMode: string | null = this.getAttribute("ar-mode");
+
+            if (configState) {
+                dst += "&config_state=" + configState;
+            }
+
+            if (embedType) {
+                dst += "&embed_type=" + embedType;
+            }
+
+            if (productID) {
+                dst += "&product_id=" + productID;
+            }
+
+            if (sceneProductID) {
+                dst += "&scene_product_id=" + sceneProductID;
+            }
+
+            if (variationID) {
+                dst += "&variation_id=" + variationID;
+            }
+
+            if (variationSKU) {
+                dst += "&variation_sku=" + variationSKU;
+            }
+
+            if (arMode) {
+                dst += "&ar_mode=" + arMode;
+            }
+
+            if (sceneID) {
+                dst += "&scene_id=" + sceneID;
+            }
+
+            viewer.setAttribute("url", opt.url || dst);
+
+            viewer.onload = () => {
+                return accept(viewer);
+            };
+
+            this._element = viewer;
+            this._state = ControllerState.QRCode;
+            this._prevQROpt = opt;
+
+            this.append(viewer);
+        });
+    }
+
     public startRenderer(): Promise<HTMLElement> {
         return new Promise<HTMLElement>((accept, reject) => {
             // remove the old renderer instance if any
