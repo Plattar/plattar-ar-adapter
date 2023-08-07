@@ -384,7 +384,7 @@ export class ConfiguratorState {
                 const check: any = productState[meta.scene_product_index];
 
                 if (check !== null && check !== undefined) {
-                    return productState.length === 3 && data.meta_data.type === type;
+                    return productState.length === 3 && productState[meta.meta_index].type === type;
                 }
 
                 return false;
