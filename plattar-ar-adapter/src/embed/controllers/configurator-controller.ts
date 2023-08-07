@@ -80,6 +80,34 @@ export class ConfiguratorController extends PlattarController {
         }
     }
 
+    public override async startARQRCode(options: any): Promise<HTMLElement> {
+        try {
+            const dState: DecodedConfiguratorState = await this.getConfiguratorState();
+
+            // if this is declared, we have a furniture scene that we need to re-create the embed
+            // with new attributes
+            const product = dState.state.firstOfType("product");
+
+            if (product) {
+                this.parent.lockObserver();
+                this.parent.destroy();
+                this.setAttribute("product-id", product.scene_product_id);
+                this.parent.unlockObserver();
+                const controller = this.parent.create();
+
+                if (controller) {
+                    return controller.startARQRCode(options);
+                }
+
+                return Promise.reject(new Error("ConfiguratorController.startARQRCode() - legacy product transition failed"));
+            }
+        }
+        catch (_err) {
+        }
+
+        return super.startARQRCode(options);
+    }
+
     public async startViewerQRCode(options: any): Promise<HTMLElement> {
         // remove the old renderer instance if any
         this.removeRenderer();
@@ -87,7 +115,38 @@ export class ConfiguratorController extends PlattarController {
         const sceneID: string | null = this.getAttribute("scene-id");
 
         if (!sceneID) {
-            throw new Error("ConfiguratorController.startQRCode() - minimum required attributes not set, use scene-id as a minimum");
+            throw new Error("ConfiguratorController.startViewerQRCode() - minimum required attributes not set, use scene-id as a minimum");
+        }
+
+        // optional attributes
+        let configState: string | null = null;
+
+        try {
+            const dState: DecodedConfiguratorState = await this.getConfiguratorState();
+
+            // if this is declared, we have a furniture scene that we need to re-create the embed
+            // with new attributes
+            const product = dState.state.firstOfType("product");
+
+            if (product) {
+                this.parent.lockObserver();
+                this.parent.destroy();
+                this.setAttribute("product-id", product.scene_product_id);
+                this.parent.unlockObserver();
+                const controller = this.parent.create();
+
+                if (controller) {
+                    return controller.startViewerQRCode(options);
+                }
+
+                return Promise.reject(new Error("ConfiguratorController.startViewerQRCode() - legacy product transition failed"));
+            }
+
+            configState = dState.state.encode();
+        }
+        catch (_err) {
+            // config state is not available
+            configState = null;
         }
 
         const opt: any = options || this._GetDefaultQROptions();
@@ -118,18 +177,8 @@ export class ConfiguratorController extends PlattarController {
 
         let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + sceneID;
 
-        // optional attributes
-        let configState: string | null = null;
         const showAR: string | null = this.getAttribute("show-ar");
         const showUI: string | null = this.getAttribute("show-ui");
-
-        try {
-            configState = (await this.getConfiguratorState()).state.encode();
-        }
-        catch (_err) {
-            // config state is not available
-            configState = null;
-        }
 
         if (showUI && showUI === "true") {
             dst = Server.location().base + "configurator/dist/index.html?scene_id=" + sceneID;
@@ -167,6 +216,37 @@ export class ConfiguratorController extends PlattarController {
             throw new Error("ConfiguratorController.startRenderer() - minimum required attributes not set, use scene-id as a minimum");
         }
 
+        // optional attributes
+        let configState: DecodedConfiguratorState | null = null;
+
+        try {
+            const dState: DecodedConfiguratorState = await this.getConfiguratorState();
+
+            // if this is declared, we have a furniture scene that we need to re-create the embed
+            // with new attributes
+            const product = dState.state.firstOfType("product");
+
+            if (product) {
+                this.parent.lockObserver();
+                this.parent.destroy();
+                this.setAttribute("product-id", product.scene_product_id);
+                this.parent.unlockObserver();
+                const controller = this.parent.create();
+
+                if (controller) {
+                    return controller.startRenderer();
+                }
+
+                return Promise.reject(new Error("ConfiguratorController.startRenderer() - legacy product transition failed"));
+            }
+
+            configState = dState;
+        }
+        catch (_err) {
+            // config state is not available
+            configState = null;
+        }
+
         // required attributes with defaults for plattar-configurator node
         const width: string = this.getAttribute("width") || "500px";
         const height: string = this.getAttribute("height") || "500px";
@@ -179,17 +259,6 @@ export class ConfiguratorController extends PlattarController {
         viewer.setAttribute("height", height);
         viewer.setAttribute("server", server);
         viewer.setAttribute("scene-id", sceneID);
-
-        // optional attributes
-        let configState: DecodedConfiguratorState | null = null;
-
-        try {
-            configState = await this.getConfiguratorState();
-        }
-        catch (_err) {
-            // config state is not available
-            configState = null;
-        }
 
         const showAR: string | null = this.getAttribute("show-ar");
         const showUI: string | null = this.getAttribute("show-ui");
@@ -222,6 +291,31 @@ export class ConfiguratorController extends PlattarController {
     public async initAR(): Promise<LauncherAR> {
         if (!Util.canAugment()) {
             throw new Error("ConfiguratorController.initAR() - cannot proceed as AR not available in context");
+        }
+
+        try {
+            const dState: DecodedConfiguratorState = await this.getConfiguratorState();
+
+            // if this is declared, we have a furniture scene that we need to re-create the embed
+            // with new attributes
+            const product = dState.state.firstOfType("product");
+
+            if (product) {
+                this.parent.lockObserver();
+                this.parent.destroy();
+                this.setAttribute("product-id", product.scene_product_id);
+                this.parent.unlockObserver();
+                const controller = this.parent.create();
+
+                if (controller) {
+                    return controller.initAR();
+                }
+
+                return Promise.reject(new Error("ConfiguratorController.initAR() - legacy product transition failed"));
+            }
+        }
+        catch (_err) {
+            // config state is not available
         }
 
         const arMode: string | null = this.getAttribute("ar-mode") || "generated";

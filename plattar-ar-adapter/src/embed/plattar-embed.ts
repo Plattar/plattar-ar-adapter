@@ -16,6 +16,14 @@ enum EmbedType {
 }
 
 /**
+ * Controls the state of the observer
+ */
+enum ObserverState {
+    Locked,
+    Unlocked
+}
+
+/**
  * This is the primary <plattar-embed /> node that allows easy embedding
  * of Plattar related content
  */
@@ -23,6 +31,7 @@ export default class PlattarEmbed extends HTMLElement {
 
     // this is the current embed type, viewer by default
     private _currentType: EmbedType = EmbedType.None;
+    private _observerState: ObserverState = ObserverState.Unlocked;
     private _controller: PlattarController | null = null;
     private _currentSceneID: string | null = null;
     private _observer: MutationObserver | null = null;
@@ -45,24 +54,26 @@ export default class PlattarEmbed extends HTMLElement {
     /**
      * creates a brand new instance of this embed
      */
-    public create(): void {
+    public create(): PlattarController | null {
         // server cannot be changed once its set - defaults to production
         const server: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
         Server.create(Server.match(server || "production"));
 
         if (!this._observer) {
             this._observer = new MutationObserver((mutations: MutationRecord[]) => {
-                mutations.forEach((mutation: MutationRecord) => {
-                    if (mutation.type === "attributes") {
-                        const attributeName: string = mutation.attributeName ? mutation.attributeName : "none";
-                        if (this._currentType !== EmbedType.Legacy) {
-                            this._CreateEmbed(attributeName);
+                if (this._observerState === ObserverState.Unlocked) {
+                    mutations.forEach((mutation: MutationRecord) => {
+                        if (mutation.type === "attributes") {
+                            const attributeName: string = mutation.attributeName ? mutation.attributeName : "none";
+                            if (this._currentType !== EmbedType.Legacy) {
+                                this._CreateEmbed(attributeName);
+                            }
+                            else {
+                                this._OnAttributesUpdated(attributeName);
+                            }
                         }
-                        else {
-                            this._OnAttributesUpdated(attributeName);
-                        }
-                    }
-                });
+                    });
+                }
             });
 
             this._observer.observe(this, {
@@ -76,10 +87,26 @@ export default class PlattarEmbed extends HTMLElement {
             this._currentType = EmbedType.Legacy;
             this._CreateLegacyEmbed();
 
-            return;
+            return this._controller;
         }
 
         this._CreateEmbed("none");
+
+        return this._controller;
+    }
+
+    /**
+     * Locks the observer so attribute changes do not trigger anything
+     */
+    public lockObserver(): void {
+        this._observerState = ObserverState.Locked;
+    }
+
+    /**
+     * Unlocks the observer so attribute changes will start to re-trigger properly
+     */
+    public unlockObserver(): void {
+        this._observerState = ObserverState.Unlocked;
     }
 
     /**

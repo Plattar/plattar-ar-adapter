@@ -1,9 +1,12 @@
 import { Product, ProductVariation, Project, Scene, SceneModel, SceneProduct } from "@plattar/plattar-api";
 
+export type SceneProductDataMetaType = "sceneproduct" | "scenemodel" | "product";
+
 interface ConfiguratorStateData {
     meta: {
         scene_product_index: 0,
         scene_model_index: 0,
+        product_index: 0,
         product_variation_index: 1,
         meta_index: 2
     },
@@ -18,7 +21,7 @@ export interface SceneProductData {
 
 export interface SceneProductDataMeta {
     augment: boolean;
-    type: "sceneproduct" | "scenemodel";
+    type: SceneProductDataMetaType;
 }
 
 export interface DecodedConfiguratorState {
@@ -47,6 +50,7 @@ export class ConfiguratorState {
             meta: {
                 scene_product_index: 0,
                 scene_model_index: 0,
+                product_index: 0,
                 product_variation_index: 1,
                 meta_index: 2,
             },
@@ -62,6 +66,7 @@ export class ConfiguratorState {
                 if (parsedState.meta) {
                     defaultState.meta.scene_product_index = parsedState.meta.scene_product_index || 0;
                     defaultState.meta.scene_model_index = parsedState.meta.scene_model_index || 0;
+                    defaultState.meta.product_index = parsedState.meta.product_index || 0;
                     defaultState.meta.product_variation_index = parsedState.meta.product_variation_index || 1;
                     defaultState.meta.meta_index = parsedState.meta.meta_index || 2;
                 }
@@ -153,6 +158,40 @@ export class ConfiguratorState {
 
             newData[meta.scene_product_index] = SceneModelID;
             newData[meta.product_variation_index] = null;
+            newData[meta.meta_index] = metaData;
+        }
+    }
+
+    /**
+     * Adds a new Product with meta-data into the Configurator State
+     * 
+     * @param productID - The Product ID to add
+     * @param metaData - Arbitrary meta-data that can be used against certain operaions
+     */
+    public setProduct(productID: string, productVariationID: string, metaData: SceneProductDataMeta | null | undefined = null): void {
+        if (productID && productVariationID) {
+            metaData = metaData || { augment: true, type: "product" };
+            metaData.type = "product";
+
+            const states: Array<Array<any>> = this._state.states;
+            const meta = this._state.meta;
+
+            let newData: any[] | null = null;
+
+            const existingData: any[] | null = this.findSceneProductIndex(productID);
+
+            if (existingData) {
+                newData = existingData;
+            }
+            else {
+                newData = [];
+
+                // push the new data into the stack
+                states.push(newData);
+            }
+
+            newData[meta.product_index] = productID;
+            newData[meta.product_variation_index] = productVariationID;
             newData[meta.meta_index] = metaData;
         }
     }
@@ -332,6 +371,44 @@ export class ConfiguratorState {
         return null;
     }
 
+    /**
+     * @returns Returns the first reference of data in the stack that matches a type, otherwise returns null
+     */
+    public firstOfType(type: SceneProductDataMetaType): SceneProductData | null {
+        const states: Array<Array<any>> = this._state.states;
+
+        if (states.length > 0) {
+            const meta = this._state.meta;
+
+            const found = states.find((productState: Array<any>): boolean => {
+                const check: any = productState[meta.scene_product_index];
+
+                if (check !== null && check !== undefined) {
+                    return productState.length === 3 && data.meta_data.type === type;
+                }
+
+                return false;
+            });
+
+            if (!found) {
+                return null;
+            }
+
+            const data: SceneProductData = {
+                scene_product_id: found[meta.scene_product_index],
+                product_variation_id: found[meta.product_variation_index],
+                meta_data: {
+                    augment: found[meta.meta_index].augment || true,
+                    type: found[meta.meta_index].type || type
+                }
+            };
+
+            return data;
+        }
+
+        return null;
+    }
+
     public get length(): number {
         return this._state.states.length;
     }
@@ -361,6 +438,7 @@ export class ConfiguratorState {
 
         const fscene: Scene = new Scene(sceneID);
         fscene.include(Project);
+        fscene.include(Product);
         fscene.include(SceneProduct);
         fscene.include(SceneModel);
         fscene.include(SceneProduct.include(Product.include(ProductVariation)));
@@ -390,14 +468,16 @@ export class ConfiguratorState {
         fscene.include(Project);
         fscene.include(SceneProduct);
         fscene.include(SceneModel);
+        fscene.include(Product);
         fscene.include(SceneProduct.include(Product.include(ProductVariation)));
 
         const scene: Scene = await fscene.get();
 
         const sceneProducts: Array<SceneProduct> = scene.relationships.filter(SceneProduct);
         const sceneModels: Array<SceneModel> = scene.relationships.filter(SceneModel);
+        const products: Array<Product> = scene.relationships.filter(Product);
 
-        // add out scene models
+        // add our scene models
         sceneModels.forEach((sceneModel: SceneModel) => {
             configState.setSceneModel(sceneModel.id, {
                 augment: sceneModel.attributes.include_in_augment,
@@ -405,7 +485,17 @@ export class ConfiguratorState {
             });
         });
 
-        // add out scene products
+        // add our products - this is used when scene == furniture
+        products.forEach((product: Product) => {
+            if (product.attributes.product_variation_id) {
+                configState.setProduct(product.id, product.attributes.product_variation_id, {
+                    augment: true,
+                    type: "product"
+                });
+            }
+        });
+
+        // add our scene products
         sceneProducts.forEach((sceneProduct: SceneProduct) => {
             const product: Product | undefined = sceneProduct.relationships.find(Product);
 
