@@ -1,6 +1,7 @@
 import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { ConfiguratorState, DecodedConfiguratorState } from "../../util/configurator-state";
+import type PlattarEmbed from "../plattar-embed";
 
 export enum ControllerState {
     None,
@@ -25,7 +26,7 @@ export abstract class PlattarController {
         }
     };
 
-    private readonly _parent: HTMLElement;
+    private readonly _parent: PlattarEmbed;
     protected _state: ControllerState = ControllerState.None;
     protected _element: HTMLElement | null = null;
     protected _prevQROpt: any = null;
@@ -33,7 +34,7 @@ export abstract class PlattarController {
     private _selectVariationObserver: any = null;
     private _selectVariationSKUObserver: any = null;
 
-    constructor(parent: HTMLElement) {
+    constructor(parent: PlattarEmbed) {
         this._parent = parent;
     }
 
@@ -283,17 +284,29 @@ export abstract class PlattarController {
     /**
      * Returns the Parent Instance
      */
-    public get parent(): HTMLElement {
+    public get parent(): PlattarEmbed {
         return this._parent;
     }
 
     /**
      * Returns the specified attribute from the parent
-     * @param attribute - The name of thhe attribute
+     * @param attribute - The name of the attribute
      * @returns - The attribute value or null
      */
     public getAttribute(attribute: string): string | null {
         return this.parent ? (this.parent.hasAttribute(attribute) ? this.parent.getAttribute(attribute) : null) : null;
+    }
+
+    /**
+     * Sets a particular attribute into the HTML DOM
+     * 
+     * @param attribute - The name of the attribute
+     * @param value - The value of the attribute
+     */
+    public setAttribute(attribute: string, value: string): void {
+        if (this.parent) {
+            this.parent.setAttribute(attribute, value);
+        }
     }
 
     /**

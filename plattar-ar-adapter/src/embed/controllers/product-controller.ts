@@ -17,12 +17,6 @@ export class ProductController extends PlattarController {
         throw new Error("ProductController.getConfiguratorState() - legacy embeds do not support configurator states");
     }
 
-    constructor(parent: HTMLElement) {
-        // this is a hack against DecodedConfiguratorState that's now stored in PlattarController
-        // this is not used in legacy mode
-        super(parent);
-    }
-
     public override async onAttributesUpdated(attributeName: string): Promise<void> {
         const state: ControllerState = this._state;
 
