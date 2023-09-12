@@ -310,6 +310,17 @@ export abstract class PlattarController {
     }
 
     /**
+     * Removes a particular attribute from HTML DOM
+     * 
+     * @param attribute - The name of the attribute
+     */
+    public removeAttribute(attribute: string): void {
+        if (this.parent) {
+            this.parent.removeAttribute(attribute);
+        }
+    }
+
+    /**
      * Appends the provided element into the shadow-root of the parent element
      * @param element - The element to append
      */

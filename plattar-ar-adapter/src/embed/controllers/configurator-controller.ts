@@ -92,6 +92,7 @@ export class ConfiguratorController extends PlattarController {
                 this.parent.lockObserver();
                 this.parent.destroy();
                 this.setAttribute("product-id", product.scene_product_id);
+                this.removeAttribute("scene-id");
                 this.parent.unlockObserver();
                 const controller = this.parent.create();
 
@@ -132,6 +133,7 @@ export class ConfiguratorController extends PlattarController {
                 this.parent.lockObserver();
                 this.parent.destroy();
                 this.setAttribute("product-id", product.scene_product_id);
+                this.removeAttribute("scene-id");
                 this.parent.unlockObserver();
                 const controller = this.parent.create();
 
@@ -230,6 +232,7 @@ export class ConfiguratorController extends PlattarController {
                 this.parent.lockObserver();
                 this.parent.destroy();
                 this.setAttribute("product-id", product.scene_product_id);
+                this.removeAttribute("scene-id");
                 this.parent.unlockObserver();
                 const controller = this.parent.create();
 
@@ -304,6 +307,7 @@ export class ConfiguratorController extends PlattarController {
                 this.parent.lockObserver();
                 this.parent.destroy();
                 this.setAttribute("product-id", product.scene_product_id);
+                this.removeAttribute("scene-id");
                 this.parent.unlockObserver();
                 const controller = this.parent.create();
 
