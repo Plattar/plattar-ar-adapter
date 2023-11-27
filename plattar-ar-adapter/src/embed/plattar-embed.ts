@@ -81,7 +81,7 @@ export default class PlattarEmbed extends HTMLElement {
             });
         }
 
-        const productID: string | null = this.hasAttribute("product-id") ? this.getAttribute("product-id") : null;
+        const productID: string | null = this.hasAttribute("product-id") && !this.hasAttribute("scene-id") ? this.getAttribute("product-id") : null;
 
         if (productID) {
             this._currentType = EmbedType.Legacy;
@@ -240,7 +240,7 @@ export default class PlattarEmbed extends HTMLElement {
 
     /**
      * This will remove the currently active Renderer
-     * 
+     *
      * @returns - true if removed successfully, false otherwise
      */
     public removeRenderer(): boolean {
