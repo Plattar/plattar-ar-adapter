@@ -27,8 +27,8 @@ export default class QuicklookViewer extends ARViewer {
 
         if (banner) {
             url += `#callToAction=${banner.button}`;
-            url += `?checkoutTitle=${banner.title}`;
-            url += `?checkoutSubtitle=${banner.subtitle}`;
+            url += `&checkoutTitle=${banner.title}`;
+            url += `&checkoutSubtitle=${banner.subtitle}`;
 
             const handleQuicklook: (event: any) => void = (event: any) => {
                 if (event.data === "_apple_ar_quicklook_button_tapped") {
