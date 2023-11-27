@@ -260,4 +260,27 @@ export default class PlattarEmbed extends HTMLElement {
             this._controller.onAttributesUpdated(attributeName);
         }
     }
+
+    public override addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => any, options?: boolean | AddEventListenerOptions | undefined): void;
+    public override addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
+    public override addEventListener(type: unknown, listener: unknown, options?: unknown): void {
+        // add to the element event listener
+        super.addEventListener(<any>type, <any>listener, <any>options);
+
+        const eventType: string = 'arclick';
+
+        if (type === eventType) {
+            // automatically enable `show-ar-banner` to true if an arclick event is added
+            this.setAttribute('show-ar-banner', 'true');
+
+            // if this is a redirect url from an AR Action - we need to fire the event listener now
+            const url = new URL(location.href);
+
+            if (url.searchParams.get('plattar_ar_action') === 'true') {
+                setTimeout(() => {
+                    this.dispatchEvent(new Event(eventType));
+                }, 200);
+            }
+        }
+    }
 }

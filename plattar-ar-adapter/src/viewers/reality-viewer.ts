@@ -1,4 +1,4 @@
-import ARViewer from "./ar-viewer";
+import { ARViewer } from "./ar-viewer";
 
 export default class RealityViewer extends ARViewer {
     constructor() {

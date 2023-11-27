@@ -2,7 +2,7 @@ import { Analytics } from "@plattar/plattar-analytics";
 import { Product, Project, Scene, SceneModel, SceneProduct, Server } from "@plattar/plattar-api";
 import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
-import ARViewer from "../viewers/ar-viewer";
+import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
@@ -15,6 +15,12 @@ export interface SceneVariationSelection {
     readonly variationID?: string;
 }
 
+export interface SceneAROptions {
+    readonly sceneID: string;
+    readonly variationSelection: SceneVariationSelection;
+    readonly useARBanner: boolean;
+}
+
 /**
  * Performs AR functionality related to Plattar Scenes
  */
@@ -24,27 +30,25 @@ export class SceneAR extends LauncherAR {
     private _analytics: Analytics | null = null;
 
     // scene and selected variation IDs
-    private readonly _sceneID: string;
-    private readonly _variationSelection: SceneVariationSelection;
+    private readonly _options: SceneAROptions;
 
     // this thing controls the actual AR view
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
-    constructor(sceneID: string | undefined | null = null, variationSelection: SceneVariationSelection | undefined | null = null) {
+    constructor(options: SceneAROptions) {
         super();
 
-        if (!sceneID) {
+        if (!options.sceneID) {
             throw new Error("SceneAR.constructor(sceneID) - sceneID must be defined");
         }
 
-        this._sceneID = sceneID;
-        this._variationSelection = variationSelection || {};
+        this._options = options;
         this._ar = null;
     }
 
     public get sceneID(): string {
-        return this._sceneID;
+        return this._options.sceneID;
     }
 
     private _SetupAnalytics(scene: Scene): void {
@@ -68,6 +72,14 @@ export class SceneAR extends LauncherAR {
             if (application) {
                 analytics.data.push("applicationId", application.id);
                 analytics.data.push("applicationTitle", application.attributes.title);
+
+                if (this._options.useARBanner) {
+                    this.options.banner = {
+                        title: <any>application.attributes.title,
+                        subtitle: scene.attributes.title,
+                        button: 'Visit'
+                    }
+                }
             }
         }
     }
@@ -97,7 +109,7 @@ export class SceneAR extends LauncherAR {
             // add our scene products
             sceneProducts.forEach((sceneProduct: SceneProduct) => {
                 const product: Product | undefined = sceneProduct.relationships.find(Product);
-                const selection: SceneVariationSelection = this._variationSelection;
+                const selection: SceneVariationSelection = this._options.variationSelection;
 
                 // we have a specific product selection
                 if (sceneProduct.attributes.include_in_augment) {
@@ -176,6 +188,7 @@ export class SceneAR extends LauncherAR {
                             return this._ComposeScene(scene, "vto").then((modelUrl: string) => {
                                 this._ar = new RealityViewer();
                                 this._ar.modelUrl = modelUrl;
+                                this._ar.banner = this.options.banner;
 
                                 return accept(this);
                             }).catch(reject);
@@ -190,6 +203,7 @@ export class SceneAR extends LauncherAR {
                         return this._ComposeScene(scene, "usdz").then((modelUrl: string) => {
                             this._ar = new QuicklookViewer();
                             this._ar.modelUrl = modelUrl;
+                            this._ar.banner = this.options.banner;
 
                             return accept(this);
                         }).catch(reject);
@@ -204,6 +218,7 @@ export class SceneAR extends LauncherAR {
                         const arviewer = new SceneViewer();
                         arviewer.modelUrl = modelUrl;
                         arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
+                        arviewer.banner = this.options.banner;
 
                         if (sceneOpt.anchor === "vertical") {
                             arviewer.isVertical = true;

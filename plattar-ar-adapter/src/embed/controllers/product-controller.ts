@@ -159,6 +159,7 @@ export class ProductController extends PlattarController {
             const variationID: string | null = this.getAttribute("variation-id");
             const variationSKU: string | null = this.getAttribute("variation-sku");
             const arMode: string | null = this.getAttribute("ar-mode");
+            const showBanner: string | null = this.getAttribute("show-ar-banner");
 
             if (configState) {
                 dst += "&config_state=" + configState;
@@ -190,6 +191,10 @@ export class ProductController extends PlattarController {
 
             if (sceneID) {
                 dst += "&scene_id=" + sceneID;
+            }
+
+            if (showBanner) {
+                dst += "&show_ar_banner=" + showBanner;
             }
 
             viewer.setAttribute("url", opt.url || dst);
@@ -271,7 +276,13 @@ export class ProductController extends PlattarController {
                 const variationID: string | null = this.getAttribute("variation-id");
                 const variationSKU: string | null = this.getAttribute("variation-sku");
 
-                const product: ProductAR = new ProductAR(productID, variationID, variationSKU);
+                //const product: ProductAR = new ProductAR(productID, variationID, variationSKU);
+                const product: ProductAR = new ProductAR({
+                    productID: productID,
+                    variationID: variationID ? variationID : (variationSKU ? null : "default"),
+                    variationSKU: variationSKU,
+                    useARBanner: this.getBooleanAttribute("show-ar-banner")
+                });
 
                 return product.init().then(accept).catch(reject);
             }

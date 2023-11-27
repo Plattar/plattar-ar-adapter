@@ -1,20 +1,25 @@
 import { Analytics } from "@plattar/plattar-analytics";
 import { Project, Scene, Server } from "@plattar/plattar-api";
 import { Util } from "../util/util";
-import ARViewer from "../viewers/ar-viewer";
+import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
 import version from "../version";
 
+export interface RawAROptions {
+    readonly modelLocation: string;
+    readonly sceneID: string | null;
+    readonly useARBanner: boolean;
+}
+
 /**
  * Allows launching AR Experiences provided a single remote 3D Model file
  */
 export class RawAR extends LauncherAR {
     // model location
-    private readonly _modelLocation: string;
-    private readonly _sceneID: string | null;
+    private readonly _options: RawAROptions;
 
     // this thing controls the actual AR view
     // this is setup via .init() function
@@ -23,18 +28,17 @@ export class RawAR extends LauncherAR {
     // analytics instance
     private _analytics: Analytics | null = null;
 
-    constructor(modelLocation: string | undefined | null = null, sceneID: string | undefined | null = null) {
+    constructor(options: RawAROptions) {
         super();
 
-        if (!modelLocation) {
+        if (!options.modelLocation) {
             throw new Error("RawAR.constructor(modelLocation) - modelLocation must be defined");
         }
 
-        const lowerLoc: string = modelLocation.toLowerCase();
+        const lowerLoc: string = options.modelLocation.toLowerCase();
 
         if (lowerLoc.endsWith("usdz") || lowerLoc.endsWith("glb") || lowerLoc.endsWith("gltf") || lowerLoc.endsWith("reality")) {
-            this._modelLocation = modelLocation;
-            this._sceneID = sceneID;
+            this._options = options;
             this._ar = null;
         }
         else {
@@ -43,12 +47,12 @@ export class RawAR extends LauncherAR {
     }
 
     public get modelLocation(): string {
-        return this._modelLocation;
+        return this._options.modelLocation;
     }
 
     private _SetupAnalytics(): Promise<void> {
         return new Promise<void>((accept, _reject) => {
-            const sceneID: string | null = this._sceneID;
+            const sceneID: string | null = this._options.sceneID;
 
             if (!sceneID) {
                 return accept();
@@ -74,6 +78,14 @@ export class RawAR extends LauncherAR {
                 if (application) {
                     analytics.data.push("applicationId", application.id);
                     analytics.data.push("applicationTitle", application.attributes.title);
+
+                    if (this._options.useARBanner) {
+                        this.options.banner = {
+                            title: <any>application.attributes.title,
+                            subtitle: scene.attributes.title,
+                            button: 'Visit'
+                        }
+                    }
                 }
 
                 accept();
@@ -98,7 +110,7 @@ export class RawAR extends LauncherAR {
 
             // send the analytics (if any)
             this._SetupAnalytics().then(() => {
-                const modelLocation: string = this._modelLocation;
+                const modelLocation: string = this._options.modelLocation;
                 const lowerLoc = modelLocation.toLowerCase();
 
                 // we need to define our AR module here
@@ -108,6 +120,7 @@ export class RawAR extends LauncherAR {
                     if (lowerLoc.endsWith("reality") && Util.canRealityViewer()) {
                         this._ar = new RealityViewer();
                         this._ar.modelUrl = modelLocation;
+                        this._ar.banner = this.options.banner;
 
                         return accept(this);
                     }
@@ -129,6 +142,7 @@ export class RawAR extends LauncherAR {
                         const arviewer = new SceneViewer();
                         arviewer.modelUrl = modelLocation;
                         arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
+                        arviewer.banner = this.options.banner;
                         this._ar = arviewer;
 
                         return accept(this);

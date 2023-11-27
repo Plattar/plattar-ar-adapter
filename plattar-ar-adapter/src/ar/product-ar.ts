@@ -1,12 +1,19 @@
 import { FileModel, Product, ProductVariation, Scene, Project, Server } from "@plattar/plattar-api";
 import { Analytics } from "@plattar/plattar-analytics";
 import { Util } from "../util/util";
-import ARViewer from "../viewers/ar-viewer";
+import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
 import version from "../version";
+
+export interface ProductAROptions {
+    readonly productID: string;
+    readonly variationID: string | null;
+    readonly variationSKU: string | null;
+    readonly useARBanner: boolean;
+}
 
 /**
  * Performs AR functionality related to Plattar Products and Variation types
@@ -15,16 +22,13 @@ export class ProductAR extends LauncherAR {
 
     // analytics instance
     private _analytics: Analytics | null = null;
-
-    // product and selected variation IDs
-    private readonly _productID: string;
-    private readonly _variationID: string | null;
-    private readonly _variationSKU: string | null;
+    private readonly _options: ProductAROptions;
 
     // this thing controls the actual AR view
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
+    /*
     constructor(productID: string | undefined | null = null, variationID: string | undefined | null = null, variationSKU: string | undefined | null = null) {
         super();
 
@@ -37,17 +41,29 @@ export class ProductAR extends LauncherAR {
         this._variationID = variationID ? variationID : (variationSKU ? null : "default");
         this._ar = null;
     }
+    */
+
+    constructor(options: ProductAROptions) {
+        super();
+
+        if (!options.productID) {
+            throw new Error("ProductAR.constructor(productID, variationID) - productID must be defined");
+        }
+
+        this._options = options;
+        this._ar = null;
+    }
 
     public get productID(): string {
-        return this._productID;
+        return this._options.productID;
     }
 
     public get variationID(): string | null {
-        return this._variationID;
+        return this._options.variationID;
     }
 
     public get variationSKU(): string | null {
-        return this._variationSKU;
+        return this._options.variationSKU;
     }
 
     private _SetupAnalytics(product: Product, variation: ProductVariation): void {
@@ -73,6 +89,14 @@ export class ProductAR extends LauncherAR {
             if (application) {
                 analytics.data.push("applicationId", application.id);
                 analytics.data.push("applicationTitle", application.attributes.title);
+
+                if (this._options.useARBanner) {
+                    this.options.banner = {
+                        title: <any>product.attributes.title,
+                        subtitle: variation.attributes.title,
+                        button: 'Visit'
+                    }
+                }
             }
         }
 
@@ -165,6 +189,7 @@ export class ProductAR extends LauncherAR {
                     if (model.attributes.reality_filename && Util.canRealityViewer()) {
                         this._ar = new RealityViewer();
                         this._ar.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.reality_filename;
+                        this._ar.banner = this.options.banner;
 
                         return accept(this);
                     }
@@ -173,6 +198,7 @@ export class ProductAR extends LauncherAR {
                     if (model.attributes.usdz_filename && Util.canQuicklook()) {
                         this._ar = new QuicklookViewer();
                         this._ar.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.usdz_filename;
+                        this._ar.banner = this.options.banner;
 
                         return accept(this);
                     }
@@ -185,6 +211,7 @@ export class ProductAR extends LauncherAR {
                     const arviewer = new SceneViewer();
                     arviewer.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.original_filename;
                     arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
+                    arviewer.banner = this.options.banner;
 
                     const scene: Scene | undefined = product.relationships.find(Scene);
 

@@ -211,6 +211,7 @@ export abstract class PlattarController {
         const variationID: string | null = this.getAttribute("variation-id");
         const variationSKU: string | null = this.getAttribute("variation-sku");
         const arMode: string | null = this.getAttribute("ar-mode");
+        const showBanner: string | null = this.getAttribute("show-ar-banner");
 
         try {
             configState = (await this.getConfiguratorState()).state.encode()
@@ -250,6 +251,10 @@ export abstract class PlattarController {
 
         if (sceneID) {
             dst += "&scene_id=" + sceneID;
+        }
+
+        if (showBanner) {
+            dst += "&show_ar_banner=" + showBanner;
         }
 
         viewer.setAttribute("url", opt.url || dst);
@@ -295,6 +300,15 @@ export abstract class PlattarController {
      */
     public getAttribute(attribute: string): string | null {
         return this.parent ? (this.parent.hasAttribute(attribute) ? this.parent.getAttribute(attribute) : null) : null;
+    }
+
+    /**
+     * Returns the specified attribute from the parent as a boolean
+     * @param attribute - The name of the attribute
+     * @returns - The attribute value
+     */
+    public getBooleanAttribute(attribute: string): boolean {
+        return this.parent ? (this.parent.hasAttribute(attribute) ? (this.parent.getAttribute(attribute)?.toLowerCase() === "true" ? true : false) : false) : false;
     }
 
     /**

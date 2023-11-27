@@ -2,13 +2,18 @@ import { Analytics } from "@plattar/plattar-analytics";
 import { Project, Scene, Server } from "@plattar/plattar-api";
 import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
-import ARViewer from "../viewers/ar-viewer";
+import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
 import { DecodedConfiguratorState, SceneProductData } from "../util/configurator-state";
 import version from "../version";
+
+export interface ConfiguratorAROptions {
+    readonly state: DecodedConfiguratorState;
+    readonly useARBanner: boolean;
+}
 
 /**
  * Performs AR functionality related to Plattar Scenes
@@ -17,25 +22,25 @@ export class ConfiguratorAR extends LauncherAR {
 
     // analytics instance
     private _analytics: Analytics | null = null;
-    private _state: DecodedConfiguratorState;
+    private _options: ConfiguratorAROptions;
 
     // this thing controls the actual AR view
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
-    constructor(state: DecodedConfiguratorState) {
+    constructor(options: ConfiguratorAROptions) {
         super();
 
-        if (!state) {
+        if (!options.state) {
             throw new Error("ConfiguratorAR.constructor(state) - state must be defined");
         }
 
-        this._state = state;
+        this._options = options;
         this._ar = null;
     }
 
     private _SetupAnalytics(): void {
-        const scene: Scene = this._state.scene;
+        const scene: Scene = this._options.state.scene;
         let analytics: Analytics | null = null;
 
         // setup scene stuff (if any)
@@ -56,6 +61,14 @@ export class ConfiguratorAR extends LauncherAR {
             if (application) {
                 analytics.data.push("applicationId", application.id);
                 analytics.data.push("applicationTitle", application.attributes.title);
+
+                if (this._options.useARBanner) {
+                    this.options.banner = {
+                        title: <any>application.attributes.title,
+                        subtitle: scene.attributes.title,
+                        button: 'Visit'
+                    }
+                }
             }
         }
     }
@@ -65,7 +78,7 @@ export class ConfiguratorAR extends LauncherAR {
      * an AR File
      */
     private async _Compose(output: "glb" | "usdz" | "vto"): Promise<string> {
-        const objects: Array<SceneProductData> = this._state.state.array();
+        const objects: Array<SceneProductData> = this._options.state.state.array();
 
         if (objects.length <= 0) {
             throw new Error("ConfiguratorAR.Compose() - cannot proceed as scene does not contain AR components");
@@ -113,7 +126,7 @@ export class ConfiguratorAR extends LauncherAR {
             throw new Error("ConfiguratorAR.init() - cannot proceed as AR not available in context");
         }
 
-        const scene: Scene = this._state.scene;
+        const scene: Scene = this._options.state.scene;
 
         this._SetupAnalytics();
 
@@ -130,6 +143,7 @@ export class ConfiguratorAR extends LauncherAR {
 
                     this._ar = new RealityViewer();
                     this._ar.modelUrl = modelUrl;
+                    this._ar.banner = this.options.banner;
 
                     return this;
                 }
@@ -144,6 +158,7 @@ export class ConfiguratorAR extends LauncherAR {
 
                 this._ar = new QuicklookViewer();
                 this._ar.modelUrl = modelUrl;
+                this._ar.banner = this.options.banner;
 
                 return this;
             }
@@ -158,6 +173,7 @@ export class ConfiguratorAR extends LauncherAR {
             const arviewer = new SceneViewer();
             arviewer.modelUrl = modelUrl;
             arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
+            arviewer.banner = this.options.banner;
 
             if (sceneOpt.anchor === "vertical") {
                 arviewer.isVertical = true;

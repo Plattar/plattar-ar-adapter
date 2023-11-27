@@ -1,5 +1,8 @@
+import { ARBanner } from "../viewers/ar-viewer";
+
 export interface LauncherAROptions {
-    anchor: "horizontal" | "vertical" | "vto" | "horizontal_vertical"
+    anchor: "horizontal" | "vertical" | "vto" | "horizontal_vertical";
+    banner: ARBanner | null;
 }
 
 export abstract class LauncherAR {
@@ -7,7 +10,8 @@ export abstract class LauncherAR {
 
     constructor() {
         this._opt = {
-            anchor: "horizontal_vertical"
+            anchor: "horizontal_vertical",
+            banner: null
         }
     }
 

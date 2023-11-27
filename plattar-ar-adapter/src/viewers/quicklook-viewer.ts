@@ -1,14 +1,8 @@
-import ARViewer from "./ar-viewer";
+import { ARBanner, ARViewer } from "./ar-viewer";
 
 export default class QuicklookViewer extends ARViewer {
-    public araction: string | null = null;
-    public arcallback: () => void;
-    public titleHTML: string;
-
     constructor() {
         super();
-        this.titleHTML = "&checkoutTitle=" + document.title + "&checkoutSubtitle=" + document.title;
-        this.arcallback = () => { };
     }
 
     public get nodeType(): string {
@@ -28,29 +22,24 @@ export default class QuicklookViewer extends ARViewer {
         anchor.setAttribute("rel", "ar");
         anchor.appendChild(document.createElement("img"));
 
+        const banner: ARBanner | null = this.banner;
         let url: string = this.modelUrl;
-        const araction: string | null = this.araction;
 
-        if (araction) {
+        if (banner) {
+            url += `#callToAction=${banner.button}`;
+            url += `?checkoutTitle=${banner.title}`;
+            url += `?checkoutSubtitle=${banner.subtitle}`;
+
             const handleQuicklook: (event: any) => void = (event: any) => {
                 if (event.data === "_apple_ar_quicklook_button_tapped") {
-                    this.arcallback();
+                    window.location.assign(this.composedActionURL);
                 }
-
-                document.body.removeChild(anchor);
-                anchor.removeEventListener("message", handleQuicklook, false);
-            };
+            }
 
             anchor.addEventListener("message", handleQuicklook, false);
-            document.body.appendChild(anchor);
-
-            url += "#callToAction=" + araction;
-
-            if (this.titleHTML) {
-                url += this.titleHTML;
-            }
         }
 
+        document.body.appendChild(anchor);
         anchor.setAttribute("href", encodeURI(url));
         anchor.click();
     }
