@@ -23,6 +23,7 @@ The software is open source and maintained by the Plattar team. Souce code can b
 - [QRCode Routing](guides/qrcode-routing.md)
 - [QRCode Scanning](guides/qrcode-scanning.md)
 - [QRCode Styling](guides/qrcode-styling.md)
+- [AR Banners](guides/ar-banners.md)
 
 #### API Guides
 

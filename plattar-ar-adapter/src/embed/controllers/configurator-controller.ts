@@ -181,6 +181,7 @@ export class ConfiguratorController extends PlattarController {
 
         const showAR: string | null = this.getAttribute("show-ar");
         const showUI: string | null = this.getAttribute("show-ui");
+        const showBanner: string | null = this.getAttribute("show-ar-banner");
 
         if (showUI && showUI === "true") {
             dst = Server.location().base + "configurator/dist/index.html?scene_id=" + sceneID;
@@ -192,6 +193,10 @@ export class ConfiguratorController extends PlattarController {
 
         if (showAR) {
             dst += "&show_ar=" + showAR;
+        }
+
+        if (showBanner) {
+            dst += "&show_ar_banner=" + showBanner;
         }
 
         viewer.setAttribute("url", opt.url || dst);
@@ -347,7 +352,13 @@ export class ConfiguratorController extends PlattarController {
         const first: SceneProductData | null = state.first();
 
         if (first) {
-            const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
+            //const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);
+            const sceneProductAR: SceneProductAR = new SceneProductAR({
+                productID: first.scene_product_id,
+                variationID: first.product_variation_id,
+                variationSKU: null,
+                useARBanner: this.getBooleanAttribute("show-ar-banner")
+            });
 
             return sceneProductAR.init();
         }
@@ -365,7 +376,7 @@ export class ConfiguratorController extends PlattarController {
             throw new Error("VTOController.initAR() - generated AR minimum required attributes not set, use scene-id as a minimum");
         }
 
-        const configAR: ConfiguratorAR = new ConfiguratorAR(await this.getConfiguratorState());
+        const configAR: ConfiguratorAR = new ConfiguratorAR({ state: await this.getConfiguratorState(), useARBanner: this.getBooleanAttribute("show-ar-banner") });
 
         return configAR.init();
     }

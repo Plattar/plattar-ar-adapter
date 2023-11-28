@@ -1,4 +1,4 @@
-import { ProductAR } from "./product-ar";
+import { ProductAR, ProductAROptions } from "./product-ar";
 import { SceneProduct } from "@plattar/plattar-api";
 import { Util } from "../util/util";
 import { LauncherAR } from "./launcher-ar";
@@ -14,21 +14,22 @@ export class SceneProductAR extends ProductAR {
     // this is evaluated in the init() function
     private _attachedProductID: string | null = null;
 
-    constructor(sceneProductID: string | undefined | null = null, variationID: string | undefined | null = null, variationSKU: string | undefined | null = null) {
-        super(sceneProductID, variationID, variationSKU);
+    constructor(options: ProductAROptions) {
+        //super(sceneProductID, variationID, variationSKU);
+        super(options);
 
-        if (!sceneProductID) {
+        if (!options.productID) {
             throw new Error("SceneProductAR.constructor(sceneProductID, variationID) - sceneProductID must be defined");
         }
 
-        this._sceneProductID = sceneProductID;
+        this._sceneProductID = options.productID;
     }
 
     public get sceneProductID(): string {
         return this._sceneProductID;
     }
 
-    public get productID(): string {
+    public override get productID(): string {
         if (!this._attachedProductID) {
             throw new Error("SceneProductAR.productID() - product id was not defined, did you call init()?");
         }

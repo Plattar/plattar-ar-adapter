@@ -1,12 +1,17 @@
 import { FileModel, Project, Server } from "@plattar/plattar-api";
 import { Analytics } from "@plattar/plattar-analytics";
 import { Util } from "../util/util";
-import ARViewer from "../viewers/ar-viewer";
+import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
 import version from "../version";
+
+export interface ModelAROptions {
+    readonly modelID: string;
+    readonly useARBanner: boolean;
+}
 
 /**
  * Performs AT Functionality using Plattar FileModel types
@@ -17,25 +22,25 @@ export class ModelAR extends LauncherAR {
     private _analytics: Analytics | null = null;
 
     // model ID
-    private readonly _modelID: string;
+    private readonly _options: ModelAROptions;
 
     // this thing controls the actual AR view
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
-    constructor(modelID: string | undefined | null = null) {
+    constructor(options: ModelAROptions) {
         super();
 
-        if (!modelID) {
+        if (!options.modelID) {
             throw new Error("ModelAR.constructor(modelID) - modelID must be defined");
         }
 
-        this._modelID = modelID;
+        this._options = options;
         this._ar = null;
     }
 
     public get modelID(): string {
-        return this._modelID;
+        return this._options.modelID;
     }
 
     private _SetupAnalytics(model: FileModel): void {
@@ -56,6 +61,14 @@ export class ModelAR extends LauncherAR {
             analytics.data.push("modelTitle", model.attributes.title);
 
             this._analytics = analytics;
+
+            if (this._options.useARBanner) {
+                this.options.banner = {
+                    title: <any>project.attributes.title,
+                    subtitle: model.attributes.title,
+                    button: 'Visit'
+                }
+            }
         }
     }
 
@@ -87,6 +100,7 @@ export class ModelAR extends LauncherAR {
                     if (model.attributes.reality_filename && Util.canRealityViewer()) {
                         this._ar = new RealityViewer();
                         this._ar.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.reality_filename;
+                        this._ar.banner = this.options.banner;
 
                         return accept(this);
                     }
@@ -95,6 +109,7 @@ export class ModelAR extends LauncherAR {
                     if (model.attributes.usdz_filename && Util.canQuicklook()) {
                         this._ar = new QuicklookViewer();
                         this._ar.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.usdz_filename;
+                        this._ar.banner = this.options.banner;
 
                         return accept(this);
                     }
@@ -107,6 +122,7 @@ export class ModelAR extends LauncherAR {
                     const arviewer = new SceneViewer();
                     arviewer.modelUrl = Server.location().cdn + model.attributes.path + model.attributes.original_filename;
                     arviewer.isVertical = this.options.anchor === "vertical" ? true : false;
+                    arviewer.banner = this.options.banner;
                     this._ar = arviewer;
 
                     return accept(this);
