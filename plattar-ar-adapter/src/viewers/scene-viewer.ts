@@ -28,8 +28,8 @@ export default class SceneViewer extends ARViewer {
         const banner: ARBanner | null = this.banner;
 
         if (banner) {
+            intent += `&title=<b>${banner.title}</b><br>${banner.subtitle}`;
             intent += `&link=${this.composedActionURL}`;
-            intent += `&title=<b><b>${banner.title} ${banner.subtitle}`;
         }
 
         if (this.isVertical) {

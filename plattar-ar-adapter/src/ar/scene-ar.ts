@@ -186,7 +186,7 @@ export class SceneAR extends LauncherAR {
                     if (sceneOpt.anchor === "face") {
                         if (Util.canRealityViewer()) {
                             return this._ComposeScene(scene, "vto").then((modelUrl: string) => {
-                                this._ar = new RealityViewer();
+                                this._ar = new QuicklookViewer();
                                 this._ar.modelUrl = modelUrl;
                                 this._ar.banner = this.options.banner;
 

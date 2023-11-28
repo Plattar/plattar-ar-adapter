@@ -141,7 +141,7 @@ export class ConfiguratorAR extends LauncherAR {
                 if (Util.canRealityViewer()) {
                     const modelUrl: string = await this._Compose("vto");
 
-                    this._ar = new RealityViewer();
+                    this._ar = new QuicklookViewer();
                     this._ar.modelUrl = modelUrl;
                     this._ar.banner = this.options.banner;
 
