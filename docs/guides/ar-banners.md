@@ -6,6 +6,20 @@ With the introduction of `plattar-ar-adapter` version `1.163.1` there is now sev
 
 AR Banners requires the `plattar-ar-adapter` SDK minimum version to be `1.163.1`.
 
+### Screenshots for Android & IOS
+
+<p float="left">
+<img width="250" alt="Android AR Banner" title="Android AR Banner" src="https://github.com/Plattar/plattar-ar-adapter/assets/7587896/e97564b0-a853-49d6-a017-e4e308385006">
+<img width="250" alt="IOS AR Banner" title="IOS AR Banner" src="https://github.com/Plattar/plattar-ar-adapter/assets/7587896/809eef72-4ba4-4d9b-805c-5c664edf987c">
+</p>
+
+AR Banners contains 4 distinct elements
+
+1. **Title** - This will be the name of your Application and can be changed in the Plattar CMS
+2. **Subtitle** - This will be the name of your Scene and can be changed in the Plattar CMS
+3. **CTA Button** - This will always be visible and named as `Visit` and cannot be changed. When clicked, the `arclick` event will be fired.
+4. **URL** - This will either be the url of your website or the content CDN url and cannot be changed
+
 ### How It Works
 
 We introduce a new attribute that can be used to display the AR Banner when Augmented Reality mode is launched.
