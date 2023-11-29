@@ -1,7 +1,7 @@
 export interface ARBanner {
     readonly title: string;
     readonly subtitle: string;
-    readonly button: 'Visit';
+    readonly button: string;
 }
 
 export abstract class ARViewer {

@@ -281,7 +281,14 @@ export class ProductController extends PlattarController {
                     productID: productID,
                     variationID: variationID ? variationID : (variationSKU ? null : "default"),
                     variationSKU: variationSKU,
-                    useARBanner: this.getBooleanAttribute("show-ar-banner")
+                    arBanner: {
+                        enabled: this.getBooleanAttribute("show-ar-banner"),
+                        details: {
+                            title: this.getAttribute("ar-banner-title"),
+                            subtitle: this.getAttribute("ar-banner-subtitle"),
+                            ctaName: this.getAttribute("ar-banner-button")
+                        }
+                    }
                 });
 
                 return product.init().then(accept).catch(reject);
