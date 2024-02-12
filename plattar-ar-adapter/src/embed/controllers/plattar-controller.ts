@@ -279,7 +279,25 @@ export abstract class PlattarController {
     /**
      * Removes the currently active renderer view from the DOM
      */
-    public abstract removeRenderer(): boolean;
+    public removeRenderer(): boolean {
+        // remove all other children
+        const shadow = this.parent.shadowRoot;
+
+        if (shadow) {
+            let child = shadow.lastElementChild;
+
+            while (child) {
+                shadow.removeChild(child);
+                child = shadow.lastElementChild;
+            }
+        }
+
+        this._element = null;
+
+        this.removeMessengerObservers();
+
+        return true;
+    }
 
     /**
      * Get the underlying renderer component (if any)
