@@ -342,4 +342,16 @@ export abstract class PlattarController {
         const shadow = this.parent.shadowRoot || this.parent.attachShadow({ mode: 'open' });
         shadow.append(element);
     }
+
+    /**
+     * 
+     * @param element 
+     */
+    public removeChild(element: HTMLElement): void {
+        const shadow = this.parent.shadowRoot;
+
+        if (shadow) {
+            shadow.removeChild(element);
+        }
+    }
 }

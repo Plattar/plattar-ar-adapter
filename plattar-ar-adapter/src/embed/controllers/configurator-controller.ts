@@ -383,7 +383,7 @@ export class ConfiguratorController extends PlattarController {
 
     public removeRenderer(): boolean {
         if (this._element) {
-            this._element.remove();
+            this.removeChild(this._element);
             this._element = null;
 
             return true;
