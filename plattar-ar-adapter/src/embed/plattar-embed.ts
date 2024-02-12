@@ -4,6 +4,7 @@ import { PlattarController } from "./controllers/plattar-controller";
 import { ConfiguratorController } from "./controllers/configurator-controller";
 import { VTOController } from "./controllers/vto-controller";
 import { ProductController } from "./controllers/product-controller";
+import { Util } from "../util/util";
 
 /**
  * This tracks the current embed type
@@ -125,17 +126,23 @@ export default class PlattarEmbed extends HTMLElement {
     private _CreateLegacyEmbed(): void {
         // server cannot be changed once its set - defaults to production
         const server: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
-        Server.create(Server.match(server || "production"));
 
-        this._controller = new ProductController(this);
+        if (Util.isValidServerLocation(server)) {
+            Server.create(Server.match(server || "production"));
 
-        const init: string | null = this.hasAttribute("init") ? this.getAttribute("init") : null;
+            this._controller = new ProductController(this);
 
-        switch (init) {
-            case "viewer": this.startViewer();
-                break;
-            case "qrcode": this.startQRCode();
-                break;
+            const init: string | null = this.hasAttribute("init") ? this.getAttribute("init") : null;
+
+            switch (init) {
+                case "viewer": this.startViewer();
+                    break;
+                case "qrcode": this.startQRCode();
+                    break;
+            }
+        }
+        else {
+            console.warn("PlattarEmbed.CreateLegacy - cannot create as server attribute " + server + " is invalid, embed status remains unchanged");
         }
     }
 
@@ -148,13 +155,18 @@ export default class PlattarEmbed extends HTMLElement {
         const serverAttribute: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
 
         if (this._currentServer !== serverAttribute) {
-            this._currentSceneID = serverAttribute || "production";
+            this._currentServer = serverAttribute || "production";
 
             // reset the controller if any
             if (this._controller) {
                 this._controller.removeRenderer();
                 this._controller = null;
             }
+        }
+
+        if (!Util.isValidServerLocation(this._currentServer)) {
+            console.warn("PlattarEmbed.Create - cannot create as server attribute " + this._currentServer + " is invalid, embed status remains unchanged");
+            return;
         }
 
         Server.create(Server.match(this._currentServer || "production"));

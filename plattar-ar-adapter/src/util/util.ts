@@ -2,6 +2,33 @@
  * Static Utility Functions
  */
 export class Util {
+    public static isValidServerLocation(server: string | null | undefined): boolean {
+        if (!server) {
+            return false;
+        }
+
+        switch (server.toLowerCase()) {
+            case "staging.plattar.space":
+            case "cdn-staging.plattar.space":
+            case "staging":
+            case "app.plattar.com":
+            case "cdn.plattar.com":
+            case "prod":
+            case "production":
+            case "review.plattar.com":
+            case "review":
+            case "qa":
+            case "dev":
+            case "developer":
+            case "development":
+            case "local":
+            case "localhost":
+                return true;
+        }
+
+        return false;
+    }
+
     public static canAugment(): boolean {
         return Util.canQuicklook() || Util.canSceneViewer();
     }
