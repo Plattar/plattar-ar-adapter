@@ -44,7 +44,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_S3_REGION }}
           SOURCE_DIR: './plattar-ar-adapter/build/es2019'
-          DEST_DIR: '/public-sdk/plattar-ar-adapter/${{env.RELEASE_VERSION}}/'
+          DEST_DIR: 'public-sdk/plattar-ar-adapter/${{env.RELEASE_VERSION}}/'
   purge-cache:
     needs: publish
     runs-on: ubuntu-latest
