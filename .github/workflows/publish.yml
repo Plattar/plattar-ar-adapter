@@ -34,7 +34,7 @@ jobs:
           package: ./plattar-ar-adapter/package.json
           token: ${{ secrets.NPM_PUBLISH_KEY }}
           access: 'public'
-      - name: CDN Cache
+      - name: Plattar CDN Cache
         uses: Noelware/s3-action@2
         with:
             directories: |
@@ -45,3 +45,14 @@ jobs:
             region: ${{ secrets.AWS_S3_REGION }}
             path-format: $(prefix)/$(file)
             prefix: /plattar-ar-adapter/${{ env.RELEASE_VERSION }}
+  purge-cache:
+    needs: publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: gacts/purge-jsdelivr-cache@v1
+        with:
+          url: |
+            https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2015/plattar-ar-adapter.min.js
+            https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.min.js
+            https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2015/plattar-ar-adapter.js
+            https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.js
