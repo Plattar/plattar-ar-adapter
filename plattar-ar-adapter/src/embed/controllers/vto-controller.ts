@@ -302,19 +302,6 @@ export class VTOController extends PlattarController {
         return configAR.init();
     }
 
-    public removeRenderer(): boolean {
-        if (this._element) {
-            this._element.remove();
-            this._element = null;
-
-            return true;
-        }
-
-        this.removeMessengerObservers();
-
-        return false;
-    }
-
     public get element(): HTMLElement | null {
         return this._element;
     }

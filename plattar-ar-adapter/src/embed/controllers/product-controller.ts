@@ -291,17 +291,6 @@ export class ProductController extends PlattarController {
         });
     }
 
-    public removeRenderer(): boolean {
-        if (this._element) {
-            this._element.remove();
-            this._element = null;
-
-            return true;
-        }
-
-        return false;
-    }
-
     public get element(): HTMLElement | null {
         return this._element;
     }

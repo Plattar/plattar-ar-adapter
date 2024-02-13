@@ -4,6 +4,7 @@ import { PlattarController } from "./controllers/plattar-controller";
 import { ConfiguratorController } from "./controllers/configurator-controller";
 import { VTOController } from "./controllers/vto-controller";
 import { ProductController } from "./controllers/product-controller";
+import { Util } from "../util/util";
 
 /**
  * This tracks the current embed type
@@ -34,6 +35,7 @@ export default class PlattarEmbed extends HTMLElement {
     private _observerState: ObserverState = ObserverState.Unlocked;
     private _controller: PlattarController | null = null;
     private _currentSceneID: string | null = null;
+    private _currentServer: string | null = null;
     private _observer: MutationObserver | null = null;
 
     constructor() {
@@ -55,10 +57,6 @@ export default class PlattarEmbed extends HTMLElement {
      * creates a brand new instance of this embed
      */
     public create(): PlattarController | null {
-        // server cannot be changed once its set - defaults to production
-        const server: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
-        Server.create(Server.match(server || "production"));
-
         if (!this._observer) {
             this._observer = new MutationObserver((mutations: MutationRecord[]) => {
                 if (this._observerState === ObserverState.Unlocked) {
@@ -126,15 +124,25 @@ export default class PlattarEmbed extends HTMLElement {
      * embedding products with variations (without a scene-id)
      */
     private _CreateLegacyEmbed(): void {
-        this._controller = new ProductController(this);
+        // server cannot be changed once its set - defaults to production
+        const server: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
 
-        const init: string | null = this.hasAttribute("init") ? this.getAttribute("init") : null;
+        if (Util.isValidServerLocation(server)) {
+            Server.create(Server.match(server || "production"));
 
-        switch (init) {
-            case "viewer": this.startViewer();
-                break;
-            case "qrcode": this.startQRCode();
-                break;
+            this._controller = new ProductController(this);
+
+            const init: string | null = this.hasAttribute("init") ? this.getAttribute("init") : null;
+
+            switch (init) {
+                case "viewer": this.startViewer();
+                    break;
+                case "qrcode": this.startQRCode();
+                    break;
+            }
+        }
+        else {
+            console.warn("PlattarEmbed.CreateLegacy - cannot create as server attribute " + server + " is invalid, embed status remains unchanged");
         }
     }
 
@@ -143,6 +151,26 @@ export default class PlattarEmbed extends HTMLElement {
      * this can also be called when attributes/state changes so embeds can be re-loaded
      */
     private _CreateEmbed(attributeName: string): void {
+        // check if controller needs to be destroyed due to server change
+        const serverAttribute: string | null = this.hasAttribute("server") ? this.getAttribute("server") : "production";
+
+        if (this._currentServer !== serverAttribute) {
+            this._currentServer = serverAttribute || "production";
+
+            // reset the controller if any
+            if (this._controller) {
+                this._controller.removeRenderer();
+                this._controller = null;
+            }
+        }
+
+        if (!Util.isValidServerLocation(this._currentServer)) {
+            console.warn("PlattarEmbed.Create - cannot create as server attribute " + this._currentServer + " is invalid, embed status remains unchanged");
+            return;
+        }
+
+        Server.create(Server.match(this._currentServer || "production"));
+
         const embedType: string | null = this.hasAttribute("embed-type") ? this.getAttribute("embed-type") : "configurator";
         const currentEmbed: EmbedType = this._currentType;
 
