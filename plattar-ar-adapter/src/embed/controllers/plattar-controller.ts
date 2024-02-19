@@ -357,7 +357,22 @@ export abstract class PlattarController {
      * @param element - The element to append
      */
     public append(element: HTMLElement): void {
+        if (this._element !== element) {
+            return;
+        }
+
+        // ensure append only allows a single element in the shadow DOM
         const shadow = this.parent.shadowRoot || this.parent.attachShadow({ mode: 'open' });
+
+        if (shadow) {
+            let child = shadow.lastElementChild;
+
+            while (child) {
+                shadow.removeChild(child);
+                child = shadow.lastElementChild;
+            }
+        }
+
         shadow.append(element);
     }
 

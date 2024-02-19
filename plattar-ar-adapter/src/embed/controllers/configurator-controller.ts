@@ -225,6 +225,7 @@ export class ConfiguratorController extends PlattarController {
 
         // optional attributes
         let configState: DecodedConfiguratorState | null = null;
+        this._state = ControllerState.Renderer;
 
         try {
             const dState: DecodedConfiguratorState = await this.getConfiguratorState();
@@ -282,8 +283,6 @@ export class ConfiguratorController extends PlattarController {
         if (showUI) {
             viewer.setAttribute("show-ui", showUI);
         }
-
-        this._state = ControllerState.Renderer;
 
         return new Promise<HTMLElement>((accept, reject) => {
             this.append(viewer);
