@@ -178,6 +178,8 @@ export class VTOController extends PlattarController {
             throw new Error("VTOController.startRenderer() - minimum required attributes not set, use scene-id as a minimum")
         }
 
+        this._state = ControllerState.Renderer;
+
         // required attributes with defaults for plattar-facear node
         const width: string = this.getAttribute("width") || "500px";
         const height: string = this.getAttribute("height") || "500px";
@@ -226,8 +228,6 @@ export class VTOController extends PlattarController {
         if (variationID) {
             viewer.setAttribute("variation-id", variationID);
         }
-
-        this._state = ControllerState.Renderer;
 
         return new Promise<HTMLElement>((accept, reject) => {
             this.append(viewer);
