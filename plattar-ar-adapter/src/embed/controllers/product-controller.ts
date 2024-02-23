@@ -95,17 +95,17 @@ export class ProductController extends PlattarController {
 
                 viewer.setAttribute("url", opt.url || dst);
 
-                viewer.onload = () => {
-                    return accept(viewer);
-                };
-
-                this.append(viewer);
-
                 this._element = viewer;
                 this._state = ControllerState.QRCode;
                 this._prevQROpt = opt;
 
-                return;
+                return new Promise<HTMLElement>((accept, reject) => {
+                    viewer.onload = () => {
+                        return accept(viewer);
+                    };
+
+                    this.append(viewer);
+                });
             }
 
             return reject(new Error("ProductController.startQRCode() - minimum required attributes not set, use product-id as a minimum"));
@@ -199,15 +199,17 @@ export class ProductController extends PlattarController {
 
             viewer.setAttribute("url", opt.url || dst);
 
-            viewer.onload = () => {
-                return accept(viewer);
-            };
-
             this._element = viewer;
             this._state = ControllerState.QRCode;
             this._prevQROpt = opt;
 
-            this.append(viewer);
+            return new Promise<HTMLElement>((accept, reject) => {
+                viewer.onload = () => {
+                    return accept(viewer);
+                };
+
+                this.append(viewer);
+            });
         });
     }
 
@@ -248,16 +250,16 @@ export class ProductController extends PlattarController {
                     viewer.setAttribute("show-ar", showAR);
                 }
 
-                viewer.onload = () => {
-                    return accept(viewer);
-                };
-
-                this.append(viewer);
-
                 this._element = viewer;
                 this._state = ControllerState.Renderer;
 
-                return;
+                return new Promise<HTMLElement>((accept, reject) => {
+                    viewer.onload = () => {
+                        return accept(viewer);
+                    };
+
+                    this.append(viewer);
+                });
             }
 
             return reject(new Error("ProductController.startRenderer() - minimum required attributes not set, use scene-id as a minimum"));
