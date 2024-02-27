@@ -29,5 +29,5 @@ See [plattar-ar-adapter](https://github.com/Plattar/plattar-ar-adapter) reposito
 Use the following script to embed the latest version of the pre-built plattar-ar-adapter SDK on your existing website.
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.min.js"></script>
+<script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
 ```

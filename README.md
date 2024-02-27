@@ -10,16 +10,8 @@ _plattar-ar-adapter_ allows easy interfacing with Apple Quicklook and Google Sce
 
 ### _Quick Use_
 
--   ES2015 & ES2019 Builds via [jsDelivr](https://www.jsdelivr.com/)
-
 ```javascript
-// Minified Version ES2015 & ES2019 (Latest)
-https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2015/plattar-ar-adapter.min.js
-https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.min.js
-
-// Standard Version ES2015 & ES2019 (Latest)
-https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2015/plattar-ar-adapter.js
-https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.js
+https://sdk.plattar.com/plattar-plugin.min.js
 ```
 
 ### _Installation_
@@ -32,4 +24,4 @@ npm install @plattar/plattar-ar-adapter
 
 ### _Documentation and Examples_
 
-- Visit [Documentation](https://plattar.github.io/plattar-ar-adapter) page for usage, guides and code examples
+- Visit [Documentation](https://docs.plattar.com) page for usage, guides and code examples
