@@ -155,7 +155,7 @@ export class WebXRController extends PlattarController {
         const height: string = this.getAttribute("height") || "500px";
         const server: string = this.getAttribute("server") || "production";
 
-        const viewer: HTMLElement = document.createElement("plattar-ewall");
+        const viewer: HTMLElement = document.createElement("plattar-8wall");
         this._element = viewer;
 
         viewer.setAttribute("width", width);
