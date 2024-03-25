@@ -5,6 +5,7 @@ import { ConfiguratorController } from "./controllers/configurator-controller";
 import { VTOController } from "./controllers/vto-controller";
 import { ProductController } from "./controllers/product-controller";
 import { Util } from "../util/util";
+import { WebXRController } from "./controllers/webxr-controller";
 
 /**
  * This tracks the current embed type
@@ -13,6 +14,7 @@ enum EmbedType {
     Configurator,
     Legacy,
     VTO,
+    WebXR,
     None
 }
 
@@ -179,6 +181,9 @@ export default class PlattarEmbed extends HTMLElement {
                 case "vto":
                     this._currentType = EmbedType.VTO;
                     break;
+                case "webxr":
+                    this._currentType = EmbedType.WebXR;
+                    break;
                 case "viewer":
                 case "configurator":
                 default:
@@ -212,6 +217,9 @@ export default class PlattarEmbed extends HTMLElement {
             switch (this._currentType) {
                 case EmbedType.Configurator:
                     this._controller = new ConfiguratorController(this);
+                    break;
+                case EmbedType.WebXR:
+                    this._controller = new WebXRController(this);
                     break;
                 case EmbedType.VTO:
                     this._controller = new VTOController(this);
