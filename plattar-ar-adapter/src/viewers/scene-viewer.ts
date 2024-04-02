@@ -36,7 +36,7 @@ export default class SceneViewer extends ARViewer {
             intent += '&enable_vertical_placement=true';
         }
 
-        intent += '#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;';
+        intent += '&a=b#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;';
         intent += `S.browser_fallback_url=${linkOverride};end;`;
 
         const anchor: HTMLAnchorElement = document.createElement("a");
