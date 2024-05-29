@@ -32,6 +32,7 @@ export abstract class PlattarController {
     protected _prevQROpt: any = null;
 
     private _selectVariationObserver: any = null;
+    private _selectVariationIDObserver: any = null;
     private _selectVariationSKUObserver: any = null;
 
     constructor(parent: PlattarEmbed) {
@@ -105,6 +106,17 @@ export abstract class PlattarController {
             }
         });
 
+        this._selectVariationIDObserver = viewer.messengerInstance.observer.subscribe("selectVariationID", (cd: any) => {
+            if (cd.type === "call") {
+                const args: string | Array<string> | undefined | null = cd.data[0];
+                const variations: Array<string> = args ? (Array.isArray(args) ? args : [args]) : [];
+
+                variations.forEach((variationID: string) => {
+                    configState.state.setVariationID(variationID);
+                });
+            }
+        });
+
         this._selectVariationSKUObserver = viewer.messengerInstance.observer.subscribe("selectVariationSKU", (cd: any) => {
             if (cd.type === "call") {
                 const args: string | Array<string> | undefined | null = cd.data[0];
@@ -124,6 +136,11 @@ export abstract class PlattarController {
         if (this._selectVariationObserver) {
             this._selectVariationObserver();
             this._selectVariationObserver = null;
+        }
+
+        if (this._selectVariationIDObserver) {
+            this._selectVariationIDObserver();
+            this._selectVariationIDObserver = null;
         }
 
         if (this._selectVariationSKUObserver) {

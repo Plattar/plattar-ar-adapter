@@ -44,11 +44,11 @@
     "@plattar/plattar-web": "^1.169.1"
   },
   "devDependencies": {
-    "@babel/cli": "^7.24.1",
-    "@babel/core": "^7.24.3",
-    "@babel/preset-env": "^7.24.3",
+    "@babel/cli": "^7.24.6",
+    "@babel/core": "^7.24.6",
+    "@babel/preset-env": "^7.24.6",
     "browserify": "^17.0.0",
-    "typescript": "^5.4.3",
+    "typescript": "^5.4.5",
     "uglify-js": "^3.17.4"
   },
   "publishConfig": {
