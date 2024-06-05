@@ -10,11 +10,13 @@ The QRCode Renderer generates the internal URL dynamically based on the various 
 
 ### Properties
 
+- **url** - accepts a url for the qr-code to load when scanned by a mobile device.
+
 - **width** (optional) - accepts a css width property for the container.
 - **height** (optional) - accepts a css height property for the container.
-- **url** (optional) - accepts a url for the qr-code to load when scanned by a mobile device.
 
 - **color** (optional) - accepts a hexadecimal HTML color that will be applied to the QR Code. Defaults to color `#101721` when not supplied.
+
 ```html
 <plattar-qrcode color="#ff0000" />
 ```
@@ -50,9 +52,8 @@ The QRCode Renderer generates the internal URL dynamically based on the various 
 
 ### Codepen Live Example
 
-<p class="codepen" data-height="500" data-default-tab="html,result" data-slug-hash="jOomRaz" data-pen-title="QR Code Use" data-user="plattar" style="height: 300px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: 2px solid; margin: 1em 0; padding: 1em;">
-  <span>See the Pen <a href="https://codepen.io/plattar/pen/jOomRaz">
+<iframe height="500" style="width: 100%;" scrolling="no" title="QR Code Use" src="https://codepen.io/plattar/embed/jOomRaz?default-tab=html%2Cresult" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+  See the Pen <a href="https://codepen.io/plattar/pen/jOomRaz">
   QR Code Use</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
-  on <a href="https://codepen.io">CodePen</a>.</span>
-</p>
-<script async src="https://cpwebassets.codepen.io/assets/embed/ei.js"></script>
+  on <a href="https://codepen.io">CodePen</a>.
+</iframe>
