@@ -273,9 +273,10 @@ export class ConfiguratorController extends PlattarController {
         const showUI: string | null = this.getAttribute("show-ui");
 
         if (configState) {
-            let encodedState = configState.state.encode();
-            if(encodedState.length < 6000){
-                viewer.setAttribute("config-state", configState.state.encode());
+            const encodedState = configState.state.encode();
+
+            if (encodedState.length < 6000) {
+                viewer.setAttribute("config-state", encodedState);
             }
         }
 
