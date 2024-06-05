@@ -19,7 +19,8 @@ The software is open source and maintained by the Plattar team. Souce code can b
 
 #### General Guides
 
-- [Default AR Button](guides/default-ar-button.md)
+<!-- - [Default AR Button](guides/default-ar-button.md) -->
+- [Standalone QRCode Use](guides/qrcode-use.md)
 - [QRCode Routing](guides/qrcode-routing.md)
 - [QRCode Scanning](guides/qrcode-scanning.md)
 - [QRCode Styling](guides/qrcode-styling.md)
