@@ -15,6 +15,8 @@ enum EmbedType {
     Legacy,
     VTO,
     WebXR,
+    Gallery,
+    Launcher,
     None
 }
 
@@ -183,6 +185,12 @@ export default class PlattarEmbed extends HTMLElement {
                     break;
                 case "webxr":
                     this._currentType = EmbedType.WebXR;
+                    break;
+                case "gallery":
+                    this._currentType = EmbedType.Gallery;
+                    break;
+                case "launcher":
+                    this._currentType = EmbedType.Launcher;
                     break;
                 case "viewer":
                 case "configurator":
