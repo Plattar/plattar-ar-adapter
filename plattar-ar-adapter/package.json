@@ -41,7 +41,7 @@
     "@plattar/plattar-api": "^1.178.1",
     "@plattar/plattar-qrcode": "1.165.1",
     "@plattar/plattar-services": "^1.157.1",
-    "@plattar/plattar-web": "^1.178.1"
+    "@plattar/plattar-web": "^1.178.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.25.9",
