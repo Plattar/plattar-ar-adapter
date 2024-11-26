@@ -1,4 +1,3 @@
-import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
 import { ConfiguratorState, DecodedConfiguratorState, SceneProductData } from "../../util/configurator-state";
@@ -84,107 +83,7 @@ export class LauncherController extends PlattarController {
     }
 
     public async startViewerQRCode(options: any): Promise<HTMLElement> {
-        // remove the old renderer instance if any
-        this.removeRenderer();
-
-        const sceneID: string | null = this.getAttribute("scene-id");
-
-        if (!sceneID) {
-            throw new Error("LauncherController.startViewerQRCode() - minimum required attributes not set, use scene-id as a minimum");
-        }
-
-        // optional attributes
-        let configState: string | null = null;
-
-        try {
-            const dState: DecodedConfiguratorState = await this.getConfiguratorState();
-
-            // if this is declared, we have a furniture scene that we need to re-create the embed
-            // with new attributes
-            const product = dState.state.firstOfType("product");
-
-            if (product) {
-                this.parent.lockObserver();
-                this.parent.destroy();
-                this.setAttribute("product-id", product.scene_product_id);
-                this.removeAttribute("scene-id");
-                this.parent.unlockObserver();
-                const controller = this.parent.create();
-
-                if (controller) {
-                    return controller.startViewerQRCode(options);
-                }
-
-                return Promise.reject(new Error("LauncherController.startViewerQRCode() - legacy product transition failed"));
-            }
-
-            configState = dState.state.encode();
-        }
-        catch (_err) {
-            // config state is not available
-            configState = null;
-        }
-
-        const opt: any = options || this._GetDefaultQROptions();
-
-        const viewer: HTMLElement = document.createElement("plattar-qrcode");
-        this._element = viewer;
-
-        // required attributes with defaults for plattar-viewer node
-        const width: string = this.getAttribute("width") || "500px";
-        const height: string = this.getAttribute("height") || "500px";
-
-        viewer.setAttribute("width", width);
-        viewer.setAttribute("height", height);
-
-        if (opt.color) {
-            viewer.setAttribute("color", opt.color);
-        }
-
-        if (opt.margin) {
-            viewer.setAttribute("margin", "" + opt.margin);
-        }
-
-        if (opt.qrType) {
-            viewer.setAttribute("qr-type", opt.qrType);
-        }
-
-        viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
-
-        let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + sceneID;
-
-        const showAR: string | null = this.getAttribute("show-ar");
-        const showUI: string | null = this.getAttribute("show-ui");
-        const showBanner: string | null = this.getAttribute("show-ar-banner");
-
-        if (showUI && showUI === "true") {
-            dst = Server.location().base + "configurator/dist/index.html?scene_id=" + sceneID;
-        }
-
-        if (configState) {
-            dst += "&config_state=" + configState;
-        }
-
-        if (showAR) {
-            dst += "&show_ar=" + showAR;
-        }
-
-        if (showBanner) {
-            dst += "&show_ar_banner=" + showBanner;
-        }
-
-        viewer.setAttribute("url", opt.url || dst);
-
-        this._state = ControllerState.QRCode;
-        this._prevQROpt = opt;
-
-        return new Promise<HTMLElement>((accept, reject) => {
-            viewer.onload = () => {
-                return accept(viewer);
-            };
-
-            this.append(viewer);
-        });
+        return this.startARQRCode(options);
     }
 
     public async startRenderer(): Promise<HTMLElement> {
