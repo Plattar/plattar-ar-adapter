@@ -8,9 +8,14 @@ The software is open source and maintained by the Plattar team. Souce code can b
 
 ### Table of Contents
 
-#### Installation
-
+#### Get Started
 - [Installation](installation/installation.md)
+- [Loading a Scene](installation/loading-scene.md)
+- [Selecting Variation](installation/selecting-variation.md)
+- [View in AR](installation/view-ar.md)
+- [Taking Screenshot](installation/screenshot.md)
+- [Final Example](installation/final-example.md)
+- [API Reference](installation/api-reference.md)
 
 #### Web Integrations
 
