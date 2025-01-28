@@ -278,7 +278,14 @@ export class VTOController extends PlattarController {
                 productID: first.scene_product_id,
                 variationID: first.product_variation_id,
                 variationSKU: null,
-                useARBanner: this.getBooleanAttribute("show-ar-banner")
+                arBanner: {
+                    enabled: this.getBooleanAttribute("show-ar-banner"),
+                    details: {
+                        title: this.getAttribute("ar-banner-title"),
+                        subtitle: this.getAttribute("ar-banner-subtitle"),
+                        ctaName: this.getAttribute("ar-banner-button")
+                    }
+                }
             });
 
             return sceneProductAR.init();
@@ -297,7 +304,17 @@ export class VTOController extends PlattarController {
             throw new Error("VTOController.initAR() - generated AR minimum required attributes not set, use scene-id as a minimum");
         }
 
-        const configAR: ConfiguratorAR = new ConfiguratorAR({ state: await this.getConfiguratorState(), useARBanner: this.getBooleanAttribute("show-ar-banner") });
+        const configAR: ConfiguratorAR = new ConfiguratorAR({
+            state: await this.getConfiguratorState(),
+            arBanner: {
+                enabled: this.getBooleanAttribute("show-ar-banner"),
+                details: {
+                    title: this.getAttribute("ar-banner-title"),
+                    subtitle: this.getAttribute("ar-banner-subtitle"),
+                    ctaName: this.getAttribute("ar-banner-button")
+                }
+            }
+        });
 
         return configAR.init();
     }
