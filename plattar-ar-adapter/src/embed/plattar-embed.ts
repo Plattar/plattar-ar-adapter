@@ -6,6 +6,8 @@ import { VTOController } from "./controllers/vto-controller";
 import { ProductController } from "./controllers/product-controller";
 import { Util } from "../util/util";
 import { WebXRController } from "./controllers/webxr-controller";
+import { GalleryController } from "./controllers/gallery-controller";
+import { LauncherController } from "./controllers/launcher-controller";
 
 /**
  * This tracks the current embed type
@@ -15,6 +17,8 @@ enum EmbedType {
     Legacy,
     VTO,
     WebXR,
+    Gallery,
+    Launcher,
     None
 }
 
@@ -184,6 +188,12 @@ export default class PlattarEmbed extends HTMLElement {
                 case "webxr":
                     this._currentType = EmbedType.WebXR;
                     break;
+                case "gallery":
+                    this._currentType = EmbedType.Gallery;
+                    break;
+                case "launcher":
+                    this._currentType = EmbedType.Launcher;
+                    break;
                 case "viewer":
                 case "configurator":
                 default:
@@ -220,6 +230,12 @@ export default class PlattarEmbed extends HTMLElement {
                     break;
                 case EmbedType.WebXR:
                     this._controller = new WebXRController(this);
+                    break;
+                case EmbedType.Gallery:
+                    this._controller = new GalleryController(this);
+                    break;
+                case EmbedType.Launcher:
+                    this._controller = new LauncherController(this);
                     break;
                 case EmbedType.VTO:
                     this._controller = new VTOController(this);
