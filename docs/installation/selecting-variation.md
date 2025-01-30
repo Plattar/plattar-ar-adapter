@@ -1,7 +1,9 @@
 [Back to Main](./)
 
 
-## Changing Between Variation
+## Selecting Variation
+While changing between scenes work for multiple different products, sometimes products are more a variation of each other rather than a different object entirely. In which case we'll instead change between variation rather than changing the scne entirely 
+
 ### Getting Variation ID 
 
 Just like changing scenes, before we can change variation we first have to get their ids. For variation in a single scene, the `Variation ID` and `SKU` can be copied from the Plattar CMS through the editor, not too disimilar to `Scene ID`

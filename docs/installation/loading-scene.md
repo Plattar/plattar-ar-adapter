@@ -4,7 +4,7 @@
 
 ## Quick start
 
-To start, we'll begin with a simple example showing the most basic example for a 360 integration 
+To start, we'll begin with a simple example showing the most basic example for a 360 renderer 
 
 - First, we'll need to [install](../installation/installation.md) the plattar plugin, which can easily be done by adding this embed code into your website
     ```html
@@ -24,8 +24,10 @@ For this example, we'll use [attributes](../guides/node-attributes.md) to change
 </iframe>
 
 ## Changing Between Scenes
+In the first example, we get the embed tag with `scene-id` attribute and other mandatory attributes through the CMS. During runtime, we can change this scene ID to change between multiple scenes. The renderer will automatically change between scenes when a new `scene-id` is loaded 
+
 ### Getting the Scene ID
-Before we start, we first have to get a `Scene ID` from multiple scenes we'd like to change between. The `Scene ID` can be copied directly from the Plattar CMS. This ID is static for the duration of the Scene's existance and will not change when the scene is modified. Each Scene contains a unique GUID (Global Unique Identifier).
+Before we start, we first have to get a `Scene ID` from multiple scenes we'd like to change between. The `Scene ID` can be copied directly from the Plattar CMS just like the full embed tag. This ID is static for the duration of the Scene's existance and will not change when the scene is modified. Each Scene contains a unique GUID (Global Unique Identifier).
 
 - Click on your Scene to enter the Scene Editor 
 ![Scene ID can be located on the top right corner under 'Scene Settings'](OpenEditor.jpg){ width=1000px }
