@@ -10,31 +10,102 @@ One of the feature that the plattar renderer supports is the ability to render y
 
 To help user transport between the web platform to mobile, the Plattar plugin can automaticlaly generate a QR code which links to a standalone renderer on mobile. From mobile, you can easily quite easily enter augmented reality.
 
-{fig 1, renderign in augmented reality}
+{fig 1, rendering in augmented reality}
 
 ### How to
 
 - First, just like in the basic example we'll get the embed tag through the CMS and install the plattar plugin through a script tag. (If you need a refresher, you can go back to the [basic example](./loading-scene.md))
 
+```html
+<!-- Installing the PLattar Plugin -->
+<script src="https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.min.js"></script>
+
+<section>
+  <div>
+  <!-- The embed code acquired from the CMS -->
+    <plattar-embed id = "embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height = 700px ></plattar-embed>
+  </div>
+</section>
+
+```
 - From here, we can add a button which we'll use to trigger switching into AR
 
-{codepen here}
+```html
+
+<script src="https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.min.js"></script>
+
+
+<!-- Added a button which calls a function in the script-->
+<section>
+  <div>
+    <button onclick="launchAR()" >Launch AR/Return</button>
+  </div>
+</section>
+
+<section>
+  <div>
+    <plattar-embed id = "embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height = 700px ></plattar-embed>
+  </div>
+</section>
+
+```
+
 
 - Now we can start adding some functionality into the script. In your script, we can start by getting the embed tag from the DOM and creating a simple function that will be called when the button is pressed
 
-{codepen here}
+```javascript
+//getting the embed Tag
+const embed = document.getElementById("embed");
 
-- There's multiple ways to launch the AR Launcher, we'll use the embed-type for this example, all we need to do is to change the `embed-type` inside the embed tag attribute to `launcher`
+//A function that gets called when the button is pressed
+function launchAR(){
 
-- We want this button to both function as a way to trigger the AR Launcher and hides it, as such we'll first have to figure out what the current state of the embed type we can do this using ```getAttribute("embed-type")```
+}
+```
 
-{codepen here}
+- There's multiple ways to launch the AR Launcher, we'll use the `embed-type` for this example, all we need to do is to change the `embed-type` inside the embed tag attribute to `launcher`
+
+- before that however, since we only have 1 button, we want it to both function as a way to trigger the AR Launcher and hides it (i.e. return back to the 360 viewer), as such we'll first have to figure out what the current state of the embed type is. We can do this using ```getAttribute("embed-type")```
+
+```javascript
+const embed = document.getElementById("embed");
+
+function launchAR(){
+  //Prints out what's the current state of the embed-type is
+  console.log(embed.getAttribute("embed-type"))
+}
+```
 
 - From here we can add a simple if statement which only triggers when the renderer isn't in Launcher mode and to switch between them
 
-{codepen here}
+```javascript
+const embed = document.getElementById("embed");
+
+function launchAR(){
+  //Depending on the embed-type trigger one of these lines
+  //Notably, this works even if the embed type starts as a null instead of viewer
+  if ((embed.getAttribute("embed-type")) != "launcher")
+      console.log("Launch")
+  else 
+      console.log("Return")
+}
+```
+
 
 - Finally, Using a similar method to changing variant, we'll use `setAttribute()` to change between `embed-type`s
+```javascript
+const embed = document.getElementById("embed");
+
+function launchAR(){
+  console.log("Launch")
+  if ((embed.getAttribute("embed-type")) != "launcher")
+      //uses set attribute to change between launcher and viewer
+      embed.setAttribute("embed-type", "launcher")
+  else 
+      embed.setAttribute("embed-type", "viewer")
+}
+```
+
 
 ### Final result 
 <iframe height="600" style="width: 100%;" scrolling="no" title="Changing to AR Mode" src="https://codepen.io/plattar/embed/ZYzwJqe?default-tab=js%2Cresult&editable=true" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
