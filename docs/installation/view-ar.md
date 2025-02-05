@@ -4,19 +4,19 @@
 
 [Jump to final result](#final-result)
 
-One of the feature that the plattar renderer supports is the ability to render your scenes in augmented reality. This is limited to the mobile platform as the feature is supported through ARCore and AppleAR. 
+One of the features that the plattar renderer supports is the ability to render your scenes in augmented reality. This is limited to the mobile platform as the feature is supported through ARCore and AppleAR. 
 
 ![ArFig](ARFig.jpg)
 
-To help user transport between the web platform to mobile, the Plattar plugin can automaticlaly generate a QR code which links to a standalone renderer on mobile. From mobile, you can easily quite easily enter augmented reality.
+To help users transport between the web platform to mobile, the Plattar plugin can automatically generate a QR code which links to a standalone renderer on mobile. From mobile, you can easily enter augmented reality.
 
-### How to
+### Switching from renderer to Launcher
 
 - First, just like in the basic example we'll get the embed tag through the CMS and install the plattar plugin through a script tag. (If you need a refresher, you can go back to the [basic example](./loading-scene.md))
   
   ```html
   <!-- Installing the PLattar Plugin -->
-  <script src="https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.min.js"></script>
+  <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
   
   <section>
     <div>
@@ -29,7 +29,7 @@ To help user transport between the web platform to mobile, the Plattar plugin ca
 - From here, we can add a button which we'll use to trigger switching into AR
   
   ```html
-  <script src="https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.min.js"></script>
+  <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
 
   <!-- Added a button which calls a function in the script-->
 
@@ -46,7 +46,7 @@ To help user transport between the web platform to mobile, the Plattar plugin ca
     </section>
 
   ```
-- Now we can start adding some functionality into the script. In your script, we can start by getting the embed tag from the DOM and creating a simple function that will be called when the button is pressed
+- Now we can start adding some functionality into the script. We can start by getting the embed tag from the DOM and creating a simple function that will be called when the button is pressed
 
   ```javascript
   //getting the embed Tag
@@ -60,7 +60,7 @@ To help user transport between the web platform to mobile, the Plattar plugin ca
 
 - There's multiple ways to launch the AR Launcher, we'll use the `embed-type` for this example, all we need to do is to change the `embed-type` inside the embed tag attribute to `launcher`
 
-- before that however, since we only have 1 button, we want it to both function as a way to trigger the AR Launcher and hides it (i.e. return back to the 360 viewer), as such we'll first have to figure out what the current state of the embed type is. We can do this using ```getAttribute("embed-type")```
+- Before that, however, since we only have 1 button, we want it to both function as a way to trigger the AR Launcher and hide it (i.e. return back to the 360 viewer), as such we'll first have to figure out what the current state of the embed type is. We can do this using ```getAttribute("embed-type")```
   
   ```javascript
   const embed = document.getElementById("embed");
@@ -94,7 +94,7 @@ To help user transport between the web platform to mobile, the Plattar plugin ca
   function launchAR(){
     console.log("Launch")
     if ((embed.getAttribute("embed-type")) != "launcher")
-        //uses set attribute to change between launcher and viewer
+        //uses setAttribute() to change between launcher and viewer
         embed.setAttribute("embed-type", "launcher")
     else 
         embed.setAttribute("embed-type", "viewer")
@@ -111,6 +111,6 @@ To help user transport between the web platform to mobile, the Plattar plugin ca
 
 ### Demonstration
 
-As previously mentioned, the AR launcher only works on Mobile, as such isntead of starting augmented reality from the web, it'll insetad create a QR code, which once scanned will lead you to the current renderer with a button to launch AR form your phone
+As previously mentioned, the AR launcher only works on Mobile, as such instead of starting augmented reality from the web, it will instead create a QR code, which once scanned will lead you to the current renderer with a button to launch AR from your phone
 
-<img title="" src="ARDemo.gif" alt="ARDemo" width="387" data-align="center">
+![[ARDemo.gif]]{ width=400px }
