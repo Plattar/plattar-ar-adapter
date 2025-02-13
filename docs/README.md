@@ -11,9 +11,13 @@ The software is open source and maintained by the Plattar team. Souce code can b
 #### Get Started
 - [Installation](installation/installation.md)
 - [Loading a Scene](installation/loading-scene.md)
-- [Selecting Variation](installation/selecting-variation.md)
-- [View in AR](installation/view-ar.md)
+- [Changing between Scenes](installation/changing-scene.md)
+- [Selecting Variation using plattar id](installation/selecting-variation.md)
+- [Selecting Variation using SKU](installation/selecting-variation.md)
+- [Selecting multiple Variations at the same time](installation/selecting-variation.md)
 - [Taking Screenshot](installation/screenshot.md)
+- [View in AR](installation/view-ar.md)
+- [Gallery View](installation/view-ar.md)
 - [Final Example](installation/final-example.md)
 - [API Reference](installation/api-reference.md)
 
