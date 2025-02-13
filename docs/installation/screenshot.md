@@ -4,24 +4,13 @@
 
 [Jump to final result](#taking-screenshot-final-result)
 
-Taking a screenshot of a product is an additional feature that can be added into existing infrastructure. All we need to do is call the `takeScreenshot()` [function](./api-reference.md)
+The Plattar Plugin supports the ability to take a screenshot of the scene which can then be displayed in the user's cart or order form. To do this we can call the `takeScreenshot()` [function](./api-reference.md).
 
 ## Taking and Displaying Screenshots
 
-- First, just like in the basic example we'll get the embed tag through the CMS and install the plattar plugin through a script tag. (If you need a refresher, you can go back to the [basic example](./loading-scene.md))
-  
-  ```html
-  <!-- Installing the Plattar Plugin -->
-  <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
-  
-  <section>
-    <div>
-    <!-- The embed code acquired from the CMS -->
-      <plattar-embed id = "embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height = 700px ></plattar-embed>
-    </div>
-  </section>
-  ```
-- Then we'll add a button into the html that calls `takeScreenshot(500,500)` fucntion which we will implement later on. This function takes two value: width and height for the screenshot.
+-  First, we'll get the embed tag through the CMS and install the plattar plugin through a script tag. (If you need a refresher, you can go back to the [basic example](./loading-scene.md/#changing-between-scenes))
+
+- Then we'll add a button into the html that calls `takeScreenshot(500,500)` function which we will implement later on. This function takes two values: the width and height for the screenshot.
 
   ```html
   <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
@@ -29,13 +18,13 @@ Taking a screenshot of a product is an additional feature that can be added into
   <!-- add a button which will call takeScreenshot()-->
   <section>
     <div>
-      <button type="button" onclick="takeScreenshot(500,500)">Take Screenshot</button>
+      <button type="button" onclick="takeScreenshot(500, 500)">Take Screenshot</button>
     </div>
   </section>
 
   <section>
     <div>
-      <plattar-embed id = "embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height = 700px ></plattar-embed>
+      <plattar-embed id="embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height="700px" ></plattar-embed>
     </div>
   </section>
   ```
@@ -53,22 +42,24 @@ Taking a screenshot of a product is an additional feature that can be added into
     <div>
       <plattar-embed id = "embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height = 700px ></plattar-embed>
       <!-- add the image tag -->
-      <img height = 700px id='thumbnail'>
+      <img height="700px" id='thumbnail'>
     </div>
   </section>
   ```
 
-- Now, moving into the javascript, we'll first find the embed through its id and add the `takeScreenshot(width,height)` which we'll implement on the next step
+- Now, moving onto the JavaScript, we'll first find the embed through its id and add the `takeScreenshot(width, height)` which we'll implement on the next step.
 
   ```javascript
   //get the embed
   const embed = document.getElementById("embed");
 
   //create takeScreenshot(width,height) function
-  function takeScreenshot(width,height) {}
+  function takeScreenshot(width,height) {
+
+  }
   ```
 
-- Inside this function we'll call  `viewer.messenger.takeScreenshot ({width: int, height: int})` to take a screenshot for the current view of the editor 
+- Inside this function we'll call  `viewer.messenger.takeScreenshot({width: int, height: int})` to take a screenshot of the 3D Viewer.
 
   ```javascript
   const embed = document.getElementById("embed");
@@ -78,12 +69,12 @@ Taking a screenshot of a product is an additional feature that can be added into
       .takeScreenshot({
         width: width,
         height: height
-      })
+      });
   }
   ```
   Technically, the screenshot is working now, but we can't see it yet because we haven't added a function to display it.
-  
-- To display the screenshot, we'll use a callback function. In this example, an [anonymous](https://www.geeksforgeeks.org/javascript-anonymous-functions/) function will execute once the screenshot is successfully taken. 
+
+- To display the screenshot, we'll use a promise chain. In this example, an [anonymous](https://www.geeksforgeeks.org/javascript-anonymous-functions/) function will execute once the screenshot is successfully taken.
 
   ```javascript
   const embed = document.getElementById("embed");
@@ -96,7 +87,7 @@ Taking a screenshot of a product is an additional feature that can be added into
       })
       //this section of the code will be called once the screenshot is taken.
       .then(function () {
-        console.log("Screenshot taken")
+        console.log("Screenshot taken");
       });
   }
   ```
@@ -111,7 +102,7 @@ Taking a screenshot of a product is an additional feature that can be added into
         width: width,
         height: height
       })
-      //the function takes in an imagebase64, a raw data containing the screenshot 
+      //the function takes in an imagebase64, a raw data containing the screenshot
       .then(function (imageBase64) {
         //get the img tag by id
         var image = document.getElementById("thumbnail");

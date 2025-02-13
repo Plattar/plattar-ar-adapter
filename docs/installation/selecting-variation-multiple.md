@@ -1,26 +1,16 @@
 [Back to Main](./)
 
 
-## Selecting multiple Variation at the same time
-On certain scenarios, you might want to change multiple variation at the same time.
+## Selecting Multiple Variations
+In certain scenarios, you might want to change multiple variations at the same time.
 
 ### Changing multiple variations using attribute
 To follow this guide you need to know how to [install](installation.md) the plattar plugin, get the [embed tag](loading-scene.md) through the CMS, get the [variation-id](selecting-variation-id.md#getting-variation-id) or [sku](selecting-variation-sku.md#getting-variation-sku), and change between them through [attribute](selecting-variation-sku.md#changing-variation-using-attribute) or [function](selecting-variation-sku.md#changing-variation-using-function).
 
--  First, just like in the basic example we'll get the embed tag through the CMS and install the plattar plugin through a script tag. (If you need a refresher, you can go back to the [basic example](./loading-scene.md/#changing-between-scenes))
-  ```html
-  <!-- Installing the PLattar Plugin -->
-  <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
-  
-  <section>
-    <div>
-    <!-- The embed code acquired from the CMS -->
-      <plattar-embed id = "embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height = 700px ></plattar-embed>
-    </div>
-  </section>
-  ```
+-  First, we'll get the embed tag through the CMS and install the plattar plugin through a script tag. (If you need a refresher, you can go back to the [basic example](./loading-scene.md/#changing-between-scenes))
 
-- Next we'll add a couple of buttons we'll use to change between the variations
+
+- Next we'll add a couple of buttons to change between the variations
 
 ```html
 <!-- install script tag above -->
@@ -28,14 +18,14 @@ To follow this guide you need to know how to [install](installation.md) the plat
 <section>
   <div>
     <p>Combinations</p>
-    <button type="button" >Base</button>
+    <button type="button">Base</button>
     <button type="button">Black and Gold</button>
     <button type="button">All Blue</button>
   </div>
 </section>
 <!-- embed tag below -->
 ```
-- Just like in other examples, we'll use this button to call a function on click. As for value, we'll use a comma seperated value to change multiple variations at the same time 
+- Just like in other examples, we'll use this button to call a function on click. As for the value attribute, we'll use a comma separated value to change multiple variations at the same time .
 
 ```html
 <!-- install script tag above -->
@@ -53,7 +43,7 @@ To follow this guide you need to know how to [install](installation.md) the plat
 ```
 >Note that When changing multiple variation at the same time using the attributes, the `variation-id` or `SKU` has to be separated using a **comma without space**
 
-- Moving into the javascript, we'll start of by getting the tag through an id search and defining the function we made for the buttons to call on click
+- Moving into the JavaScript, we'll start of by getting the tag through an id search and defining the function we made for the buttons to call on click.
 ```javascript
 //get the embed tag through its id
 const embed = document.getElementById("embed");
@@ -62,18 +52,18 @@ const embed = document.getElementById("embed");
 function selectSKU(sku) {}
 ```
 
-- using `setAttribute(attribute, value)` now we'll change the SKU attribute. In the case of using attribute, these comma without values should be intrepted by the plugin without any more user involvement
+- using `setAttribute(attribute, value)` now we'll change the SKU attribute. The Plattar Plugin will detect the attribute change and swap to the selected variations in teh scene.
 
 ```javascript
 const embed = document.getElementById("embed");
 
 function selectSKU(sku) {
-    //directly use setAttribute() to change the value of the variation-sku. no changes needed to be amde since the value is already in the correct format
-    embed.setAttribute("variation-sku", sku)
+  //directly use setAttribute() to change the value of the variation-sku. no changes needed to be amde since the value is already in the correct format
+  embed.setAttribute("variation-sku", sku);
 }
 ```
 
-#### Changing multiple variations using attribute final example
+#### Changing multiple variations using attribute example
 
 <iframe height="600" style="width: 100%;" scrolling="no" title="Changing Multiple Variant Using Attribute" src="https://codepen.io/plattar/embed/wBvvRXG?default-tab=js%2Cresult&editable=true" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
   See the Pen <a href="https://codepen.io/plattar/pen/wBvvRXG">
@@ -87,7 +77,7 @@ function selectSKU(sku) {
 
 ```html
 <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
-  
+
 <section>
   <div>
     <p>Combinations</p>
@@ -99,12 +89,12 @@ function selectSKU(sku) {
 
 <section>
   <div>
-    <plattar-embed id = "embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height = 700px ></plattar-embed>
+    <plattar-embed id="embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height="700px" ></plattar-embed>
   </div>
 </section>
 ```
 
-- In the javascript, instead of using `setAttribute(attribute, value)`, we'll first have to seperate the button values into an array of strings based on where the comma are placed using `value.split(character)` function
+- In the JavaScript, instead of using `setAttribute(attribute, value)` we'll first have to separate the values into an array of strings based on where the comma is placed using `value.split(character)` function
 
 ```javascript
 const embed = document.getElementById("embed");
@@ -114,7 +104,7 @@ function selectSKU(sku) {
     console.log(sku.split(","))
 }
 ```
-- Once we got the array, we can input them directly into `viewer.messenger.selectVariationSKU (variationSKU:string|Array<string>)` or `viewer.messenger.selectVariationID (variationID:string|Array<string>)`.
+- Once we have the array, we can input them directly into `viewer.messenger.selectVariationSKU (variationSKU:string|Array<string>)` or `viewer.messenger.selectVariationID (variationID:string|Array<string>)`.
 ```javascript
 const embed = document.getElementById("embed");
 
