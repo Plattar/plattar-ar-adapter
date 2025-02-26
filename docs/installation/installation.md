@@ -31,3 +31,5 @@ Use the following script to embed the latest version of the pre-built plattar-ar
 ```html
 <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
 ```
+
+
