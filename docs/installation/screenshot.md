@@ -40,7 +40,7 @@ The Plattar Plugin supports the ability to take a screenshot of the scene which 
 
   <section>
     <div>
-      <plattar-embed id = "embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height = 700px ></plattar-embed>
+      <plattar-embed id="embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer" height='700px'></plattar-embed>
       <!-- add the image tag -->
       <img height="700px" id='thumbnail'>
     </div>
