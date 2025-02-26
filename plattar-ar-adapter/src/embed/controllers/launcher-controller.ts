@@ -4,6 +4,7 @@ import { ConfiguratorState, DecodedConfiguratorState, SceneProductData } from ".
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 import { ConfiguratorAR } from "../../ar/configurator-ar";
+import { SceneGraphAR } from "../../ar/scene-graph-ar";
 
 /**
  * Manages an instance of the <plattar-configurator> HTML Element
@@ -109,6 +110,7 @@ export class LauncherController extends PlattarController {
         const variationSKU: string | null = this.getAttribute("variation-sku");
         const arMode: string | null = this.getAttribute("ar-mode");
         const showBanner: string | null = this.getAttribute("show-ar-banner");
+        const sceneGraphID: string | null = this.getAttribute("scene-graph-id");
 
         // required attributes with defaults for plattar-launcher node
         const width: string = this.getAttribute("width") || "500px";
@@ -159,6 +161,10 @@ export class LauncherController extends PlattarController {
             if (encodedState.length < 6000) {
                 viewer.setAttribute("config-state", encodedState);
             }
+        }
+
+        if (sceneGraphID) {
+            viewer.setAttribute("scene-graph-id", sceneGraphID);
         }
 
         return new Promise<HTMLElement>((accept, reject) => {
@@ -250,6 +256,20 @@ export class LauncherController extends PlattarController {
 
         if (!sceneID) {
             throw new Error("LauncherController.initAR() - generated AR minimum required attributes not set, use scene-id as a minimum");
+        }
+
+        const graphID: string | null = this.getAttribute("scene-graph-id");
+
+        // use the scene-graph route if available
+        if (graphID) {
+            const configAR: SceneGraphAR = new SceneGraphAR(
+                {
+                    useARBanner: this.getBooleanAttribute("show-ar-banner"),
+                    id: graphID,
+                    sceneID: sceneID
+                });
+
+            return configAR.init();
         }
 
         const configAR: ConfiguratorAR = new ConfiguratorAR({ state: await this.getConfiguratorState(), useARBanner: this.getBooleanAttribute("show-ar-banner") });

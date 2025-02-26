@@ -229,6 +229,7 @@ export abstract class PlattarController {
         const variationSKU: string | null = this.getAttribute("variation-sku");
         const arMode: string | null = this.getAttribute("ar-mode");
         const showBanner: string | null = this.getAttribute("show-ar-banner");
+        const sceneGraphID: string | null = this.getAttribute("scene-graph-id");
 
         try {
             configState = (await this.getConfiguratorState()).state.encode()
@@ -272,6 +273,10 @@ export abstract class PlattarController {
 
         if (showBanner) {
             dst += "&show_ar_banner=" + showBanner;
+        }
+
+        if (sceneGraphID) {
+            dst += "&scene_graph_id" + sceneGraphID;
         }
 
         viewer.setAttribute("url", opt.url || dst);
