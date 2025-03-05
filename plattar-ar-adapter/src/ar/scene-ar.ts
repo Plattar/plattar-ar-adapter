@@ -4,7 +4,6 @@ import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
 import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
-import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
 import version from "../version";

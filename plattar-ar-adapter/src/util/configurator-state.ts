@@ -540,4 +540,43 @@ export class ConfiguratorState {
     public encode(): string {
         return btoa(JSON.stringify(this._state));
     }
+
+    /**
+     * Compiles and returns the Dynamic Scene Graph (Updated for 2025 for DynamicAR)
+     * NOTE: Eventually this structure should replace ConfiguratorState
+     */
+    public get sceneGraph(): any {
+        const objects: Array<SceneProductData> = this.array();
+
+        // in here we need to generate the schema input to be sent to the backend service
+        const schema: any = {
+            // ensure to only generate AR using files we pass into the backend
+            strict: false,
+            inputs: []
+        };
+
+        objects.forEach((object: SceneProductData) => {
+            if (object.meta_data.type === "scenemodel") {
+                const data: any = {
+                    id: object.scene_product_id,
+                    type: 'scenemodel',
+                    visibility: object.meta_data.augment
+                };
+
+                schema.inputs.push(data);
+            }
+            else {
+                const data: any = {
+                    id: object.scene_product_id,
+                    type: 'sceneproduct',
+                    variation_id: object.product_variation_id,
+                    visibility: object.meta_data.augment
+                };
+
+                schema.inputs.push(data);
+            }
+        });
+
+        return schema;
+    }
 }

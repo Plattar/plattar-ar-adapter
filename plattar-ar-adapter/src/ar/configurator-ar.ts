@@ -4,7 +4,6 @@ import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
 import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
-import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
 import { DecodedConfiguratorState, SceneProductData } from "../util/configurator-state";
@@ -78,40 +77,35 @@ export class ConfiguratorAR extends LauncherAR {
      * an AR File
      */
     private async _Compose(output: "glb" | "usdz" | "vto"): Promise<string> {
-        const objects: Array<SceneProductData> = this._options.state.state.array();
+        const type: "viewer" | "reality" = output === 'glb' ? "viewer" : "reality";
 
-        if (objects.length <= 0) {
-            throw new Error("ConfiguratorAR.Compose() - cannot proceed as scene does not contain AR components");
-        }
+        const url: string = `https://xrutils.plattar.com/v3/scene/${this._options.state.scene.id}/${type}`;
 
-        // define our configurator
-        const configurator: Configurator = new Configurator();
+        // grab our existing scene-graph from the saved API
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    data: {
+                        attributes: this._options.state.state.sceneGraph
+                    }
+                })
+            });
 
-        configurator.server = <any>Server.location().type;
-        configurator.output = output;
-
-        let totalARObjectCount: number = 0;
-
-        objects.forEach((object: SceneProductData) => {
-            if (object.meta_data.augment) {
-                if (object.meta_data.type === "scenemodel") {
-                    configurator.addModel(object.scene_product_id);
-                }
-                else {
-                    configurator.addSceneProduct(object.scene_product_id, object.product_variation_id);
-                }
-
-                totalARObjectCount++;
+            if (!response.ok) {
+                throw new Error(`ConfiguratorAR - Fetching Existing Graph Error - network response was not ok ${response.status}`);
             }
-        });
 
-        if (totalARObjectCount <= 0) {
-            throw new Error("ConfiguratorAR.Compose() - cannot proceed as scene does not contain any enabled AR components");
+            const data = await response.json();
+
+            return data.data.attributes.url;
         }
-
-        const results: any = await configurator.get();
-
-        return results.filename;
+        catch (error: any) {
+            throw new Error(`ConfiguratorAR - Fetching Existing Graph Error - there was a request error to ${url}, error was ${error.message}`);
+        }
     }
 
     /**
