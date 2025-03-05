@@ -6,7 +6,7 @@ The plattar-ar-adapter SDK is bundled with functionality that allows integrating
 
 The Configurator exposes a set of interfaces and functionality that allows switching product states, loading existing configuration states and launching AR functionality for IOS and Android devices.
 
-As of version `1.154.1` The SDK makes the Configurator as the default embed type. 
+As of version `1.154.1` The SDK makes the Configurator as the default embed type.
 
 ### Node Attributes
 
@@ -52,7 +52,7 @@ The `width` and `height` attributes will scale the internal renderer and QR Code
 
 - **ar-mode** (optional)
 
-The `ar-mode` attribute controls how AR is launched. The default setting is `generated` which will bundle and generate an AR file using all Products and Variations in the Scene. 
+The `ar-mode` attribute controls how AR is launched. The default setting is `generated` which will bundle and generate an AR file using all Products and Variations in the Scene.
 
 An alternative mode is using `inherited` which will use the pre-generated/user-uploaded `glb`, `usdz` and `reality` files attached to Products and Variations. When using `inherited` mode, no combinations will be performed so its only suitable when there is a single Product/Variation in the Scene.
 
@@ -80,7 +80,7 @@ The following renderer functions are available
 selectVariationID(variationID:string | Array<string>);
 ```
 
-- Activates the provided Product Variation using a user-defined Variation SKU. The Variation SKU must be a member of a Scene Product in the Scene. The argument can be either a single Variation SKU or an Array of Variation SKU's. 
+- Activates the provided Product Variation using a user-defined Variation SKU. The Variation SKU must be a member of a Scene Product in the Scene. The argument can be either a single Variation SKU or an Array of Variation SKU's.
 
 ```js
 selectVariationSKU(variationSKU:string | Array<string>);
@@ -127,7 +127,7 @@ This scene contains multiple products with multiple variations that can be confi
     <title>Scene Product Variation Selection Experience</title>
 
     <script
-        src="https://cdn.jsdelivr.net/npm/@plattar/plattar-ar-adapter/build/es2019/plattar-ar-adapter.min.js"></script>
+        src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
 </head>
 
 <body>
@@ -241,9 +241,9 @@ This scene contains multiple products with multiple variations that can be confi
 
 <img width="500" alt="The Example Scene should look like the following image" src="https://stoplight.io/api/v1/projects/cHJqOjEwODA2Nw/images/2DMkUJTYglE">
 
-### Codepan Live Example
+### Codepen Live Example
 
-<iframe height="300" style="width: 100%;" scrolling="no" title="Configurator Integration" src="https://codepen.io/plattar/embed/VwxWJgL?default-tab=html%2Cresult" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+<iframe height="600" style="width: 100%;" scrolling="no" title="Configurator Integration" src="https://codepen.io/plattar/embed/VwxWJgL?default-tab=html%2Cresult" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
   See the Pen <a href="https://codepen.io/plattar/pen/VwxWJgL">
   Configurator Integration</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
   on <a href="https://codepen.io">CodePen</a>.
