@@ -225,7 +225,7 @@ export class LauncherController extends PlattarController {
         }
 
         const state: ConfiguratorState = (await this.getConfiguratorState()).state;
-        const first: SceneProductData | null = state.first();
+        const first: SceneProductData | null = state.firstActiveOfType("sceneproduct");
 
         if (first) {
             //const sceneProductAR: SceneProductAR = new SceneProductAR(first.scene_product_id, first.product_variation_id);

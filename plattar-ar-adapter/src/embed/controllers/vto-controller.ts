@@ -271,7 +271,7 @@ export class VTOController extends PlattarController {
         }
 
         const state: ConfiguratorState = (await this.getConfiguratorState()).state;
-        const first: SceneProductData | null = state.first();
+        const first: SceneProductData | null = state.firstActiveOfType("sceneproduct");
 
         if (first) {
             const sceneProductAR: SceneProductAR = new SceneProductAR({
