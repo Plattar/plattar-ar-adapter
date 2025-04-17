@@ -7,16 +7,16 @@ In-the Plattar Scene Editor, you can drag and position cameras in the scene to f
 # Setting a Default Camera
 To set a camera to be default, first add a camera into your scene then click on the star button next to its name in the camera list.
 
-![Setting Default Camera](../images/default-camera-select.jpg){ width=1000px }
+![Setting Default Camera](../images/default-camera-select.jpg)
 
 # Setting a Product's Camera
 You can assign a camera to a product in order to move to this camera when a variant of that product is selected. To do this select the product in your object list, then in the property inspector select the camera you want from the camera drop-down list.
 
-![Setting a Product's Camera](../images/product-camera-selection.jpg){ width=1000px }
+![Setting a Product's Camera](../images/product-camera-selection.jpg)
 
 # Moving to a Camera Using Code
 The Plattar plugin provides a few options for moving the current view to a camera positioned in the scene. You can you either method `snapToCamera(camera_id)` to instantly move the camera or `moveToCamera(camera_id)` to animate smoothly over one second to the camera position. You will have to get your camera ids from the Scene Editor and get a reference to the plattar-embed.
-![Getting Camera ID](../images/camera-id.jpg){ width=1000px }
+![Getting Camera ID](../images/camera-id.jpg)
 
 ```javascript
 const embed = document.getElementById("embed");
