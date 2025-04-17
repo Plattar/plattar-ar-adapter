@@ -15,11 +15,12 @@ The software is open source and maintained by the Plattar team. Souce code can b
 - [Selecting Variation using Variation ID](installation/selecting-variation-id.md)
 - [Selecting Variation using SKU](installation/selecting-variation-sku.md)
 - [Selecting Multiple Variations Simultaneously](installation/selecting-variation-multiple.md)
+- [Moving to a Camera](installation/selecting-camera.md)
 - [Taking Screenshot](installation/screenshot.md)
 - [View in AR](installation/view-ar.md)
 - [Gallery View](installation/adding-gallery.md)
 - [Final Example](installation/final-example.md)
-- [API Reference](installation/api-reference.md)
+- [Embed API Reference](installation/api-reference.md)
 
 #### Web Integrations
 

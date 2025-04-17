@@ -10,7 +10,7 @@ One of the features that the Plattar Plugin supports is the ability to open your
 
 To help users transport between the web platform to mobile, the Plattar plugin can automatically display a QR Code which links to the AR Launcher on mobile. From here you can easily enter Augmented Reality.
 
-### Switching from renderer to Launcher
+### Switching from 3D Viewer to Plattar Launcher
 
 -  First, we'll get the embed tag through the CMS and install the plattar plugin through a script tag. (If you need a refresher, you can go back to the [basic example](./loading-scene.md/#changing-between-scenes))
 
@@ -23,7 +23,7 @@ To help users transport between the web platform to mobile, the Plattar plugin c
 
   <section>
     <div>
-      <button onclick="launchAR()" >Launch AR/Return</button>
+      <button onclick="toggleLaunchPage()">Toggle Plattar Launch Page</button>
     </div>
   </section>
 
@@ -41,7 +41,7 @@ To help users transport between the web platform to mobile, the Plattar plugin c
   const embed = document.getElementById("embed");
 
   //A function that gets called when the button is pressed
-  function launchAR(){
+  function toggleLaunchPage(){
 
   }
   ```
@@ -51,11 +51,9 @@ To help users transport between the web platform to mobile, the Plattar plugin c
 - Since we only have one button, we want it to both function as a way to trigger the AR Launcher and return back to the 360 Viewer. We can use the function ```getAttribute("embed-type")``` to find out the current state of the embed node.
 
   ```javascript
-  const embed = document.getElementById("embed");
-
-  function launchAR(){
+  function toggleLaunchPage(){
     //Prints out what's the current state of the embed-type is
-    console.log(embed.getAttribute("embed-type"))
+    console.log(embed.getAttribute("embed-type"));
   }
   ```
 
@@ -64,25 +62,24 @@ To help users transport between the web platform to mobile, the Plattar plugin c
   ```javascript
   const embed = document.getElementById("embed");
 
-  function launchAR(){
+  function toggleLaunchPage(){
     //Depending on the embed-type trigger one of these lines
     //Notably, this works even if the embed type starts as a null instead of viewer
     if ((embed.getAttribute("embed-type")) != "launcher"){
-      console.log("Launch");
+      console.log("Launch AR");
     }
     else{
-      console.log("Return");
+      console.log("Return to Viewer");
     }
   }
   ```
 
-- Finally, Using a similar method to changing variants, we'll use `setAttribute()` to change between `embed-type`s
+- Finally, Using a similar method to changing variants, we'll use `setAttribute()` to change between `embed-types`
 
   ```javascript
   const embed = document.getElementById("embed");
 
-  function launchAR(){
-    console.log("Launch")
+  function toggleLaunchPage(){
     if ((embed.getAttribute("embed-type")) != "launcher"){
       //uses setAttribute() to change between launcher and viewer
       embed.setAttribute("embed-type", "launcher");
@@ -93,7 +90,50 @@ To help users transport between the web platform to mobile, the Plattar plugin c
   }
   ```
 
-### Final result
+### Launching AR Directly
+The Plattar Embed supports launching AR directly on supported devices, by using the `startAR()` function. It also has a helper function to query whether the device supports AR or not, to allow a fallback to show the launch page or an error messge.
+
+- Firstly we set up a button to launch the AR experience
+  ```html
+  <button onclick="launchAR()">Launch AR</button>
+  ```
+
+- Then we create a function to call when the launch button is pressed
+  ```javascript
+  function launchAR(){
+    console.log('Launch AR Experience');
+  }
+  ```
+
+- We can use the plattar utility to test for if the device supports AR
+  ```javascript
+  if (PlattarARAdapter.Util.canAugment()) {
+    console.log('Supports AR');
+  }
+  else {
+    console.log('AR Unavailable');
+  }
+  ```
+
+- And finally we can launch the AR, with a fallback option to open the Plattar Launch page if it fails or if AR is unavailable
+  ```javascript
+  function launchAR(){
+    if (PlattarARAdapter.Util.canAugment()) {
+      embed.startAR()
+      .catch(function(err) {
+        console.error('Error starting AR:', err);
+        toggleLaunchPage(true);
+      });
+    }
+    else {
+      // fallback to rendering QR Code
+      toggleLaunchPage(true);
+    }
+  }
+  ```
+
+
+### Final Result
 
 <iframe height="600" style="width: 100%;" scrolling="no" title="Changing to AR Mode" src="https://codepen.io/plattar/embed/ZYzwJqe?default-tab=js%2Cresult&editable=true" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
   See the Pen <a href="https://codepen.io/plattar/pen/ZYzwJqe">
@@ -102,7 +142,9 @@ To help users transport between the web platform to mobile, the Plattar plugin c
 </iframe>
 
 ### Demonstration
-
-As previously mentioned, the AR launcher only works on Mobile, as such instead of starting augmented reality from the web, it will instead create a QR code. Scanning this will lead you to the current renderer with a button to launch AR from your phone.
-
+As AR only works on supported devices, here is a video of the user experience opening the webpage on a desktop computer which displays the QR code to the open the AR experience on the mobile device.
 ![[../images/ARDemo.gif]]{ width=400px }
+
+### Next Step
+Next we will go over how to create and use the Plattar Gallery to show 3D Renders, Product Photograpy and the 3D viewer all in a single embed.
+[Go to next step](./adding-gallery.md)

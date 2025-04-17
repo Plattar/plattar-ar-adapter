@@ -119,3 +119,7 @@ The Plattar Plugin supports the ability to take a screenshot of the scene which 
   Untitled</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
   on <a href="https://codepen.io">CodePen</a>.
 </iframe>
+
+### Next Step
+Next we will go over how to display your 3D content in AR.
+[Go to next step](./view-ar.md)

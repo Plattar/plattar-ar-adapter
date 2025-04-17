@@ -172,4 +172,6 @@ In this example, we'll use function instead which offers better redundency and e
   on <a href="https://codepen.io">CodePen</a>.
 </iframe>
 
-
+### Next Step
+Next we will go over how to select and load multiple model variations at once
+[Go to next step](./selecting-variation-multiple.md)

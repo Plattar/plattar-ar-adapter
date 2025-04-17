@@ -9,61 +9,59 @@ To follow this guide you need to know how to [install](installation.md) the plat
 
 -  First, we'll get the embed tag through the CMS and install the plattar plugin through a script tag. (If you need a refresher, you can go back to the [basic example](./loading-scene.md/#changing-between-scenes))
 
-
 - Next we'll add a couple of buttons to change between the variations
 
-```html
-<!-- install script tag above -->
-<!-- Added a section containing all the needed button to change bewteen variation -->
-<section>
-  <div>
-    <p>Combinations</p>
-    <button type="button">Base</button>
-    <button type="button">Black and Gold</button>
-    <button type="button">All Blue</button>
-  </div>
-</section>
-<!-- embed tag below -->
-```
+  ```html
+  <!-- install script tag above -->
+  <!-- Added a section containing all the needed button to change bewteen variation -->
+  <section>
+    <div>
+      <p>Combinations</p>
+      <button type="button">Base</button>
+      <button type="button">Black and Gold</button>
+      <button type="button">All Blue</button>
+    </div>
+  </section>
+  <!-- embed tag below -->
+  ```
+
 - Just like in other examples, we'll use this button to call a function on click. As for the value attribute, we'll use a comma separated value to change multiple variations at the same time .
 
-```html
-<!-- install script tag above -->
-<section>
-  <div>
-    <p>Combinations</p>
-    <!--Add value as a comma seperated list of multiple SKUs-->
-    <button type="button" value="8z4m4,pmk51,zl33i" onclick="selectSKU(this.value)">Base</button>
-    <!--BUtton calls selectSKU() which we will define on later steps-->
-    <button type="button" value="f1ora,uxzs1,ogqdu" onclick="selectSKU(this.value)">Black and Gold</button>
-    <button type="button" value="y6j1e,ogcu7,zl33i" onclick="selectSKU(this.value)">All Blue</button>
-  </div>
-</section>
-<!-- embed tag below -->
-```
->Note that When changing multiple variation at the same time using the attributes, the `variation-id` or `SKU` has to be separated using a **comma without space**
+  ```html
+  <section>
+    <div>
+      <p>Combinations</p>
+      <!--Add value as a comma seperated list of multiple SKUs-->
+      <button type="button" value="8z4m4,pmk51,zl33i" onclick="selectSKU(this.value)">Base</button>
+      <!--BUtton calls selectSKU() which we will define on later steps-->
+      <button type="button" value="f1ora,uxzs1,ogqdu" onclick="selectSKU(this.value)">Black and Gold</button>
+      <button type="button" value="y6j1e,ogcu7,zl33i" onclick="selectSKU(this.value)">All Blue</button>
+    </div>
+  </section>
+  ```
+  >Note that When changing multiple variation at the same time using the attributes, the `variation-id` or `SKU` has to be separated using a **comma without space**
 
 - Moving into the JavaScript, we'll start of by getting the tag through an id search and defining the function we made for the buttons to call on click.
-```javascript
-//get the embed tag through its id
-const embed = document.getElementById("embed");
+  ```javascript
+  //get the embed tag through its id
+  const embed = document.getElementById("embed");
 
-//define selectSKU() function
-function selectSKU(sku) {}
-```
+  //define selectSKU() function
+  function selectSKU(sku) {}
+  ```
 
 - using `setAttribute(attribute, value)` now we'll change the SKU attribute. The Plattar Plugin will detect the attribute change and swap to the selected variations in teh scene.
 
-```javascript
-const embed = document.getElementById("embed");
+  ```javascript
+  const embed = document.getElementById("embed");
 
-function selectSKU(sku) {
-  //directly use setAttribute() to change the value of the variation-sku. no changes needed to be amde since the value is already in the correct format
-  embed.setAttribute("variation-sku", sku);
-}
-```
+  function selectSKU(sku) {
+    //directly use setAttribute() to change the value of the variation-sku. no changes needed to be amde since the value is already in the correct format
+    embed.setAttribute("variation-sku", sku);
+  }
+  ```
 
-#### Changing multiple variations using attribute example
+#### Changing Multiple Variations Using Attribute Example
 
 <iframe height="600" style="width: 100%;" scrolling="no" title="Changing Multiple Variant Using Attribute" src="https://codepen.io/plattar/embed/wBvvRXG?default-tab=js%2Cresult&editable=true" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
   See the Pen <a href="https://codepen.io/plattar/pen/wBvvRXG">
@@ -71,7 +69,7 @@ function selectSKU(sku) {
   on <a href="https://codepen.io">CodePen</a>.
 </iframe>
 
-### Changing multiple variations using function
+### Changing Multiple Variations Using Function
 
 - Just like in the previous example, we'll start off from the same html
 
@@ -120,3 +118,7 @@ function selectSKU(sku) {
   Changing Multiple Variant Using Attribute</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
   on <a href="https://codepen.io">CodePen</a>.
 </iframe>
+
+### Next Step
+Next we will go over how to move the user camera to different positions to show different views of your model.
+[Go to next step](./selecting-camera.md)

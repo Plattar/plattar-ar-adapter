@@ -2,6 +2,7 @@
 
 
 # Changing Between Scenes
+[Jump to final result](#changing-scenes-final-result)
 
 In the [previous step](./loading-scene.md), we get the scene embed tag with `scene-id` and other mandatory attributes through the CMS. During runtime, we can change this `scene-id` to swap between different scenes. The renderer will automatically change scenes when the `scene-id` is changed.
 
@@ -21,42 +22,35 @@ Now we have the new `Scene ID`, we can now change the `scene-id` attribute direc
 
 - Start by removing the `show-ui` attribute as we'll be creating our own buttons. We'll also add an ID to the html tag so we can select it using javascript.
   ```html
-    <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
+  <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
 
-    <!-- remove show-ui="true" and added id="embed" -->
-    <plattar-embed id="embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer"></plattar-embed>
-    ```
+  <!-- remove show-ui="true" and added id="embed" -->
+  <plattar-embed id="embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer"></plattar-embed>
+  ```
+
 - Next, we'll add a section above the embed with buttons and text. We'll use these buttons to call the scene change functions.
   ```html
-    <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
-
-    <!-- Section containing buttons which will call the scene switching -->
-    <div>
-      <p>Scene Selection</p>
-      <button>Helmet</button>
-      <button >Bed</button>
-      <button >Coffee Machine</button>
-    </div>
-
-    <plattar-embed id="embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer"></plattar-embed>
+  <!-- Section containing buttons which will call the scene switching -->
+  <div>
+    <p>Scene Selection</p>
+    <button>Helmet</button>
+    <button>Bed</button>
+    <button>Coffee Machine</button>
+  </div>
     ```
 
 - Now we'll add a `value` and `onclick` attribute to these buttons. Each of these buttons should have a `value` equal to the `scene-id` from the [CMS](#getting-the-scene-id). The `onclick` attributes should call `selectScene(this.value)` which will pass over the `value` attribute we set.
 
   ```html
-    <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
-
-    <div>
-      <p>Scene Selection</p>
-      <!-- button value contains scene-id obtained through the CMS -->
-      <button value="d9331ec5-3292-4ba9-b632-fab49b29a9e8" onclick="selectScene(this.value)">Helmet</button>
-      <!-- These buttons will use their value as parameter to call selectScene()-->
-      <button value="550b5585-7f0b-4a3a-ab01-dc5b27741372" onclick="selectScene(this.value)">Bed</button>
-      <button value="95c7a7a0-c89d-42dc-9752-102c36475413" onclick="selectScene(this.value)">Coffee Machine</button>
-    </div>
-
-    <plattar-embed id="embed" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer"></plattar-embed>
-    ```
+  <div>
+    <p>Scene Selection</p>
+    <!-- button value contains scene-id obtained through the CMS -->
+    <!-- These buttons will use their value as parameter to call selectScene()-->
+    <button value="d9331ec5-3292-4ba9-b632-fab49b29a9e8" onclick="selectScene(this.value)">Helmet</button>
+    <button value="550b5585-7f0b-4a3a-ab01-dc5b27741372" onclick="selectScene(this.value)">Bed</button>
+    <button value="95c7a7a0-c89d-42dc-9752-102c36475413" onclick="selectScene(this.value)">Coffee Machine</button>
+  </div>
+  ```
 
 - Once we have the HTML setup we can move into the javascript. We'll first get the embed tag through an ID.
   ``` javascript
@@ -90,3 +84,7 @@ Now we have the new `Scene ID`, we can now change the `scene-id` attribute direc
   Changing Scene</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
   on <a href="https://codepen.io">CodePen</a>.
 </iframe>
+
+### Next Step
+Next we will go over how to select and load different model variations.
+[Go to next step](./selecting-variation-id.md)

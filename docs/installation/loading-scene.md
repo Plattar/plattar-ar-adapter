@@ -1,10 +1,7 @@
 [Back to Main](./)
 
 # Loading a Scene
-
-
-
-[Jump to final result](#changing-scenes-final-result)
+[Jump to final result](#loading-a-scene-result)
 
 ## Quick Start
 
@@ -25,6 +22,7 @@ To start, we'll begin with a simple example showing a basic 3D Viewer.
 
   ```html
   <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
+
   <!-- the embed code obtained through the CMS -->
   <plattar-embed scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer"></plattar-embed>
   ```
@@ -32,6 +30,7 @@ To start, we'll begin with a simple example showing a basic 3D Viewer.
 
   ```html
   <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
+
   <!-- add the show-ui = "true" to use plattar's default UI -->
   <plattar-embed show-ui="true" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer"></plattar-embed>
   ```
@@ -42,4 +41,8 @@ To start, we'll begin with a simple example showing a basic 3D Viewer.
   Quick Start</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
   on <a href="https://codepen.io">CodePen</a>.
 </iframe>
+
+### Next Step
+Next we will go over how to change and load a different scene.
+[Go to next step](./changing-scene.md)
 
