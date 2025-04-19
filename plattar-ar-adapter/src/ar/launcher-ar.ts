@@ -5,6 +5,19 @@ export interface LauncherAROptions {
     banner: ARBanner | null;
 }
 
+export interface ARBannerDetails {
+    readonly title?: string | null;
+    readonly subtitle?: string | null;
+    readonly ctaName?: string | null;
+}
+
+export interface LauncherOptions {
+    readonly arBanner: {
+        readonly enabled: boolean;
+        readonly details: ARBannerDetails;
+    };
+}
+
 export abstract class LauncherAR {
     private readonly _opt: LauncherAROptions;
 
