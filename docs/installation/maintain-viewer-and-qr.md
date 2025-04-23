@@ -9,7 +9,7 @@ In a custom built integration, you may want to display a QR Code to your users a
 ### Display two Embeds
 -  First, we'll copy the variation selection using attribute example from a [previous tutorial](./selecting-variation-id.md/#changing-variation-using-attribute))
 
-- ThWe will then have two embed nodes, one for the viewer and one for the QR code, and give them ids to identify them. Note the difference in the `init` attribute for the QR Code embed.
+- We will then use two embed nodes, one for the viewer and one for the QR code, and give them ids to identify them. Note the difference in the `init` attribute for the QR Code embed.
   ```html
   <section>
     <div>
