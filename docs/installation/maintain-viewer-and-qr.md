@@ -10,10 +10,9 @@ One of the features that the Plattar Plugin supports is the ability to open your
 
 To help users transport between the web platform to mobile, the Plattar plugin can display a QR Code which links to the AR Launcher on mobile. The Plattar AR Launch page contains all the code to turn your scene/configuration into an AR compatible model and open the Augmented Reality experience.
 
-### Swap from Viewer to a QR Code (Legacy Code)
+### Swap from viewer to a QR Code (Legacy Code)
 The Plattar Embed supports displaying a QR Code on desktop devices for users to scan with their AR supported devices in order to see the AR Experience.
-
-Plattar supports swapping between the 3D viewer and the QRCode, but due to the load times it can be easier to maintain two embeds, one for the Viewer and one for the QRCode. The [next doc](./maintain-viewer-and-qr.md) will explain how to do that, but for now we will use the legacy functions to do the switch.
+Plattar supports swapping between the 3D viewer and the QRCode, but due to the load times it can be easier to maintain two embeds, one for the Viewer and one for the QRCode. The next doc will explain how to do that, but for now we will use the legacy functions to do the switch.
 
 -  First, we'll get the embed tag through the CMS and install the plattar plugin through a script tag. (If you need a refresher, you can go back to the [basic example](./loading-scene.md/#changing-between-scenes))
 
@@ -36,7 +35,7 @@ Plattar supports swapping between the 3D viewer and the QRCode, but due to the l
   }
   ```
 
-### Swap from Viewer to the Plattar Launch page
+### Display the Plattar Launch page
 The Plattar Launch page is a more advanced version of the QR Code, which contains some instructions to the user on how to interact with the AR experience and will either display the QR Code or a button depending on whether they are on an AR supported device.
 
 - After setting up the embed tag, we can add a button which we'll use to launch the AR experience
@@ -160,5 +159,5 @@ As AR only works on supported devices, here is a video of the user experience op
 ![[../images/ARDemo.gif]]{ width=400px }
 
 ### Next Step
-Next we will go over how to use two embed nodes side-by-side to display both the 3D Viewer and a QR code that can be scanned by mobile devices to open AR.
-[Go to next step](./maintain-viewer-and-qr.md)
+Next we will go over how to create and use the Plattar Gallery to show 3D Renders, Product Photograpy and the 3D viewer all in a single embed.
+[Go to next step](./adding-gallery.md)

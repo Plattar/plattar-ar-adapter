@@ -18,6 +18,7 @@ The software is open source and maintained by the Plattar team. Souce code can b
 - [Moving to a Camera](installation/selecting-camera.md)
 - [Taking Screenshot](installation/screenshot.md)
 - [View in AR](installation/view-ar.md)
+- [Display a Viewer and QR Code](installation/maintain-viewer-and-qr.md)
 - [Gallery View](installation/adding-gallery.md)
 - [Final Example](installation/final-example.md)
 - [Embed API Reference](installation/api-reference.md)
