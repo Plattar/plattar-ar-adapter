@@ -35,7 +35,7 @@ In a custom built integration, you may want to display a QR Code to your users a
 
 ### Final Result
 
-<iframe height="300" style="width: 100%;" scrolling="no" title="Changing to AR Mode" src="https://codepen.io/plattar/embed/yyygJyM?default-tab=html%2Cresult" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
+<iframe height="600" style="width: 100%;" scrolling="no" title="Changing to AR Mode" src="https://codepen.io/plattar/embed/yyygJyM?default-tab=html%2Cresult" frameborder="no" loading="lazy" allowtransparency="true" allowfullscreen="true">
   See the Pen <a href="https://codepen.io/plattar/pen/yyygJyM">
   Changing to AR Mode</a> by Plattar (<a href="https://codepen.io/plattar">@plattar</a>)
   on <a href="https://codepen.io">CodePen</a>.
