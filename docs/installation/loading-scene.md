@@ -24,7 +24,7 @@ To start, we'll begin with a simple example showing a basic 3D Viewer.
   <script src="https://sdk.plattar.com/plattar-plugin.min.js"></script>
 
   <!-- the embed code obtained through the CMS -->
-  <plattar-embed scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer"></plattar-embed>
+  <plattar-embed id='embed' scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer"></plattar-embed>
   ```
 - Finally, for a quick implementation, we can use Plattar's built in UI to add full functionality to our embed, including variation change and AR viewer. To do so we'll simply need to add ```show-ui="true"```.
 
@@ -33,6 +33,33 @@ To start, we'll begin with a simple example showing a basic 3D Viewer.
 
   <!-- add the show-ui = "true" to use plattar's default UI -->
   <plattar-embed show-ui="true" scene-id="d9331ec5-3292-4ba9-b632-fab49b29a9e8" init="viewer"></plattar-embed>
+  ```
+
+- An extra step we can do is add a function listener to wait for the scene to complete loading. You can use this to show your own loading screen or instructions until the Plattar scene has completed loading. To do this we add a listener function like this:
+  ```javascript
+  const embed = document.getElementById("embed");
+
+  embed.viewer.context.setLoading = function(params) {
+    if(params.loading == false){
+      console.log('Scene has completed loading');
+    }
+  }
+  ```
+
+- In our codepen example we need to add some extra functionality due to the way it loads, you can probably ignore this for your implementation but is here as an example if needed:
+  ```javascript
+  let intv = setInterval(() => {
+    if(!embed.viewer){
+      return;
+    }
+    clearInterval(intv);
+
+    embed.viewer.context.setLoading = function(params) {
+      if(params.loading == false){
+        console.log('Scene has completed loading');
+      }
+    }
+  }, 100);
   ```
 
 ### Loading a Scene Result
