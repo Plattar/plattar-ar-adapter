@@ -409,6 +409,41 @@ export class ConfiguratorState {
         return null;
     }
 
+    public firstActiveOfType(type: SceneProductDataMetaType): SceneProductData | null {
+        const states: Array<Array<any>> = this._state.states;
+
+        if (states.length > 0) {
+            const meta = this._state.meta;
+
+            const found = states.find((productState: Array<any>): boolean => {
+                const check: any = productState[meta.scene_product_index];
+
+                if (check !== null && check !== undefined) {
+                    return productState.length === 3 && productState[meta.meta_index].type === type && productState[meta.meta_index].augment === true;
+                }
+
+                return false;
+            });
+
+            if (!found) {
+                return null;
+            }
+
+            const data: SceneProductData = {
+                scene_product_id: found[meta.scene_product_index],
+                product_variation_id: found[meta.product_variation_index],
+                meta_data: {
+                    augment: found[meta.meta_index].augment || true,
+                    type: found[meta.meta_index].type || type
+                }
+            };
+
+            return data;
+        }
+
+        return null;
+    }
+
     public get length(): number {
         return this._state.states.length;
     }
