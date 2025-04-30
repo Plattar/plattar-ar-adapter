@@ -1,57 +1,57 @@
 {
-  "name": "@plattar/plattar-ar-adapter",
-  "version": "0.0.1",
-  "description": "Plattar AR Adapter for interfacing with Google & Apple WebAR",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
-  "scripts": {
-    "clean": "rm -rf build dist node_modules",
-    "build": "npm run clean && npm install && npm run build-ts && npm run build-es2019 && npm run build-es2015",
-    "build-ts": "tsc --noEmitOnError",
-    "build-es2019": "rm -rf build/es2019 && mkdir -p build/es2019 && browserify --standalone PlattarARAdapter dist/index.js -o build/es2019/plattar-ar-adapter.js && uglifyjs build/es2019/plattar-ar-adapter.js --output build/es2019/plattar-ar-adapter.min.js",
-    "build-es2015": "rm -rf build/es2015 && mkdir -p build/es2015 && babel build/es2019/plattar-ar-adapter.js --presets=@babel/env > build/es2015/plattar-ar-adapter.js && uglifyjs build/es2015/plattar-ar-adapter.js --output build/es2015/plattar-ar-adapter.min.js",
-    "clean:build": "npm run clean && npm run build"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Plattar/plattar-ar-adapter.git"
-  },
-  "engines": {
-    "node": "^10.17 || >=12.3"
-  },
-  "keywords": [
-    "plattar",
-    "npm",
-    "ar",
-    "augmented",
-    "reality",
-    "augmentedreality",
-    "augmented-reality",
-    "web"
-  ],
-  "author": "plattar",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/Plattar/plattar-ar-adapter/issues"
-  },
-  "homepage": "https://www.plattar.com",
-  "dependencies": {
-    "@plattar/plattar-analytics": "^1.152.2",
-    "@plattar/plattar-api": "^1.178.1",
-    "@plattar/plattar-qrcode": "1.178.1",
-    "@plattar/plattar-services": "^1.157.1",
-    "@plattar/plattar-web": "^1.182.2"
-  },
-  "devDependencies": {
-    "@babel/cli": "^7.26.4",
-    "@babel/core": "^7.26.9",
-    "@babel/preset-env": "^7.26.9",
-    "browserify": "^17.0.1",
-    "typescript": "^5.8.2",
-    "uglify-js": "^3.19.3"
-  },
-  "publishConfig": {
-    "access": "public"
-  }
+	"name": "@plattar/plattar-ar-adapter",
+	"version": "0.0.1",
+	"description": "Plattar AR Adapter for interfacing with Google & Apple WebAR",
+	"main": "dist/index.js",
+	"module": "dist/index.js",
+	"types": "dist/index.d.ts",
+	"scripts": {
+		"clean": "rm -rf build dist node_modules",
+		"build": "npm run clean && npm install && npm run build-ts && npm run build-es2019 && npm run build-es2015",
+		"build-ts": "tsc --noEmitOnError",
+		"build-es2019": "rm -rf build/es2019 && mkdir -p build/es2019 && browserify --standalone PlattarARAdapter dist/index.js -o build/es2019/plattar-ar-adapter.js && uglifyjs build/es2019/plattar-ar-adapter.js --output build/es2019/plattar-ar-adapter.min.js",
+		"build-es2015": "rm -rf build/es2015 && mkdir -p build/es2015 && babel build/es2019/plattar-ar-adapter.js --presets=@babel/env > build/es2015/plattar-ar-adapter.js && uglifyjs build/es2015/plattar-ar-adapter.js --output build/es2015/plattar-ar-adapter.min.js",
+		"clean:build": "npm run clean && npm run build"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Plattar/plattar-ar-adapter.git"
+	},
+	"engines": {
+		"node": "^10.17 || >=12.3"
+	},
+	"keywords": [
+		"plattar",
+		"npm",
+		"ar",
+		"augmented",
+		"reality",
+		"augmentedreality",
+		"augmented-reality",
+		"web"
+	],
+	"author": "plattar",
+	"license": "Apache-2.0",
+	"bugs": {
+		"url": "https://github.com/Plattar/plattar-ar-adapter/issues"
+	},
+	"homepage": "https://www.plattar.com",
+	"dependencies": {
+		"@plattar/plattar-analytics": "^1.152.2",
+		"@plattar/plattar-api": "^1.186.3",
+		"@plattar/plattar-qrcode": "1.178.1",
+		"@plattar/plattar-services": "^1.186.1",
+		"@plattar/plattar-web": "^1.182.2"
+	},
+	"devDependencies": {
+		"@babel/cli": "^7.27.0",
+		"@babel/core": "^7.26.10",
+		"@babel/preset-env": "^7.26.9",
+		"browserify": "^17.0.1",
+		"typescript": "^5.8.3",
+		"uglify-js": "^3.19.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }
