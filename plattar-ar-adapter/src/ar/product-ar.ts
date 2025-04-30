@@ -5,14 +5,13 @@ import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
-import { LauncherAR } from "./launcher-ar";
+import { LauncherAR, LauncherOptions } from "./launcher-ar";
 import version from "../version";
 
-export interface ProductAROptions {
+export interface ProductAROptions extends LauncherOptions {
     readonly productID: string;
     readonly variationID: string | null;
     readonly variationSKU: string | null;
-    readonly useARBanner: boolean;
 }
 
 /**
@@ -27,21 +26,6 @@ export class ProductAR extends LauncherAR {
     // this thing controls the actual AR view
     // this is setup via .init() function
     private _ar: ARViewer | null;
-
-    /*
-    constructor(productID: string | undefined | null = null, variationID: string | undefined | null = null, variationSKU: string | undefined | null = null) {
-        super();
-
-        if (!productID) {
-            throw new Error("ProductAR.constructor(productID, variationID) - productID must be defined");
-        }
-
-        this._productID = productID;
-        this._variationSKU = variationSKU;
-        this._variationID = variationID ? variationID : (variationSKU ? null : "default");
-        this._ar = null;
-    }
-    */
 
     constructor(options: ProductAROptions) {
         super();
@@ -90,11 +74,11 @@ export class ProductAR extends LauncherAR {
                 analytics.data.push("applicationId", application.id);
                 analytics.data.push("applicationTitle", application.attributes.title);
 
-                if (this._options.useARBanner) {
+                if (this._options.arBanner.enabled) {
                     this.options.banner = {
-                        title: <any>product.attributes.title,
-                        subtitle: variation.attributes.title,
-                        button: 'Visit'
+                        title: this._options.arBanner.details.title || <any>product.attributes.title,
+                        subtitle: this._options.arBanner.details.subtitle || variation.attributes.title,
+                        button: this._options.arBanner.details.ctaName || 'Visit'
                     }
                 }
             }
