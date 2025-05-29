@@ -576,6 +576,43 @@ export class ConfiguratorState {
         return btoa(JSON.stringify(this._state));
     }
 
+    public async encodeSceneGraphID(): Promise<string> {
+        const graph: any = this.sceneGraph;
+
+        // some scene-graphs are very large in size, we store it remotely
+        // this storage will expire in 10 minutes so this is a non-permanent version
+        // and is designed for quick ar
+        const url: string = `https://c.plattar.com/v3/redir/store`;
+
+        // finally send our scene-graph to the backend to generate the AR file and return
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    data: {
+                        attributes: {
+                            data: graph
+                        }
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`ConfiguratorState.encodeSceneGraphID() - network response was not ok ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            return data.data.id;
+        }
+        catch (error: any) {
+            throw new Error(`ConfiguratorState.encodeSceneGraphID() - there was a request error to ${url}, error was ${error.message}`);
+        }
+    }
+
     /**
      * Compiles and returns the Dynamic Scene Graph (Updated for 2025 for DynamicAR)
      * NOTE: Eventually this structure should replace ConfiguratorState

@@ -234,7 +234,7 @@ export abstract class PlattarController {
 
         let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
 
-        let configState: string | null = null;
+        //let configState: string | null = null;
         const sceneID: string | null = this.getAttribute("scene-id");
         const embedType: string | null = this.getAttribute("embed-type");
         const productID: string | null = this.getAttribute("product-id");
@@ -245,8 +245,9 @@ export abstract class PlattarController {
         const showBanner: string | null = this.getAttribute("show-ar-banner");
         const sceneGraphID: string | null = this.getAttribute("scene-graph-id");
 
+        /*
         try {
-            configState = (await this.getConfiguratorState()).state.encode()
+            configState = (await this.getConfiguratorState()).state.sceneGraph;
         }
         catch (_err) {
             // config state not available for some reason
@@ -256,6 +257,7 @@ export abstract class PlattarController {
         if (configState) {
             dst += "&config_state=" + configState;
         }
+            */
 
         if (embedType) {
             dst += "&embed_type=" + embedType;
@@ -291,6 +293,17 @@ export abstract class PlattarController {
 
         if (sceneGraphID) {
             dst += "&scene_graph_id" + sceneGraphID;
+        }
+        else {
+            try {
+                const sceneGraphID: string = await (await this.getConfiguratorState()).state.encodeSceneGraphID();
+                dst += "&scene_graph_id=" + sceneGraphID;
+            }
+            catch (_err) {
+                // scene graph ID not available for some reason
+                // we will generate a new one
+                console.error(_err);
+            }
         }
 
         viewer.setAttribute("url", opt.url || dst);
