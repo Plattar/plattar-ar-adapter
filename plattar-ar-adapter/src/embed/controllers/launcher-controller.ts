@@ -155,16 +155,20 @@ export class LauncherController extends PlattarController {
             viewer.setAttribute("show-ar-banner", showBanner);
         }
 
-        if (configState) {
-            const encodedState = configState.state.encode();
-
-            if (encodedState.length < 6000) {
-                viewer.setAttribute("config-state", encodedState);
-            }
-        }
-
         if (sceneGraphID) {
             viewer.setAttribute("scene-graph-id", sceneGraphID);
+        }
+        else {
+            try {
+                const sceneGraphID: string = await (await this.getConfiguratorState()).state.encodeSceneGraphID();
+
+                viewer.setAttribute("scene-graph-id", sceneGraphID);
+            }
+            catch (_err) {
+                // scene graph ID not available for some reason
+                // we will generate a new one
+                console.error(_err);
+            }
         }
 
         return new Promise<HTMLElement>((accept, reject) => {

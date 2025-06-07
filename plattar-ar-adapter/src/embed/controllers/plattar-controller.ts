@@ -245,20 +245,6 @@ export abstract class PlattarController {
         const showBanner: string | null = this.getAttribute("show-ar-banner");
         const sceneGraphID: string | null = this.getAttribute("scene-graph-id");
 
-        /*
-        try {
-            configState = (await this.getConfiguratorState()).state.sceneGraph;
-        }
-        catch (_err) {
-            // config state not available for some reason
-            configState = null;
-        }
-
-        if (configState) {
-            dst += "&config_state=" + configState;
-        }
-            */
-
         if (embedType) {
             dst += "&embed_type=" + embedType;
         }
