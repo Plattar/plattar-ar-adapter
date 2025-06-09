@@ -10,7 +10,7 @@ One of the features that the Plattar Plugin supports is the ability to open your
 
 To help users transport between the web platform to mobile, the Plattar plugin can display a QR Code which links to the AR Launcher on mobile. The Plattar AR Launch page contains all the code to turn your scene/configuration into an AR compatible model and open the Augmented Reality experience.
 
-### Swap from Viewer to a QR Code (Legacy Code)
+<!-- ### Swap from Viewer to a QR Code (Legacy Code)
 The Plattar Embed supports displaying a QR Code on desktop devices for users to scan with their AR supported devices in order to see the AR Experience.
 
 Plattar supports swapping between the 3D viewer and the QRCode, but due to the load times it can be easier to maintain two embeds, one for the Viewer and one for the QRCode. The [next doc](./maintain-viewer-and-qr.md) will explain how to do that, but for now we will use the legacy functions to do the switch.
@@ -34,7 +34,7 @@ Plattar supports swapping between the 3D viewer and the QRCode, but due to the l
   function toggleQRCode(){
 
   }
-  ```
+  ``` -->
 
 ### Swap from Viewer to the Plattar Launch page
 The Plattar Launch page is a more advanced version of the QR Code, which contains some instructions to the user on how to interact with the AR experience and will either display the QR Code or a button depending on whether they are on an AR supported device.
