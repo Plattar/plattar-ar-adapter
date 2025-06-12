@@ -26,28 +26,28 @@ export class LauncherController extends PlattarController {
     public override async onAttributesUpdated(attributeName: string): Promise<void> {
         const state: ControllerState = this._state;
 
+        if (attributeName === "variation-id") {
+            const configState: DecodedConfiguratorState = await this.getConfiguratorState();
+            const variationIDs: string | null = this.getAttribute("variation-id");
+            const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
+
+            variationIDsList.forEach((variationID: string) => {
+                configState.state.setVariationID(variationID);
+            });
+        }
+
+        if (attributeName === "variation-sku") {
+            const configState: DecodedConfiguratorState = await this.getConfiguratorState();
+            const variationSKUs: string | null = this.getAttribute("variation-sku");
+            const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+
+            variationSKUList.forEach((variationSKU: string) => {
+                configState.state.setVariationSKU(variationSKU);
+            });
+        }
+
         // re-render the QR Code when attributes have changed
         if (state === ControllerState.QRCode) {
-            if (attributeName === "variation-id") {
-                const configState: DecodedConfiguratorState = await this.getConfiguratorState();
-                const variationIDs: string | null = this.getAttribute("variation-id");
-                const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
-
-                variationIDsList.forEach((variationID: string) => {
-                    configState.state.setVariationID(variationID);
-                });
-            }
-
-            if (attributeName === "variation-sku") {
-                const configState: DecodedConfiguratorState = await this.getConfiguratorState();
-                const variationSKUs: string | null = this.getAttribute("variation-sku");
-                const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
-
-                variationSKUList.forEach((variationSKU: string) => {
-                    configState.state.setVariationSKU(variationSKU);
-                });
-            }
-
             this.startQRCode(this._prevQROpt);
 
             return;
