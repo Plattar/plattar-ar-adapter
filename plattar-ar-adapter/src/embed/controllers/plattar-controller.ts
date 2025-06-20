@@ -278,7 +278,7 @@ export abstract class PlattarController {
         }
 
         if (sceneGraphID) {
-            dst += "&scene_graph_id" + sceneGraphID;
+            dst += "&scene_graph_id=" + sceneGraphID;
         }
         else {
             try {
