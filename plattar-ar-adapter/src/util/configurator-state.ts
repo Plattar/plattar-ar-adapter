@@ -308,7 +308,7 @@ export class ConfiguratorState {
                         scene_product_id: productState[meta.scene_product_index],
                         product_variation_id: productState[meta.product_variation_index],
                         meta_data: {
-                            augment: productState[meta.meta_index].augment || true,
+                            augment: productState[meta.meta_index].augment ?? true,
                             type: productState[meta.meta_index].type || "sceneproduct"
                         }
                     });
