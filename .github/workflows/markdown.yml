@@ -1,0 +1,12 @@
+name: Generate AI-Ready Docs
+on:
+  push:
+    branches:
+        - '**'  # Triggers on push to any branch
+  workflow_dispatch:
+jobs:
+  generate:
+    uses: Plattar/workflows/.github/workflows/generate-folder-markdown.yml@main
+    with:
+      target_folder: 'docs'
+      max_file_size_kb: 10000
