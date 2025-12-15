@@ -5,13 +5,12 @@ import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
-import { LauncherAR } from "./launcher-ar";
+import { LauncherAR, LauncherOptions } from "./launcher-ar";
 import version from "../version";
 
-export interface RawAROptions {
+export interface RawAROptions extends LauncherOptions {
     readonly modelLocation: string;
     readonly sceneID: string | null;
-    readonly useARBanner: boolean;
 }
 
 /**
@@ -79,11 +78,11 @@ export class RawAR extends LauncherAR {
                     analytics.data.push("applicationId", application.id);
                     analytics.data.push("applicationTitle", application.attributes.title);
 
-                    if (this._options.useARBanner) {
+                    if (this._options.arBanner.enabled) {
                         this.options.banner = {
-                            title: <any>application.attributes.title,
-                            subtitle: scene.attributes.title,
-                            button: 'Visit'
+                            title: this._options.arBanner.details.title || <any>application.attributes.title,
+                            subtitle: this._options.arBanner.details.subtitle || scene.attributes.title,
+                            button: this._options.arBanner.details.ctaName || 'Visit'
                         }
                     }
                 }

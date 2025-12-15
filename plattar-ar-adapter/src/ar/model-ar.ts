@@ -5,12 +5,11 @@ import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import RealityViewer from "../viewers/reality-viewer";
 import SceneViewer from "../viewers/scene-viewer";
-import { LauncherAR } from "./launcher-ar";
+import { LauncherAR, LauncherOptions } from "./launcher-ar";
 import version from "../version";
 
-export interface ModelAROptions {
+export interface ModelAROptions extends LauncherOptions {
     readonly modelID: string;
-    readonly useARBanner: boolean;
 }
 
 /**
@@ -62,11 +61,11 @@ export class ModelAR extends LauncherAR {
 
             this._analytics = analytics;
 
-            if (this._options.useARBanner) {
+            if (this._options.arBanner.enabled) {
                 this.options.banner = {
-                    title: <any>project.attributes.title,
-                    subtitle: model.attributes.title,
-                    button: 'Visit'
+                    title: this._options.arBanner.details.title || <any>project.attributes.title,
+                    subtitle: this._options.arBanner.details.subtitle || model.attributes.title,
+                    button: this._options.arBanner.details.ctaName || 'Visit'
                 }
             }
         }
