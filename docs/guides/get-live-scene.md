@@ -184,28 +184,6 @@ function loadScene(sceneId, productId) {
 }
 ```
 
-## Scene Status Options
-
-In the Plattar CMS, scenes can have the following status values:
-
-- **live** - Scene is published and ready for production use
-- **draft** - Scene is in development
-- **archived** - Scene is no longer active
-
-You can filter for any of these statuses:
-
-```javascript
-// Get draft scenes
-const draftScenes = scenes.filter((res) => {
-  return res.attributes.custom_json.status === "draft";
-});
-
-// Get archived scenes
-const archivedScenes = scenes.filter((res) => {
-  return res.attributes.custom_json.status === "archived";
-});
-```
-
 ## Error Handling
 
 Always include proper error handling when working with the API:

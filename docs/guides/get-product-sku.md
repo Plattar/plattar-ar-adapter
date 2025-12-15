@@ -8,7 +8,7 @@ The SKU field can be defined via the Plattar CMS in either the **Product** or **
 
 ## Get User-Defined SKU from Product Object using Scene ID
 
-![Product SKU in CMS](../images/product-sku-cms.png)
+![Product SKU in CMS](../images/product-sku-cms.jpeg)
 
 The following code example shows how to get the user-defined **SKU** field from the Product object in the provided Scene. Note that a Scene can have many products.
 
@@ -58,7 +58,7 @@ For the purposes of this example, we use a pre-defined scene with id `c0afc220-8
 
 ## Get User-Defined SKU from Product Variation Object using Scene ID
 
-![Product Variation SKU in CMS](../images/variation-sku-cms.png)
+![Product Variation SKU in CMS](../images/variation-sku-cms.jpeg)
 
 The following code example shows how to get the user-defined **SKU** field from the ProductVariation object in the provided Scene. Note that a Scene can have many products and products can have many product variations.
 

@@ -106,7 +106,7 @@ For individual Scene integrations, the `Scene ID` can be copied directly from th
 
 2. Click on your Scene to enter the Scene Editor
 
-   ![Open VTO Scene Editor](../images/vto-scene-editor.png)
+   ![Open VTO Scene Editor](../images/vto-scene-editor.jpeg)
 
 3. Copy the `Scene ID` from the Scene Editor and use as part of the `scene-id` attribute in the integration
 
@@ -120,7 +120,7 @@ For multiple Scene integrations, the embed codes can be generated and exported d
 2. Select the Scenes ready for integration
 3. Export the generated JSON file containing all the integration URLs and codes for the selection
 
-![Export Multiple Scenes](../images/export-scenes.png)
+![Export Multiple Scenes](../images/export-scenes.jpeg)
 
 ## VTO Embed Example
 
@@ -317,39 +317,6 @@ For VTO to work properly, your scene must:
 - **Different Lighting**: Test in various lighting conditions
 - **Face Positions**: Test with different face angles and positions
 - **Performance**: Monitor frame rates and loading times
-
-## Troubleshooting
-
-### VTO Not Loading
-
-```javascript
-embed.viewer.context.setLoading = (params) => {
-  if (params.loading === false) {
-    console.log("VTO loaded successfully");
-  } else if (params.error) {
-    console.error("VTO loading error:", params.error);
-    // Show error message to user
-    showErrorMessage("Unable to load VTO experience");
-  }
-};
-```
-
-### Camera Permission Denied
-
-```javascript
-async function launchVTO() {
-  try {
-    await embed.setAttribute("embed-type", "vto");
-    await embed.setAttribute("init", "viewer");
-  } catch (err) {
-    if (err.name === 'NotAllowedError') {
-      showMessage("Camera permission is required for VTO");
-    } else {
-      console.error("VTO launch error:", err);
-    }
-  }
-}
-```
 
 ## Related Guides
 

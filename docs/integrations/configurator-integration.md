@@ -106,11 +106,9 @@ For individual Scene integrations, the `Scene ID` can be copied directly from th
 
 2. Click on your Scene to enter the Scene Editor
 
-   ![Open Scene Editor](../images/open-scene-editor.png)
+   ![Open Scene Editor](../images/open-scene-editor.jpeg)
 
 3. Copy the `Scene ID` from the Scene Editor and use as part of the `scene-id` attribute in the integration
-
-   ![Copy Scene ID](../images/copy-scene-id.png)
 
 ## Multiple Scene IDs
 
@@ -122,7 +120,7 @@ For multiple Scene integrations, the embed codes can be generated and exported d
 2. Select the Scenes ready for integration
 3. Export the generated JSON file containing all the integration URLs and codes for the selection
 
-![Export Multiple Scenes](../images/export-scenes.png)
+![Export Multiple Scenes](../images/export-scenes.jpeg)
 
 ## Configurator/Viewer Integration Example with Variation Switching
 
@@ -258,7 +256,7 @@ This scene contains multiple products with multiple variations that can be confi
 
 The example scene should look like the following:
 
-![Configurator Example](../images/configurator-example-scene.png)
+![Configurator Example](../images/configurator-example-scene.jpeg)
 
 ## CodePen Live Example
 
