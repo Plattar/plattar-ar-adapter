@@ -7,6 +7,7 @@
   * [Loading a Scene](installation/loading-scene.md)
   * [Changing Scenes](installation/changing-scene.md)
   * [API Reference](installation/api-reference.md)
+  * [Advanced Visibility Control API](installation/advanced-visibility-api.md) ⚠️ Beta
 
 * **Working with Variations**
   * [Selecting by Variation ID](installation/selecting-variation-id.md)

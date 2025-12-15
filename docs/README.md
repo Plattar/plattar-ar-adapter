@@ -31,6 +31,7 @@ Get started with the Plattar AR Adapter SDK in just a few steps:
 - [Gallery View](installation/adding-gallery.md)
 - [Final Example](installation/final-example.md)
 - [Embed API Reference](installation/api-reference.md)
+- [Advanced Visibility Control API](installation/advanced-visibility-api.md) - ⚠️ Beta functionality
 
 ### Web Integrations
 
@@ -67,6 +68,11 @@ Combine 3D viewers with traditional product photography in a seamless gallery ex
 ### Advanced Camera Controls
 Programmatically control camera positions and animations. Create guided product tours and highlight specific features.
 
+### Advanced Visibility Control (Beta)
+Fine-grained control over product variation visibility for building custom configurator experiences. See the [Advanced Visibility Control API](installation/advanced-visibility-api.md) for details.
+
+> **Note:** The Advanced Visibility Control API is currently in beta. Some features may not work as expected. Please report any issues on the [GitHub repository](https://github.com/Plattar/plattar-ar-adapter/issues).
+
 ## Platform Support
 
 - **Web Browsers**: Chrome, Firefox, Safari, Edge
@@ -80,9 +86,11 @@ Programmatically control camera positions and animations. Create guided product 
 - [NPM Package](https://www.npmjs.com/package/@plattar/plattar-ar-adapter)
 - [Plattar Platform](https://www.plattar.com)
 - [API Reference](installation/api-reference.md)
+- [Advanced Visibility Control API](installation/advanced-visibility-api.md) - Beta
 
 ## Need Help?
 
 - Check the [API Reference](installation/api-reference.md) for detailed documentation
 - Review the [examples](installation/final-example.md) to see complete implementations
 - Visit the [GitHub repository](https://github.com/Plattar/plattar-ar-adapter) for issues and discussions
+- For beta features like the Advanced Visibility Control API, please report issues on GitHub

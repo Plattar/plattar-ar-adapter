@@ -4,6 +4,7 @@
   * [Installation](installation/installation.md)
   * [Quick Start](installation/loading-scene.md)
   * [API Reference](installation/api-reference.md)
+  * [Advanced API](installation/advanced-visibility-api.md) ⚠️
 
 * Guides
   * [AR Features](installation/view-ar.md)
