@@ -9,6 +9,15 @@ export enum ControllerState {
     QRCode
 }
 
+export interface QRCodeOptions {
+    readonly color: string;
+    readonly qrType: string;
+    readonly shorten: boolean;
+    readonly margin: number;
+    readonly detached: boolean;
+    readonly url?: string | null;
+}
+
 /**
  * All Plattar Controllers are derived from the same interface
  */
@@ -17,12 +26,16 @@ export abstract class PlattarController {
     /**
      * Default QR Code rendering options
      */
-    protected _GetDefaultQROptions(): any {
+    protected _GetDefaultQROptions(opt: QRCodeOptions | undefined | null = null): QRCodeOptions {
+        const options: any = opt ?? {};
+
         return {
-            color: this.getAttribute("qr-color") || "#101721",
-            qrType: this.getAttribute("qr-style") || "default",
-            shorten: this.getAttribute("qr-shorten") || true,
-            margin: 0
+            color: options.color ?? (this.getAttribute("qr-color") || "#101721"),
+            qrType: options.qrType ?? (this.getAttribute("qr-style") || "default"),
+            shorten: options.shorten ?? (this.getBooleanAttribute("qr-shorten") || true),
+            margin: options.margin ?? 0,
+            detached: options.detached ?? (this.getBooleanAttribute("qr-detached") || false),
+            url: options.url ?? null
         }
     };
 
@@ -162,14 +175,14 @@ export abstract class PlattarController {
      * Start Rendering a QR Code with the provided options
      * @param options (optional) - The QR Code Options
      */
-    public abstract startViewerQRCode(options: any | undefined | null): Promise<HTMLElement>;
+    public abstract startViewerQRCode(options: QRCodeOptions | undefined | null): Promise<HTMLElement>;
 
     /**
      * Decide which QR Code to render according to the qr-type attribute
      * @param options 
      * @returns 
      */
-    public async startQRCode(options: any): Promise<HTMLElement> {
+    public async startQRCode(options: QRCodeOptions): Promise<HTMLElement> {
         const qrType: string = this.getAttribute("qr-type") || "viewer";
 
         switch (qrType.toLowerCase()) {
@@ -186,14 +199,15 @@ export abstract class PlattarController {
      * @param options 
      * @returns 
      */
-    public async startARQRCode(options: any): Promise<HTMLElement> {
-        // remove the old renderer instance if any
-        this.removeRenderer();
-
-        const opt: any = options || this._GetDefaultQROptions();
-
+    public async startARQRCode(options: QRCodeOptions): Promise<HTMLElement> {
+        const opt: QRCodeOptions = this._GetDefaultQROptions(options);
         const viewer: HTMLElement = document.createElement("plattar-qrcode");
-        this._element = viewer;
+
+        // remove the old renderer instance if any
+        if (!opt.detached) {
+            this.removeRenderer();
+            this._element = viewer;
+        }
 
         // required attributes with defaults for plattar-viewer node
         const width: string = this.getAttribute("width") || "500px";
@@ -207,7 +221,7 @@ export abstract class PlattarController {
         }
 
         if (opt.margin) {
-            viewer.setAttribute("margin", "" + opt.margin);
+            viewer.setAttribute("margin", `${opt.margin}`);
         }
 
         if (opt.qrType) {
@@ -220,7 +234,7 @@ export abstract class PlattarController {
 
         let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
 
-        let configState: string | null = null;
+        //let configState: string | null = null;
         const sceneID: string | null = this.getAttribute("scene-id");
         const embedType: string | null = this.getAttribute("embed-type");
         const productID: string | null = this.getAttribute("product-id");
@@ -229,18 +243,7 @@ export abstract class PlattarController {
         const variationSKU: string | null = this.getAttribute("variation-sku");
         const arMode: string | null = this.getAttribute("ar-mode");
         const showBanner: string | null = this.getAttribute("show-ar-banner");
-
-        try {
-            configState = (await this.getConfiguratorState()).state.encode()
-        }
-        catch (_err) {
-            // config state not available for some reason
-            configState = null;
-        }
-
-        if (configState) {
-            dst += "&config_state=" + configState;
-        }
+        const sceneGraphID: string | null = this.getAttribute("scene-graph-id");
 
         if (embedType) {
             dst += "&embed_type=" + embedType;
@@ -274,17 +277,39 @@ export abstract class PlattarController {
             dst += "&show_ar_banner=" + showBanner;
         }
 
+        if (sceneGraphID) {
+            dst += "&scene_graph_id=" + sceneGraphID;
+        }
+        else {
+            try {
+                const sceneGraphID: string = await (await this.getConfiguratorState()).state.encodeSceneGraphID();
+                dst += "&scene_graph_id=" + sceneGraphID;
+            }
+            catch (_err) {
+                // scene graph ID not available for some reason
+                // we will generate a new one
+                console.error(_err);
+            }
+        }
+
         viewer.setAttribute("url", opt.url || dst);
 
-        this._state = ControllerState.QRCode;
         this._prevQROpt = opt;
 
-        return new Promise<HTMLElement>((accept, reject) => {
-            this.append(viewer);
+        if (!opt.detached) {
+            this._state = ControllerState.QRCode;
 
-            viewer.onload = () => {
-                return accept(viewer);
-            };
+            return new Promise<HTMLElement>((accept, reject) => {
+                this.append(viewer);
+
+                viewer.onload = () => {
+                    return accept(viewer);
+                };
+            });
+        }
+
+        return new Promise<HTMLElement>((accept, reject) => {
+            return accept(viewer);
         });
     }
 

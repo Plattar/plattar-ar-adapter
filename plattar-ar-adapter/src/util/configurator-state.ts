@@ -308,7 +308,7 @@ export class ConfiguratorState {
                         scene_product_id: productState[meta.scene_product_index],
                         product_variation_id: productState[meta.product_variation_index],
                         meta_data: {
-                            augment: productState[meta.meta_index].augment || true,
+                            augment: productState[meta.meta_index].augment ?? true,
                             type: productState[meta.meta_index].type || "sceneproduct"
                         }
                     });
@@ -574,5 +574,81 @@ export class ConfiguratorState {
      */
     public encode(): string {
         return btoa(JSON.stringify(this._state));
+    }
+
+    public async encodeSceneGraphID(): Promise<string> {
+        const graph: any = this.sceneGraph;
+
+        // some scene-graphs are very large in size, we store it remotely
+        // this storage will expire in 10 minutes so this is a non-permanent version
+        // and is designed for quick ar
+        const url: string = `https://c.plattar.com/v3/redir/store`;
+
+        // finally send our scene-graph to the backend to generate the AR file and return
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    data: {
+                        attributes: {
+                            data: graph
+                        }
+                    }
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`ConfiguratorState.encodeSceneGraphID() - network response was not ok ${response.status}`);
+            }
+
+            const data = await response.json();
+
+            return data.data.id;
+        }
+        catch (error: any) {
+            throw new Error(`ConfiguratorState.encodeSceneGraphID() - there was a request error to ${url}, error was ${error.message}`);
+        }
+    }
+
+    /**
+     * Compiles and returns the Dynamic Scene Graph (Updated for 2025 for DynamicAR)
+     * NOTE: Eventually this structure should replace ConfiguratorState
+     */
+    public get sceneGraph(): any {
+        const objects: Array<SceneProductData> = this.array();
+
+        // in here we need to generate the schema input to be sent to the backend service
+        const schema: any = {
+            // ensure to only generate AR using files we pass into the backend
+            strict: false,
+            inputs: []
+        };
+
+        objects.forEach((object: SceneProductData) => {
+            if (object.meta_data.type === "scenemodel") {
+                const data: any = {
+                    id: object.scene_product_id,
+                    type: 'scenemodel',
+                    visibility: object.meta_data.augment
+                };
+
+                schema.inputs.push(data);
+            }
+            else {
+                const data: any = {
+                    id: object.scene_product_id,
+                    type: 'sceneproduct',
+                    variation_id: object.product_variation_id,
+                    visibility: object.meta_data.augment
+                };
+
+                schema.inputs.push(data);
+            }
+        });
+
+        return schema;
     }
 }

@@ -1,75 +1,72 @@
 import { Analytics } from "@plattar/plattar-analytics";
 import { Project, Scene, Server } from "@plattar/plattar-api";
-import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
 import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
 import SceneViewer from "../viewers/scene-viewer";
 import { LauncherAR } from "./launcher-ar";
-import { DecodedConfiguratorState, SceneProductData } from "../util/configurator-state";
 import version from "../version";
 
-export interface ConfiguratorAROptions {
-    readonly state: DecodedConfiguratorState;
+export interface SceneGraphAROptions {
+    readonly id: string;
+    readonly sceneID: string;
     readonly useARBanner: boolean;
 }
 
 /**
  * Performs AR functionality related to Plattar Scenes
  */
-export class ConfiguratorAR extends LauncherAR {
+export class SceneGraphAR extends LauncherAR {
 
     // analytics instance
     private _analytics: Analytics | null = null;
-    private _options: ConfiguratorAROptions;
+    private _options: SceneGraphAROptions;
 
     // this thing controls the actual AR view
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
-    constructor(options: ConfiguratorAROptions) {
+    constructor(options: SceneGraphAROptions) {
         super();
-
-        if (!options.state) {
-            throw new Error("ConfiguratorAR.constructor(state) - state must be defined");
-        }
 
         this._options = options;
         this._ar = null;
     }
 
-    private _SetupAnalytics(): void {
-        const scene: Scene = this._options.state.scene;
+    private async _SetupAnalytics(): Promise<Scene> {
+        const scene: Scene = new Scene(this._options.sceneID);
+        scene.include(Project);
+
+        const fetchedScene = await scene.get();
         let analytics: Analytics | null = null;
 
-        // setup scene stuff (if any)
-        if (scene) {
-            analytics = new Analytics(scene.attributes.application_id);
-            analytics.origin = <any>Server.location().type;
+        analytics = new Analytics(fetchedScene.attributes.application_id);
+        analytics.origin = <any>Server.location().type;
 
-            this._analytics = analytics;
+        this._analytics = analytics;
 
-            analytics.data.push("type", "scene-ar");
-            analytics.data.push("sdkVersion", version);
-            analytics.data.push("sceneId", scene.id);
-            analytics.data.push("sceneTitle", scene.attributes.title);
+        analytics.data.push("type", "scene-graph-ar");
+        analytics.data.push("sdkVersion", version);
+        analytics.data.push("sceneId", fetchedScene.id);
+        analytics.data.push("sceneTitle", fetchedScene.attributes.title);
 
-            const application: Project | undefined = scene.relationships.find(Project);
+        const application: Project | undefined = fetchedScene.relationships.find(Project);
 
-            // setup application stuff (if any)
-            if (application) {
-                analytics.data.push("applicationId", application.id);
-                analytics.data.push("applicationTitle", application.attributes.title);
+        // setup application stuff (if any)
+        if (application) {
+            analytics.data.push("applicationId", application.id);
+            analytics.data.push("applicationTitle", application.attributes.title);
 
-                if (this._options.useARBanner) {
-                    this.options.banner = {
-                        title: <any>application.attributes.title,
-                        subtitle: scene.attributes.title,
-                        button: 'Visit'
-                    }
+            if (this._options.useARBanner) {
+                this.options.banner = {
+                    title: <any>application.attributes.title,
+                    subtitle: fetchedScene.attributes.title,
+                    button: 'Visit'
                 }
             }
         }
+
+        return fetchedScene;
     }
 
     /**
@@ -79,24 +76,19 @@ export class ConfiguratorAR extends LauncherAR {
     private async _Compose(output: "glb" | "usdz" | "vto"): Promise<string> {
         const type: "viewer" | "reality" = output === 'glb' ? "viewer" : "reality";
 
-        const url: string = `https://xrutils.plattar.com/v3/scene/${this._options.state.scene.id}/${type}`;
+        const url: string = `https://xrutils.plattar.com/v3/scene/${this._options.sceneID}/${type}/${this._options.id}`;
 
         // grab our existing scene-graph from the saved API
         try {
             const response = await fetch(url, {
-                method: "POST",
+                method: "GET",
                 headers: {
                     "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    data: {
-                        attributes: this._options.state.state.sceneGraph
-                    }
-                })
+                }
             });
 
             if (!response.ok) {
-                throw new Error(`ConfiguratorAR - Fetching Existing Graph Error - network response was not ok ${response.status}`);
+                throw new Error(`ARAdapter - Fetching Existing Graph Error - network response was not ok ${response.status}`);
             }
 
             const data = await response.json();
@@ -104,7 +96,7 @@ export class ConfiguratorAR extends LauncherAR {
             return data.data.attributes.url;
         }
         catch (error: any) {
-            throw new Error(`ConfiguratorAR - Fetching Existing Graph Error - there was a request error to ${url}, error was ${error.message}`);
+            throw new Error(`ARAdapter - Fetching Existing Graph Error - there was a request error to ${url}, error was ${error.message}`);
         }
     }
 
@@ -117,13 +109,10 @@ export class ConfiguratorAR extends LauncherAR {
      */
     public async init(): Promise<LauncherAR> {
         if (!Util.canAugment()) {
-            throw new Error("ConfiguratorAR.init() - cannot proceed as AR not available in context");
+            throw new Error("SceneGraphAR.init() - cannot proceed as AR not available in context");
         }
 
-        const scene: Scene = this._options.state.scene;
-
-        this._SetupAnalytics();
-
+        const scene: Scene = await this._SetupAnalytics();
         const sceneOpt: any = scene.attributes.custom_json || {};
 
         // we need to define our AR module here
@@ -142,7 +131,7 @@ export class ConfiguratorAR extends LauncherAR {
                     return this;
                 }
                 else {
-                    throw new Error("ConfiguratorAR.init() - cannot proceed as VTO AR requires Reality Viewer support");
+                    throw new Error("SceneGraphAR.init() - cannot proceed as VTO AR requires Reality Viewer support");
                 }
             }
 
@@ -157,7 +146,7 @@ export class ConfiguratorAR extends LauncherAR {
                 return this;
             }
 
-            throw new Error("ConfiguratorAR.init() - cannot proceed as IOS device does not support AR Mode");
+            throw new Error("SceneGraphAR.init() - cannot proceed as IOS device does not support AR Mode");
         }
 
         // check android
@@ -180,12 +169,12 @@ export class ConfiguratorAR extends LauncherAR {
 
         // otherwise, we didn't have AR available - it should never really reach this stage as this should be caught
         // earlier in the process
-        throw new Error("ConfiguratorAR.init() - could not initialise AR correctly, check values");
+        throw new Error("SceneGraphAR.init() - could not initialise AR correctly, check values");
     }
 
     public start(): void {
         if (!this._ar) {
-            throw new Error("SceneAR.start() - cannot proceed as AR instance is null");
+            throw new Error("SceneGraphAR.start() - cannot proceed as AR instance is null");
         }
 
         const analytics: Analytics | null = this._analytics;

@@ -3,8 +3,9 @@ import { LauncherAR } from "../../ar/launcher-ar";
 import { SceneProductAR } from "../../ar/scene-product-ar";
 import { ConfiguratorState, DecodedConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
-import { ControllerState, PlattarController } from "./plattar-controller";
+import { ControllerState, PlattarController, QRCodeOptions } from "./plattar-controller";
 import { ConfiguratorAR } from "../../ar/configurator-ar";
+import { SceneGraphAR } from "../../ar/scene-graph-ar";
 
 /**
  * Manages an instance of the <plattar-configurator> HTML Element
@@ -109,9 +110,12 @@ export class ConfiguratorController extends PlattarController {
         return super.startARQRCode(options);
     }
 
-    public async startViewerQRCode(options: any): Promise<HTMLElement> {
+    public async startViewerQRCode(options: QRCodeOptions): Promise<HTMLElement> {
+        const opt: QRCodeOptions = this._GetDefaultQROptions(options);
         // remove the old renderer instance if any
-        this.removeRenderer();
+        if (!opt.detached) {
+            this.removeRenderer();
+        }
 
         const sceneID: string | null = this.getAttribute("scene-id");
 
@@ -151,10 +155,11 @@ export class ConfiguratorController extends PlattarController {
             configState = null;
         }
 
-        const opt: any = options || this._GetDefaultQROptions();
-
         const viewer: HTMLElement = document.createElement("plattar-qrcode");
-        this._element = viewer;
+
+        if (!opt.detached) {
+            this._element = viewer;
+        }
 
         // required attributes with defaults for plattar-viewer node
         const width: string = this.getAttribute("width") || "500px";
@@ -182,6 +187,7 @@ export class ConfiguratorController extends PlattarController {
         const showAR: string | null = this.getAttribute("show-ar");
         const showUI: string | null = this.getAttribute("show-ui");
         const showBanner: string | null = this.getAttribute("show-ar-banner");
+        const sceneGraphID: string | null = this.getAttribute("scene-graph-id");
 
         if (showUI && showUI === "true") {
             dst = Server.location().base + "configurator/dist/index.html?scene_id=" + sceneID;
@@ -199,17 +205,28 @@ export class ConfiguratorController extends PlattarController {
             dst += "&show_ar_banner=" + showBanner;
         }
 
+        if (sceneGraphID) {
+            dst += "&scene_graph_id=" + sceneGraphID;
+        }
+
         viewer.setAttribute("url", opt.url || dst);
 
-        this._state = ControllerState.QRCode;
         this._prevQROpt = opt;
 
-        return new Promise<HTMLElement>((accept, reject) => {
-            viewer.onload = () => {
-                return accept(viewer);
-            };
+        if (!opt.detached) {
+            this._state = ControllerState.QRCode;
 
-            this.append(viewer);
+            return new Promise<HTMLElement>((accept, reject) => {
+                viewer.onload = () => {
+                    return accept(viewer);
+                };
+
+                this.append(viewer);
+            });
+        }
+
+        return new Promise<HTMLElement>((accept, reject) => {
+            return accept(viewer);
         });
     }
 
@@ -377,6 +394,20 @@ export class ConfiguratorController extends PlattarController {
 
         if (!sceneID) {
             throw new Error("VTOController.initAR() - generated AR minimum required attributes not set, use scene-id as a minimum");
+        }
+
+        const graphID: string | null = this.getAttribute("scene-graph-id");
+
+        // use the scene-graph route if available
+        if (graphID) {
+            const configAR: SceneGraphAR = new SceneGraphAR(
+                {
+                    useARBanner: this.getBooleanAttribute("show-ar-banner"),
+                    id: graphID,
+                    sceneID: sceneID
+                });
+
+            return configAR.init();
         }
 
         const configAR: ConfiguratorAR = new ConfiguratorAR({ state: await this.getConfiguratorState(), useARBanner: this.getBooleanAttribute("show-ar-banner") });

@@ -4,6 +4,7 @@ import { ConfiguratorState, DecodedConfiguratorState, SceneProductData } from ".
 import { Util } from "../../util/util";
 import { ControllerState, PlattarController } from "./plattar-controller";
 import { ConfiguratorAR } from "../../ar/configurator-ar";
+import { SceneGraphAR } from "../../ar/scene-graph-ar";
 
 /**
  * Manages an instance of the <plattar-configurator> HTML Element
@@ -25,28 +26,28 @@ export class LauncherController extends PlattarController {
     public override async onAttributesUpdated(attributeName: string): Promise<void> {
         const state: ControllerState = this._state;
 
+        if (attributeName === "variation-id") {
+            const configState: DecodedConfiguratorState = await this.getConfiguratorState();
+            const variationIDs: string | null = this.getAttribute("variation-id");
+            const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
+
+            variationIDsList.forEach((variationID: string) => {
+                configState.state.setVariationID(variationID);
+            });
+        }
+
+        if (attributeName === "variation-sku") {
+            const configState: DecodedConfiguratorState = await this.getConfiguratorState();
+            const variationSKUs: string | null = this.getAttribute("variation-sku");
+            const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
+
+            variationSKUList.forEach((variationSKU: string) => {
+                configState.state.setVariationSKU(variationSKU);
+            });
+        }
+
         // re-render the QR Code when attributes have changed
         if (state === ControllerState.QRCode) {
-            if (attributeName === "variation-id") {
-                const configState: DecodedConfiguratorState = await this.getConfiguratorState();
-                const variationIDs: string | null = this.getAttribute("variation-id");
-                const variationIDsList: Array<string> = variationIDs ? variationIDs.split(",") : [];
-
-                variationIDsList.forEach((variationID: string) => {
-                    configState.state.setVariationID(variationID);
-                });
-            }
-
-            if (attributeName === "variation-sku") {
-                const configState: DecodedConfiguratorState = await this.getConfiguratorState();
-                const variationSKUs: string | null = this.getAttribute("variation-sku");
-                const variationSKUList: Array<string> = variationSKUs ? variationSKUs.split(",") : [];
-
-                variationSKUList.forEach((variationSKU: string) => {
-                    configState.state.setVariationSKU(variationSKU);
-                });
-            }
-
             this.startQRCode(this._prevQROpt);
 
             return;
@@ -109,6 +110,7 @@ export class LauncherController extends PlattarController {
         const variationSKU: string | null = this.getAttribute("variation-sku");
         const arMode: string | null = this.getAttribute("ar-mode");
         const showBanner: string | null = this.getAttribute("show-ar-banner");
+        const sceneGraphID: string | null = this.getAttribute("scene-graph-id");
 
         // required attributes with defaults for plattar-launcher node
         const width: string = this.getAttribute("width") || "500px";
@@ -153,11 +155,19 @@ export class LauncherController extends PlattarController {
             viewer.setAttribute("show-ar-banner", showBanner);
         }
 
-        if (configState) {
-            const encodedState = configState.state.encode();
+        if (sceneGraphID) {
+            viewer.setAttribute("scene-graph-id", sceneGraphID);
+        }
+        else {
+            try {
+                const sceneGraphID: string = await (await this.getConfiguratorState()).state.encodeSceneGraphID();
 
-            if (encodedState.length < 6000) {
-                viewer.setAttribute("config-state", encodedState);
+                viewer.setAttribute("scene-graph-id", sceneGraphID);
+            }
+            catch (_err) {
+                // scene graph ID not available for some reason
+                // we will generate a new one
+                console.error(_err);
             }
         }
 
@@ -250,6 +260,20 @@ export class LauncherController extends PlattarController {
 
         if (!sceneID) {
             throw new Error("LauncherController.initAR() - generated AR minimum required attributes not set, use scene-id as a minimum");
+        }
+
+        const graphID: string | null = this.getAttribute("scene-graph-id");
+
+        // use the scene-graph route if available
+        if (graphID) {
+            const configAR: SceneGraphAR = new SceneGraphAR(
+                {
+                    useARBanner: this.getBooleanAttribute("show-ar-banner"),
+                    id: graphID,
+                    sceneID: sceneID
+                });
+
+            return configAR.init();
         }
 
         const configAR: ConfiguratorAR = new ConfiguratorAR({ state: await this.getConfiguratorState(), useARBanner: this.getBooleanAttribute("show-ar-banner") });

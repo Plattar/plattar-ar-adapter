@@ -3,7 +3,7 @@ import { ConfiguratorState, SceneProductAR } from "../..";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { DecodedConfiguratorState, SceneProductData } from "../../util/configurator-state";
 import { Util } from "../../util/util";
-import { ControllerState, PlattarController } from "./plattar-controller";
+import { ControllerState, PlattarController, QRCodeOptions } from "./plattar-controller";
 import { ConfiguratorAR } from "../../ar/configurator-ar";
 
 /**
@@ -80,9 +80,13 @@ export class VTOController extends PlattarController {
         }
     }
 
-    public async startViewerQRCode(options: any): Promise<HTMLElement> {
+    public async startViewerQRCode(options: QRCodeOptions): Promise<HTMLElement> {
+        const opt: QRCodeOptions = this._GetDefaultQROptions(options);
+
         // remove the old renderer instance if any
-        this.removeRenderer();
+        if (!opt.detached) {
+            this.removeRenderer();
+        }
 
         const sceneID: string | null = this.getAttribute("scene-id");
 
@@ -90,10 +94,11 @@ export class VTOController extends PlattarController {
             throw new Error("VTOController.startQRCode() - minimum required attributes not set, use scene-id as a minimum");
         }
 
-        const opt: any = options || this._GetDefaultQROptions();
-
         const viewer: HTMLElement = document.createElement("plattar-qrcode");
-        this._element = viewer;
+
+        if (!opt.detached) {
+            this._element = viewer;
+        }
 
         // required attributes with defaults for plattar-viewer node
         const width: string = this.getAttribute("width") || "500px";
@@ -156,15 +161,22 @@ export class VTOController extends PlattarController {
 
         viewer.setAttribute("url", opt.url || dst);
 
-        this._state = ControllerState.QRCode;
         this._prevQROpt = opt;
 
-        return new Promise<HTMLElement>((accept, reject) => {
-            viewer.onload = () => {
-                return accept(viewer);
-            };
+        if (!opt.detached) {
+            this._state = ControllerState.QRCode;
 
-            this.append(viewer);
+            return new Promise<HTMLElement>((accept, reject) => {
+                viewer.onload = () => {
+                    return accept(viewer);
+                };
+
+                this.append(viewer);
+            });
+        }
+
+        return new Promise<HTMLElement>((accept, reject) => {
+            return accept(viewer);
         });
     }
 
