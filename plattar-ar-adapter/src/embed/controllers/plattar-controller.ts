@@ -215,6 +215,7 @@ export abstract class PlattarController {
 
         viewer.setAttribute("width", width);
         viewer.setAttribute("height", height);
+        viewer.setAttribute("server", Server.location().type);
 
         if (opt.color) {
             viewer.setAttribute("color", opt.color);
@@ -232,7 +233,16 @@ export abstract class PlattarController {
 
         const qrOptions: string = btoa(JSON.stringify(opt));
 
-        let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
+        let dst: string = `https://renderer.plattar.com/launcher.html?qr_options=${qrOptions}`;
+
+        switch (Server.location().type) {
+            case 'review':
+                dst = `https://renderer-review.plattar.com/launcher.html?qr_options=${qrOptions}`
+                break;
+            case 'staging':
+                dst = `https://renderer.plattar.space/launcher.html?qr_options=${qrOptions}`
+                break;
+        }
 
         //let configState: string | null = null;
         const sceneID: string | null = this.getAttribute("scene-id");

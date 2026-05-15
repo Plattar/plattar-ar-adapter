@@ -106,6 +106,7 @@ export class VTOController extends PlattarController {
 
         viewer.setAttribute("width", width);
         viewer.setAttribute("height", height);
+        viewer.setAttribute("server", Server.location().type);
 
         if (opt.color) {
             viewer.setAttribute("color", opt.color);
@@ -121,7 +122,16 @@ export class VTOController extends PlattarController {
 
         viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
 
-        let dst: string = Server.location().base + "renderer/facear.html?scene_id=" + sceneID;
+        let dst: string = `https://renderer.plattar.com/facear.html?scene_id=${sceneID}`;
+
+        switch (Server.location().type) {
+            case 'review':
+                dst = `https://renderer-review.plattar.com/facear.html?scene_id=${sceneID}`
+                break;
+            case 'staging':
+                dst = `https://renderer.plattar.space/facear.html?scene_id=${sceneID}`
+                break;
+        }
 
         // optional attributes
         let configState: DecodedConfiguratorState | null = null;

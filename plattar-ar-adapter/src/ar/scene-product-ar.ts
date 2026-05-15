@@ -15,7 +15,6 @@ export class SceneProductAR extends ProductAR {
     private _attachedProductID: string | null = null;
 
     constructor(options: ProductAROptions) {
-        //super(sceneProductID, variationID, variationSKU);
         super(options);
 
         if (!options.productID) {

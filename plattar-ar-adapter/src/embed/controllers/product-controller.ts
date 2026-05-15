@@ -59,6 +59,7 @@ export class ProductController extends PlattarController {
 
                 viewer.setAttribute("width", width);
                 viewer.setAttribute("height", height);
+                viewer.setAttribute("server", Server.location().type);
 
                 if (opt.color) {
                     viewer.setAttribute("color", opt.color);
@@ -79,7 +80,16 @@ export class ProductController extends PlattarController {
                 const variationSKU: string | null = this.getAttribute("variation-sku");
                 const showAR: string | null = this.getAttribute("show-ar");
 
-                let dst: string = Server.location().base + "renderer/product.html?product_id=" + productID;
+                let dst: string = `https://renderer.plattar.com/product.html?product_id=${productID}`;
+
+                switch (Server.location().type) {
+                    case 'review':
+                        dst = `https://renderer-review.plattar.com/product.html?product_id=${productID}`
+                        break;
+                    case 'staging':
+                        dst = `https://renderer.plattar.space/product.html?product_id=${productID}`
+                        break;
+                }
 
                 if (variationID) {
                     dst += "&variationId=" + variationID;
@@ -132,6 +142,7 @@ export class ProductController extends PlattarController {
 
             viewer.setAttribute("width", width);
             viewer.setAttribute("height", height);
+            viewer.setAttribute("server", Server.location().type);
 
             if (opt.color) {
                 viewer.setAttribute("color", opt.color);
@@ -149,7 +160,16 @@ export class ProductController extends PlattarController {
 
             const qrOptions: string = btoa(JSON.stringify(opt));
 
-            let dst: string = Server.location().base + "renderer/launcher.html?qr_options=" + qrOptions;
+            let dst: string = `https://renderer.plattar.com/launcher.html?qr_options=${qrOptions}`;
+
+            switch (Server.location().type) {
+                case 'review':
+                    dst = `https://renderer-review.plattar.com/launcher.html?qr_options=${qrOptions}`
+                    break;
+                case 'staging':
+                    dst = `https://renderer.plattar.space/launcher.html?qr_options=${qrOptions}`
+                    break;
+            }
 
             const sceneID: string | null = this.getAttribute("scene-id");
             const configState: string | null = this.getAttribute("config-state");

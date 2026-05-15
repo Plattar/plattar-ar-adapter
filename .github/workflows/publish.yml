@@ -6,6 +6,9 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - uses: actions/checkout@v6
       - name: set version from tag
@@ -32,7 +35,7 @@ jobs:
       - uses: JS-DevTools/npm-publish@v4
         with:
           package: ./plattar-ar-adapter/package.json
-          token: ${{ secrets.NPM_PUBLISH_KEY }}
+          token: ${{ secrets.NPM_READONLY_KEY }}
           access: 'public'
           strategy: all
       - name: Plattar CDN Cache

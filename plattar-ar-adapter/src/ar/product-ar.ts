@@ -28,21 +28,6 @@ export class ProductAR extends LauncherAR {
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
-    /*
-    constructor(productID: string | undefined | null = null, variationID: string | undefined | null = null, variationSKU: string | undefined | null = null) {
-        super();
-
-        if (!productID) {
-            throw new Error("ProductAR.constructor(productID, variationID) - productID must be defined");
-        }
-
-        this._productID = productID;
-        this._variationSKU = variationSKU;
-        this._variationID = variationID ? variationID : (variationSKU ? null : "default");
-        this._ar = null;
-    }
-    */
-
     constructor(options: ProductAROptions) {
         super();
 

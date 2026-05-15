@@ -1,4 +1,4 @@
-import { Product, ProductVariation, Project, Scene, SceneModel, SceneProduct } from "@plattar/plattar-api";
+import { Product, ProductVariation, Project, Scene, SceneModel, SceneProduct, Server } from "@plattar/plattar-api";
 
 export type SceneProductDataMetaType = "sceneproduct" | "scenemodel" | "product";
 
@@ -582,7 +582,7 @@ export class ConfiguratorState {
         // some scene-graphs are very large in size, we store it remotely
         // this storage will expire in 10 minutes so this is a non-permanent version
         // and is designed for quick ar
-        const url: string = `https://c.plattar.com/v3/redir/store`;
+        const url: string = Server.location().type === 'staging' ? 'https://c.plattar.space/v3/redir/store' : 'https://c.plattar.com/v3/redir/store';
 
         // finally send our scene-graph to the backend to generate the AR file and return
         try {

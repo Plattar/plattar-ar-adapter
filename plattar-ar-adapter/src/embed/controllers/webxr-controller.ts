@@ -1,3 +1,4 @@
+import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { DecodedConfiguratorState } from "../../util/configurator-state";
 import { Util } from "../../util/util";
@@ -105,6 +106,7 @@ export class WebXRController extends PlattarController {
 
         viewer.setAttribute("width", width);
         viewer.setAttribute("height", height);
+        viewer.setAttribute("server", Server.location().type);
 
         if (opt.color) {
             viewer.setAttribute("color", opt.color);
