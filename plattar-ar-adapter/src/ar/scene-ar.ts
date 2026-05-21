@@ -1,6 +1,5 @@
 import { Analytics } from "@plattar/plattar-analytics";
 import { Product, Project, Scene, SceneModel, SceneProduct, Server } from "@plattar/plattar-api";
-import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
 import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
@@ -87,70 +86,103 @@ export class SceneAR extends LauncherAR {
      * Composes a Scene into an AR Model (remote operation) that can be used to launch
      * an AR File
      */
-    private _ComposeScene(scene: Scene, output: "glb" | "usdz" | "vto"): Promise<string> {
-        return new Promise<string>((accept, reject) => {
-            const sceneProducts: SceneProduct[] = scene.relationships.filter(SceneProduct);
-            const sceneModels: SceneModel[] = scene.relationships.filter(SceneModel);
+    private async _ComposeScene(scene: Scene, output: "glb" | "usdz" | "vto"): Promise<string> {
+        const sceneProducts: SceneProduct[] = scene.relationships.filter(SceneProduct);
+        const sceneModels: SceneModel[] = scene.relationships.filter(SceneModel);
 
-            // nothing to do if no AR components can be found
-            if ((sceneProducts.length + sceneModels.length) <= 0) {
-                return reject(new Error("SceneAR.ComposeScene() - cannot proceed as scene does not contain AR components"));
+        // nothing to do if no AR components can be found
+        if ((sceneProducts.length + sceneModels.length) <= 0) {
+            throw new Error("SceneAR.ComposeScene() - cannot proceed as scene does not contain AR components");
+        }
+
+        const url: string = `${Server.location().type === 'staging' ? 'https://converter.plattar.space' : 'https://converter.plattar.com'}/v3/converter/config-to-model`;
+
+        const payload = {
+            data: {
+                attributes: {
+                    quality: 100,
+                    output: output,
+                    maps: new Array<any>()
+                }
             }
+        }
 
-            // define our configurator
-            const configurator: Configurator = new Configurator();
+        let totalARObjectCount: number = 0;
 
-            configurator.server = <any>Server.location().type;
-            configurator.output = output;
+        // add our scene products
+        sceneProducts.forEach((sceneProduct: SceneProduct) => {
+            const product: Product | undefined = sceneProduct.relationships.find(Product);
+            const selection: SceneVariationSelection = this._options.variationSelection;
 
-            let totalARObjectCount: number = 0;
+            // we have a specific product selection
+            if (sceneProduct.attributes.include_in_augment) {
+                // check if this product is the one we want (from selection optionally)
+                if (product && (product.id === selection.productID) && selection.variationID) {
+                    payload.data.attributes.maps.push({
+                        sceneproduct: sceneProduct.id,
+                        productvariation: selection.variationID
+                    });
 
-            // add our scene products
-            sceneProducts.forEach((sceneProduct: SceneProduct) => {
-                const product: Product | undefined = sceneProduct.relationships.find(Product);
-                const selection: SceneVariationSelection = this._options.variationSelection;
-
-                // we have a specific product selection
-                if (sceneProduct.attributes.include_in_augment) {
-                    // check if this product is the one we want (from selection optionally)
-                    if (product && (product.id === selection.productID) && selection.variationID) {
-                        configurator.addSceneProduct(sceneProduct.id, selection.variationID);
+                    totalARObjectCount++;
+                }
+                else if (product) {
+                    // check if this scene-product is the one we want (from selection)
+                    if ((sceneProduct.id === selection.sceneProductID) && selection.variationID) {
+                        payload.data.attributes.maps.push({
+                            sceneproduct: sceneProduct.id,
+                            productvariation: selection.variationID
+                        });
 
                         totalARObjectCount++;
                     }
-                    else if (product) {
-                        // check if this scene-product is the one we want (from selection)
-                        if ((sceneProduct.id === selection.sceneProductID) && selection.variationID) {
-                            configurator.addSceneProduct(sceneProduct.id, selection.variationID);
+                    else if (product.attributes.product_variation_id) {
+                        payload.data.attributes.maps.push({
+                            sceneproduct: sceneProduct.id,
+                            productvariation: product.attributes.product_variation_id
+                        });
 
-                            totalARObjectCount++;
-                        }
-                        else if (product.attributes.product_variation_id) {
-                            configurator.addSceneProduct(sceneProduct.id, product.attributes.product_variation_id);
-
-                            totalARObjectCount++;
-                        }
+                        totalARObjectCount++;
                     }
                 }
+            }
+        });
+
+        // add our scene models
+        sceneModels.forEach((sceneModel: SceneModel) => {
+            if (sceneModel.attributes.include_in_augment) {
+                payload.data.attributes.maps.push({
+                    scenemodel: sceneModel.id
+                });
+
+                totalARObjectCount++;
+            }
+        });
+
+        // ensure we have actually added AR objects
+        if (totalARObjectCount <= 0) {
+            throw new Error("SceneAR.ComposeScene() - cannot proceed as scene does not contain any enabled AR components");
+        }
+
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(payload)
             });
 
-            // add our scene models
-            sceneModels.forEach((sceneModel: SceneModel) => {
-                if (sceneModel.attributes.include_in_augment) {
-                    configurator.addModel(sceneModel.id);
-                    totalARObjectCount++;
-                }
-            });
-
-            // ensure we have actually added AR objects
-            if (totalARObjectCount <= 0) {
-                return reject(new Error("SceneAR.ComposeScene() - cannot proceed as scene does not contain any enabled AR components"));
+            if (!response.ok) {
+                throw new Error(`SceneAR.ComposeScene() - network response was not ok ${response.status}`);
             }
 
-            return configurator.get().then((result: any) => {
-                accept(result.filename);
-            }).catch(reject);
-        });
+            const data = await response.json();
+
+            return data.data.attributes.filename;
+        }
+        catch (error: any) {
+            throw new Error(`SceneAR.ComposeScene() - there was a request error to ${url}, error was ${error.message}`);
+        }
     }
 
     /**

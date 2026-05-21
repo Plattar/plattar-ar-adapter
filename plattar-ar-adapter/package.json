@@ -40,7 +40,6 @@
 		"@plattar/plattar-analytics": "^2.7.1",
 		"@plattar/plattar-api": "^2.7.1",
 		"@plattar/plattar-qrcode": "2.7.1",
-		"@plattar/plattar-services": "^2.7.2",
 		"@plattar/plattar-web": "^2.7.2"
 	},
 	"devDependencies": {
