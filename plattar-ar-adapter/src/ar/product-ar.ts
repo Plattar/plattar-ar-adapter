@@ -28,21 +28,6 @@ export class ProductAR extends LauncherAR {
     // this is setup via .init() function
     private _ar: ARViewer | null;
 
-    /*
-    constructor(productID: string | undefined | null = null, variationID: string | undefined | null = null, variationSKU: string | undefined | null = null) {
-        super();
-
-        if (!productID) {
-            throw new Error("ProductAR.constructor(productID, variationID) - productID must be defined");
-        }
-
-        this._productID = productID;
-        this._variationSKU = variationSKU;
-        this._variationID = variationID ? variationID : (variationSKU ? null : "default");
-        this._ar = null;
-    }
-    */
-
     constructor(options: ProductAROptions) {
         super();
 
@@ -67,6 +52,8 @@ export class ProductAR extends LauncherAR {
     }
 
     private _SetupAnalytics(product: Product, variation: ProductVariation): void {
+        if (this._analytics !== null) return;
+
         let analytics: Analytics | null = null;
 
         const scene: Scene | undefined = product.relationships.find(Scene);
@@ -127,9 +114,7 @@ export class ProductAR extends LauncherAR {
             }
 
             const product: Product = new Product(this.productID);
-            product.include(ProductVariation);
             product.include(ProductVariation.include(FileModel));
-            product.include(Scene);
             product.include(Scene.include(Project));
 
             product.get().then((product: Product) => {

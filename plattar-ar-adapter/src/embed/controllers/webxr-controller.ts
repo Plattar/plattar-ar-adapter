@@ -1,3 +1,4 @@
+import { Server } from "@plattar/plattar-api";
 import { LauncherAR } from "../../ar/launcher-ar";
 import { DecodedConfiguratorState } from "../../util/configurator-state";
 import { Util } from "../../util/util";
@@ -105,6 +106,7 @@ export class WebXRController extends PlattarController {
 
         viewer.setAttribute("width", width);
         viewer.setAttribute("height", height);
+        viewer.setAttribute("server", Server.location().type);
 
         if (opt.color) {
             viewer.setAttribute("color", opt.color);
@@ -127,13 +129,8 @@ export class WebXRController extends PlattarController {
         this._state = ControllerState.QRCode;
         this._prevQROpt = opt;
 
-        return new Promise<HTMLElement>((accept, reject) => {
-            viewer.onload = () => {
-                return accept(viewer);
-            };
-
-            this.append(viewer);
-        });
+        this.append(viewer);
+        return this._awaitLoad(viewer);
     }
 
     public async startRenderer(): Promise<HTMLElement> {
@@ -174,11 +171,8 @@ export class WebXRController extends PlattarController {
             viewer.setAttribute("show-ui", showUI);
         }
 
-        return new Promise<HTMLElement>((accept, reject) => {
-            this.append(viewer);
-
-            return accept(viewer);
-        });
+        this.append(viewer);
+        return Promise.resolve(viewer);
     }
 
     public override async initAR(): Promise<LauncherAR> {

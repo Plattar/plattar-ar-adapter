@@ -20,6 +20,7 @@ export default class QuicklookViewer extends ARViewer {
 
         const anchor: HTMLAnchorElement = document.createElement("a");
         anchor.setAttribute("rel", "ar");
+        anchor.setAttribute("allowsContentScaling", "0");
         anchor.appendChild(document.createElement("img"));
 
         const banner: ARBanner | null = this.banner;

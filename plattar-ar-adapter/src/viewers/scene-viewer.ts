@@ -36,6 +36,8 @@ export default class SceneViewer extends ARViewer {
             intent += '&enable_vertical_placement=true';
         }
 
+        // avoid allowing content to be resized
+        intent += '&resizable=false';
         intent += '&a=b#Intent;scheme=https;package=com.google.ar.core;action=android.intent.action.VIEW;';
         intent += `S.browser_fallback_url=${linkOverride};end;`;
 

@@ -20,6 +20,7 @@ export class SceneGraphAR extends LauncherAR {
 
     // analytics instance
     private _analytics: Analytics | null = null;
+    private _analyticsSetup: Promise<Scene> | null = null;
     private _options: SceneGraphAROptions;
 
     // this thing controls the actual AR view
@@ -33,7 +34,10 @@ export class SceneGraphAR extends LauncherAR {
         this._ar = null;
     }
 
-    private async _SetupAnalytics(): Promise<Scene> {
+    private _SetupAnalytics(): Promise<Scene> {
+        if (this._analyticsSetup !== null) return this._analyticsSetup;
+
+        this._analyticsSetup = (async (): Promise<Scene> => {
         const scene: Scene = new Scene(this._options.sceneID);
         scene.include(Project);
 
@@ -67,6 +71,9 @@ export class SceneGraphAR extends LauncherAR {
         }
 
         return fetchedScene;
+        })();
+
+        return this._analyticsSetup;
     }
 
     /**
@@ -76,7 +83,9 @@ export class SceneGraphAR extends LauncherAR {
     private async _Compose(output: "glb" | "usdz" | "vto"): Promise<string> {
         const type: "viewer" | "reality" = output === 'glb' ? "viewer" : "reality";
 
-        const url: string = `https://xrutils.plattar.com/v3/scene/${this._options.sceneID}/${type}/${this._options.id}`;
+        const serverLocation: string = Server.location().type === 'staging' ? 'https://xrutils.plattar.space/v3/scene' : 'https://xrutils.plattar.com/v3/scene';
+
+        const url: string = `${serverLocation}/${this._options.sceneID}/${type}/${this._options.id}`;
 
         // grab our existing scene-graph from the saved API
         try {

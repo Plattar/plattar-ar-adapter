@@ -1,6 +1,5 @@
 import { Analytics } from "@plattar/plattar-analytics";
 import { Project, Scene, Server } from "@plattar/plattar-api";
-import { Configurator } from "@plattar/plattar-services";
 import { Util } from "../util/util";
 import { ARViewer } from "../viewers/ar-viewer";
 import QuicklookViewer from "../viewers/quicklook-viewer";
@@ -39,6 +38,8 @@ export class ConfiguratorAR extends LauncherAR {
     }
 
     private _SetupAnalytics(): void {
+        if (this._analytics !== null) return;
+
         const scene: Scene = this._options.state.scene;
         let analytics: Analytics | null = null;
 
@@ -79,7 +80,9 @@ export class ConfiguratorAR extends LauncherAR {
     private async _Compose(output: "glb" | "usdz" | "vto"): Promise<string> {
         const type: "viewer" | "reality" = output === 'glb' ? "viewer" : "reality";
 
-        const url: string = `https://xrutils.plattar.com/v3/scene/${this._options.state.scene.id}/${type}`;
+        const serverLocation: string = Server.location().type === 'staging' ? 'https://xrutils.plattar.space/v3/scene' : 'https://xrutils.plattar.com/v3/scene';
+
+        const url: string = `${serverLocation}/${this._options.state.scene.id}/${type}`;
 
         // grab our existing scene-graph from the saved API
         try {

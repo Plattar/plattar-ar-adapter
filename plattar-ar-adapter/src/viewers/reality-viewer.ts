@@ -20,6 +20,7 @@ export default class RealityViewer extends ARViewer {
 
         const anchor: HTMLAnchorElement = document.createElement("a");
         anchor.setAttribute("rel", "ar");
+        anchor.setAttribute("allowsContentScaling", "0");
         anchor.appendChild(document.createElement("img"));
 
         anchor.setAttribute("href", this.modelUrl);

@@ -103,6 +103,12 @@ export class ConfiguratorController extends PlattarController {
 
                 return Promise.reject(new Error("ConfiguratorController.startARQRCode() - legacy product transition failed"));
             }
+
+            // Kick off scene-graph encoding immediately while we proceed to the base
+            // implementation — the result is Promise-cached so no duplicate request is fired
+            if (!this.getAttribute("scene-graph-id")) {
+                dState.state.encodeSceneGraphID().catch(() => null);
+            }
         }
         catch (_err) {
         }
@@ -167,6 +173,7 @@ export class ConfiguratorController extends PlattarController {
 
         viewer.setAttribute("width", width);
         viewer.setAttribute("height", height);
+        viewer.setAttribute("server", Server.location().type);
 
         if (opt.color) {
             viewer.setAttribute("color", opt.color);
@@ -182,7 +189,16 @@ export class ConfiguratorController extends PlattarController {
 
         viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
 
-        let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + sceneID;
+        let dst: string = `https://renderer.plattar.com/configurator.html?scene_id=${sceneID}`;
+
+        switch (Server.location().type) {
+            case 'review':
+                dst = `https://renderer-review.plattar.com/configurator.html?scene_id=${sceneID}`
+                break;
+            case 'staging':
+                dst = `https://renderer.plattar.space/configurator.html?scene_id=${sceneID}`
+                break;
+        }
 
         const showAR: string | null = this.getAttribute("show-ar");
         const showUI: string | null = this.getAttribute("show-ui");
@@ -190,7 +206,16 @@ export class ConfiguratorController extends PlattarController {
         const sceneGraphID: string | null = this.getAttribute("scene-graph-id");
 
         if (showUI && showUI === "true") {
-            dst = Server.location().base + "configurator/dist/index.html?scene_id=" + sceneID;
+            dst = `https://configurator.plattar.com/index.html?scene_id=${sceneID}`;
+
+            switch (Server.location().type) {
+                case 'review':
+                    dst = `https://configurator-review.plattar.com/configurator.html?scene_id=${sceneID}`
+                    break;
+                case 'staging':
+                    dst = `https://configurator.plattar.space/configurator.html?scene_id=${sceneID}`
+                    break;
+            }
         }
 
         if (configState) {
@@ -241,42 +266,53 @@ export class ConfiguratorController extends PlattarController {
         }
 
         // optional attributes
-        let configState: DecodedConfiguratorState | null = null;
+        let configState: ConfiguratorState | null = null;
         this._state = ControllerState.Renderer;
 
-        try {
-            const dState: DecodedConfiguratorState = await this.getConfiguratorState();
+        const suppliedState: string | null = this.getAttribute("config-state");
+
+        if (suppliedState) {
+            // the state was supplied by the host page — decode it locally
+            // rather than paying for the scene fetch getConfiguratorState()
+            // performs before the renderer iframe can even be created. The
+            // renderer only needs the re-encoded state; the flows that do
+            // need the scene (QR/AR) decode on demand and reuse this same
+            // instance via _bootConfigState, keeping user mutations.
+            configState = ConfiguratorState.decode(suppliedState);
+            this._bootConfigState = configState;
 
             // if this is declared, we have a furniture scene that we need to re-create the embed
             // with new attributes
-            const product = dState.state.firstOfType("product");
+            const product = configState.firstOfType("product");
 
             if (product) {
-                this.parent.lockObserver();
-                this.parent.destroy();
-                this.setAttribute("product-id", product.scene_product_id);
-                this.removeAttribute("scene-id");
-                this.parent.unlockObserver();
-                const controller = this.parent.create();
+                return this._transitionLegacyProduct(product);
+            }
+        }
+        else {
+            try {
+                const dState: DecodedConfiguratorState = await this.getConfiguratorState();
 
-                if (controller) {
-                    return controller.startRenderer();
+                // if this is declared, we have a furniture scene that we need to re-create the embed
+                // with new attributes
+                const product = dState.state.firstOfType("product");
+
+                if (product) {
+                    return this._transitionLegacyProduct(product);
                 }
 
-                return Promise.reject(new Error("ConfiguratorController.startRenderer() - legacy product transition failed"));
+                configState = dState.state;
             }
-
-            configState = dState;
-        }
-        catch (_err) {
-            // config state is not available
-            configState = null;
+            catch (_err) {
+                // config state is not available
+                configState = null;
+            }
         }
 
         // required attributes with defaults for plattar-configurator node
         const width: string = this.getAttribute("width") || "500px";
         const height: string = this.getAttribute("height") || "500px";
-        const server: string = this.getAttribute("server") || "production";
+        const server: string = Server.location().type;
 
         const viewer: HTMLElement = document.createElement("plattar-configurator");
         this._element = viewer;
@@ -290,7 +326,7 @@ export class ConfiguratorController extends PlattarController {
         const showUI: string | null = this.getAttribute("show-ui");
 
         if (configState) {
-            const encodedState = configState.state.encode();
+            const encodedState = configState.encode();
 
             if (encodedState.length < 6000) {
                 viewer.setAttribute("config-state", encodedState);
@@ -314,6 +350,25 @@ export class ConfiguratorController extends PlattarController {
 
             return accept(viewer);
         });
+    }
+
+    /**
+     * Legacy furniture scenes carry a "product" state entry — the embed is
+     * re-created with product attributes and rendering restarts there
+     */
+    private async _transitionLegacyProduct(product: SceneProductData): Promise<HTMLElement> {
+        this.parent.lockObserver();
+        this.parent.destroy();
+        this.setAttribute("product-id", product.scene_product_id);
+        this.removeAttribute("scene-id");
+        this.parent.unlockObserver();
+        const controller = this.parent.create();
+
+        if (controller) {
+            return controller.startRenderer();
+        }
+
+        return Promise.reject(new Error("ConfiguratorController.startRenderer() - legacy product transition failed"));
     }
 
     public async initAR(): Promise<LauncherAR> {
