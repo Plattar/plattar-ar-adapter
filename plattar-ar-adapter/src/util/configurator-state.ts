@@ -460,16 +460,18 @@ export class ConfiguratorState {
 
     /**
      * Decodes a previously generated state
-     * @param sceneID 
-     * @param state 
-     * @returns 
+     * @param sceneID
+     * @param state
+     * @param existingState - (optional) reuse this already-decoded instance instead of
+     * parsing a fresh one, so mutations applied to it before this call are preserved
+     * @returns
      */
-    public static async decodeState(sceneID: string | null | undefined = null, state: string | null | undefined = null): Promise<DecodedConfiguratorState> {
+    public static async decodeState(sceneID: string | null | undefined = null, state: string | null | undefined = null, existingState: ConfiguratorState | null | undefined = null): Promise<DecodedConfiguratorState> {
         if (!sceneID || !state) {
             throw new Error("ConfiguratorState.decodeState(sceneID, state) - sceneID and state must be defined");
         }
 
-        const configState: ConfiguratorState = new ConfiguratorState(state);
+        const configState: ConfiguratorState = existingState ?? new ConfiguratorState(state);
 
         const fscene: Scene = new Scene(sceneID);
         fscene.include(Project);

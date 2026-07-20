@@ -44,6 +44,12 @@ export abstract class PlattarController {
     protected _element: HTMLElement | null = null;
     protected _prevQROpt: any = null;
 
+    // when the renderer was booted from a supplied config-state attribute the
+    // state is decoded locally without the scene fetch — this keeps that live
+    // instance (mutated by the messenger observers as the user configures) so
+    // a later full decode for QR/AR reuses it instead of losing those changes
+    protected _bootConfigState: ConfiguratorState | null = null;
+
     private _selectVariationObserver: any = null;
     private _selectVariationIDObserver: any = null;
     private _selectVariationSKUObserver: any = null;
@@ -69,7 +75,7 @@ export abstract class PlattarController {
         // get a list of variation SKU's to use for initialising
         const variationSKUs: string | null = this.getAttribute("variation-sku");
         // generate the decoded configurator state
-        const decodedState: DecodedConfiguratorState = configState ? await ConfiguratorState.decodeState(sceneID, configState) : await ConfiguratorState.decodeScene(sceneID);
+        const decodedState: DecodedConfiguratorState = configState ? await ConfiguratorState.decodeState(sceneID, configState, this._bootConfigState) : await ConfiguratorState.decodeScene(sceneID);
 
         // change the ID's and SKU's (if any) of the default configuration state
         const variationIDList: Array<string> = variationIDs ? variationIDs.split(",") : [];
@@ -107,14 +113,14 @@ export abstract class PlattarController {
      * Setup messenger observers to detect variation changes and apply to the internal
      * configuration state
      */
-    protected setupMessengerObservers(viewer: any, configState: DecodedConfiguratorState): void {
+    protected setupMessengerObservers(viewer: any, configState: ConfiguratorState): void {
         this._selectVariationObserver = viewer.messengerInstance.observer.subscribe("selectVariation", (cd: any) => {
             if (cd.type === "call") {
                 const args: string | Array<string> | undefined | null = cd.data[0];
                 const variations: Array<string> = args ? (Array.isArray(args) ? args : [args]) : [];
 
                 variations.forEach((variationID: string) => {
-                    configState.state.setVariationID(variationID);
+                    configState.setVariationID(variationID);
                 });
             }
         });
@@ -125,7 +131,7 @@ export abstract class PlattarController {
                 const variations: Array<string> = args ? (Array.isArray(args) ? args : [args]) : [];
 
                 variations.forEach((variationID: string) => {
-                    configState.state.setVariationID(variationID);
+                    configState.setVariationID(variationID);
                 });
             }
         });
@@ -136,7 +142,7 @@ export abstract class PlattarController {
                 const variations: Array<string> = args ? (Array.isArray(args) ? args : [args]) : [];
 
                 variations.forEach((variationSKU: string) => {
-                    configState.state.setVariationSKU(variationSKU);
+                    configState.setVariationSKU(variationSKU);
                 });
             }
         });

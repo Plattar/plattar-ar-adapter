@@ -245,7 +245,7 @@ export class VTOController extends PlattarController {
             this.append(viewer);
 
             if (configState) {
-                this.setupMessengerObservers(viewer, configState);
+                this.setupMessengerObservers(viewer, configState.state);
             }
 
             return accept(viewer);
