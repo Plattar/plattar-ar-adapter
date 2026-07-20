@@ -166,18 +166,11 @@ export class VTOController extends PlattarController {
         if (!opt.detached) {
             this._state = ControllerState.QRCode;
 
-            return new Promise<HTMLElement>((accept, reject) => {
-                viewer.onload = () => {
-                    return accept(viewer);
-                };
-
-                this.append(viewer);
-            });
+            this.append(viewer);
+            return this._awaitLoad(viewer);
         }
 
-        return new Promise<HTMLElement>((accept, reject) => {
-            return accept(viewer);
-        });
+        return Promise.resolve(viewer);
     }
 
     public async startRenderer(): Promise<HTMLElement> {

@@ -42,6 +42,19 @@ export class ConfiguratorState {
     // This maps Variation SKU against a Variation ID - populated by decodeScene() function
     private readonly _mappedVariationSKUValues: Map<string, Array<string>>;
 
+    // Cache for encodeSceneGraphID() - keyed by serialised scene graph JSON so state
+    // changes automatically bust the cache, and concurrent in-flight calls share one fetch
+    private _cachedSceneGraphID: Promise<string> | null = null;
+    private _cachedSceneGraphJSON: string | null = null;
+
+    // Memoised result of the sceneGraph getter - cleared whenever state is mutated
+    private _cachedSceneGraph: any | null = null;
+
+    // Static page-lifetime cache for Scene API responses, keyed by sceneID.
+    // Shared across all controller instances so that multiple <plattar-embed>
+    // elements with the same scene-id (or a recreated controller) reuse one fetch.
+    private static readonly _sceneAPICache: Map<string, Promise<Scene>> = new Map();
+
     constructor(state: string | null | undefined = null) {
         this._mappedVariationIDValues = new Map<string, string>();
         this._mappedVariationSKUValues = new Map<string, Array<string>>();
@@ -159,6 +172,7 @@ export class ConfiguratorState {
             newData[meta.scene_product_index] = SceneModelID;
             newData[meta.product_variation_index] = null;
             newData[meta.meta_index] = metaData;
+            this._cachedSceneGraph = null;
         }
     }
 
@@ -193,6 +207,7 @@ export class ConfiguratorState {
             newData[meta.product_index] = productID;
             newData[meta.product_variation_index] = productVariationID;
             newData[meta.meta_index] = metaData;
+            this._cachedSceneGraph = null;
         }
     }
 
@@ -228,6 +243,7 @@ export class ConfiguratorState {
             newData[meta.scene_product_index] = sceneProductID;
             newData[meta.product_variation_index] = productVariationID;
             newData[meta.meta_index] = metaData;
+            this._cachedSceneGraph = null;
         }
     }
 
@@ -459,6 +475,35 @@ export class ConfiguratorState {
     }
 
     /**
+     * Returns a cached Promise<Scene> for the given sceneID, firing at most one
+     * API request per sceneID per page lifetime.  Both decodeState() and
+     * decodeScene() share this cache so they never race each other.
+     */
+    private static _fetchScene(sceneID: string): Promise<Scene> {
+        const cached = ConfiguratorState._sceneAPICache.get(sceneID);
+
+        if (cached) {
+            return cached;
+        }
+
+        const fscene: Scene = new Scene(sceneID);
+        fscene.include(Project);
+        fscene.include(SceneModel);
+        fscene.include(Product);
+        fscene.include(SceneProduct.include(Product.include(ProductVariation)));
+
+        const promise = fscene.get() as Promise<Scene>;
+        ConfiguratorState._sceneAPICache.set(sceneID, promise);
+
+        // Bust the cache on failure so the next call retries
+        promise.catch(() => {
+            ConfiguratorState._sceneAPICache.delete(sceneID);
+        });
+
+        return promise;
+    }
+
+    /**
      * Decodes a previously generated state
      * @param sceneID
      * @param state
@@ -472,15 +517,7 @@ export class ConfiguratorState {
         }
 
         const configState: ConfiguratorState = existingState ?? new ConfiguratorState(state);
-
-        const fscene: Scene = new Scene(sceneID);
-        fscene.include(Project);
-        fscene.include(Product);
-        fscene.include(SceneProduct);
-        fscene.include(SceneModel);
-        fscene.include(SceneProduct.include(Product.include(ProductVariation)));
-
-        const scene: Scene = await fscene.get();
+        const scene: Scene = await ConfiguratorState._fetchScene(sceneID);
 
         return {
             scene: scene,
@@ -500,15 +537,7 @@ export class ConfiguratorState {
         }
 
         const configState: ConfiguratorState = new ConfiguratorState();
-
-        const fscene: Scene = new Scene(sceneID);
-        fscene.include(Project);
-        fscene.include(SceneProduct);
-        fscene.include(SceneModel);
-        fscene.include(Product);
-        fscene.include(SceneProduct.include(Product.include(ProductVariation)));
-
-        const scene: Scene = await fscene.get();
+        const scene: Scene = await ConfiguratorState._fetchScene(sceneID);
 
         const sceneProducts: Array<SceneProduct> = scene.relationships.filter(SceneProduct);
         const sceneModels: Array<SceneModel> = scene.relationships.filter(SceneModel);
@@ -578,41 +607,52 @@ export class ConfiguratorState {
         return btoa(JSON.stringify(this._state));
     }
 
-    public async encodeSceneGraphID(): Promise<string> {
+    public encodeSceneGraphID(): Promise<string> {
         const graph: any = this.sceneGraph;
+        const graphJSON: string = JSON.stringify(graph);
+
+        // Return cached promise if the scene graph state hasn't changed.
+        // Caching the Promise (not the resolved value) means concurrent in-flight
+        // calls also share a single fetch rather than firing multiple requests.
+        if (this._cachedSceneGraphID !== null && this._cachedSceneGraphJSON === graphJSON) {
+            return this._cachedSceneGraphID;
+        }
 
         // some scene-graphs are very large in size, we store it remotely
         // this storage will expire in 10 minutes so this is a non-permanent version
         // and is designed for quick ar
         const url: string = `https://c.plattar.com/v3/redir/store`;
 
-        // finally send our scene-graph to the backend to generate the AR file and return
-        try {
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    data: {
-                        attributes: {
-                            data: graph
-                        }
+        this._cachedSceneGraphJSON = graphJSON;
+        this._cachedSceneGraphID = fetch(url, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                data: {
+                    attributes: {
+                        data: graph
                     }
-                })
-            });
-
+                }
+            })
+        }).then(async (response) => {
             if (!response.ok) {
                 throw new Error(`ConfiguratorState.encodeSceneGraphID() - network response was not ok ${response.status}`);
             }
 
             const data = await response.json();
 
-            return data.data.id;
-        }
-        catch (error: any) {
+            return data.data.id as string;
+        }).catch((error: any) => {
+            // Bust the cache on failure so the next call retries
+            this._cachedSceneGraphID = null;
+            this._cachedSceneGraphJSON = null;
+
             throw new Error(`ConfiguratorState.encodeSceneGraphID() - there was a request error to ${url}, error was ${error.message}`);
-        }
+        });
+
+        return this._cachedSceneGraphID;
     }
 
     /**
@@ -620,6 +660,10 @@ export class ConfiguratorState {
      * NOTE: Eventually this structure should replace ConfiguratorState
      */
     public get sceneGraph(): any {
+        if (this._cachedSceneGraph !== null) {
+            return this._cachedSceneGraph;
+        }
+
         const objects: Array<SceneProductData> = this.array();
 
         // in here we need to generate the schema input to be sent to the backend service
@@ -651,6 +695,8 @@ export class ConfiguratorState {
             }
         });
 
-        return schema;
+        this._cachedSceneGraph = schema;
+
+        return this._cachedSceneGraph;
     }
 }

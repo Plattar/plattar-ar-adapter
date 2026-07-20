@@ -127,13 +127,8 @@ export class WebXRController extends PlattarController {
         this._state = ControllerState.QRCode;
         this._prevQROpt = opt;
 
-        return new Promise<HTMLElement>((accept, reject) => {
-            viewer.onload = () => {
-                return accept(viewer);
-            };
-
-            this.append(viewer);
-        });
+        this.append(viewer);
+        return this._awaitLoad(viewer);
     }
 
     public async startRenderer(): Promise<HTMLElement> {
@@ -174,11 +169,8 @@ export class WebXRController extends PlattarController {
             viewer.setAttribute("show-ui", showUI);
         }
 
-        return new Promise<HTMLElement>((accept, reject) => {
-            this.append(viewer);
-
-            return accept(viewer);
-        });
+        this.append(viewer);
+        return Promise.resolve(viewer);
     }
 
     public override async initAR(): Promise<LauncherAR> {

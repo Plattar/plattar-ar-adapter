@@ -52,6 +52,8 @@ export class RawAR extends LauncherAR {
 
     private _SetupAnalytics(): Promise<void> {
         return new Promise<void>((accept, _reject) => {
+            if (this._analytics !== null) return accept();
+
             const sceneID: string | null = this._options.sceneID;
 
             if (!sceneID) {

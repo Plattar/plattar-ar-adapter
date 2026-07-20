@@ -60,6 +60,20 @@ export default class PlattarEmbed extends HTMLElement {
     }
 
     /**
+     * Clean up when the element is removed from the DOM.
+     * Disconnects the MutationObserver and removes all messenger subscriptions
+     * to prevent memory leaks from dangling closures.
+     */
+    disconnectedCallback() {
+        if (this._observer) {
+            this._observer.disconnect();
+            this._observer = null;
+        }
+
+        this.destroy();
+    }
+
+    /**
      * creates a brand new instance of this embed
      */
     public create(): PlattarController | null {

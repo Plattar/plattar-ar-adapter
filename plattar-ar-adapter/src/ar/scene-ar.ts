@@ -51,6 +51,8 @@ export class SceneAR extends LauncherAR {
     }
 
     private _SetupAnalytics(scene: Scene): void {
+        if (this._analytics !== null) return;
+
         let analytics: Analytics | null = null;
 
         // setup scene stuff (if any)
@@ -168,7 +170,6 @@ export class SceneAR extends LauncherAR {
 
             const scene: Scene = new Scene(this.sceneID);
             scene.include(Project);
-            scene.include(SceneProduct);
             scene.include(SceneProduct.include(Product));
             scene.include(SceneModel);
 

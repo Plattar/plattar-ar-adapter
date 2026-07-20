@@ -44,6 +44,8 @@ export class ModelAR extends LauncherAR {
     }
 
     private _SetupAnalytics(model: FileModel): void {
+        if (this._analytics !== null) return;
+
         let analytics: Analytics | null = null;
 
         const project: Project | undefined = model.relationships.find(Project);

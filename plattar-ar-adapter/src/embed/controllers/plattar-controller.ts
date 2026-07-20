@@ -288,8 +288,9 @@ export abstract class PlattarController {
         }
         else {
             try {
-                const sceneGraphID: string = await (await this.getConfiguratorState()).state.encodeSceneGraphID();
-                dst += "&scene_graph_id=" + sceneGraphID;
+                const configState = await this.getConfiguratorState();
+                const encodedID: string = await configState.state.encodeSceneGraphID();
+                dst += "&scene_graph_id=" + encodedID;
             }
             catch (_err) {
                 // scene graph ID not available for some reason
@@ -305,13 +306,8 @@ export abstract class PlattarController {
         if (!opt.detached) {
             this._state = ControllerState.QRCode;
 
-            return new Promise<HTMLElement>((accept, reject) => {
-                this.append(viewer);
-
-                viewer.onload = () => {
-                    return accept(viewer);
-                };
-            });
+            this.append(viewer);
+            return this._awaitLoad(viewer);
         }
 
         return new Promise<HTMLElement>((accept, reject) => {
@@ -323,6 +319,23 @@ export abstract class PlattarController {
      * Initialise and return a launcher that can be used to start AR
      */
     public abstract initAR(): Promise<LauncherAR>;
+
+    /**
+     * Appends the viewer to the shadow DOM and waits for its onload event.
+     * Rejects if onload does not fire within timeoutMs (default 30 s) so
+     * callers are never left with a permanently-pending Promise.
+     */
+    protected _awaitLoad(viewer: HTMLElement, timeoutMs: number = 30000): Promise<HTMLElement> {
+        return new Promise<HTMLElement>((accept, reject) => {
+            const timeout = setTimeout(() => {
+                reject(new Error("PlattarController._awaitLoad() - element did not fire onload within " + timeoutMs + "ms"));
+            }, timeoutMs);
+            (viewer as any).onload = () => {
+                clearTimeout(timeout);
+                accept(viewer);
+            };
+        });
+    }
 
     /**
      * Removes the currently active renderer view from the DOM

@@ -103,6 +103,12 @@ export class ConfiguratorController extends PlattarController {
 
                 return Promise.reject(new Error("ConfiguratorController.startARQRCode() - legacy product transition failed"));
             }
+
+            // Kick off scene-graph encoding immediately while we proceed to the base
+            // implementation — the result is Promise-cached so no duplicate request is fired
+            if (!this.getAttribute("scene-graph-id")) {
+                dState.state.encodeSceneGraphID().catch(() => null);
+            }
         }
         catch (_err) {
         }

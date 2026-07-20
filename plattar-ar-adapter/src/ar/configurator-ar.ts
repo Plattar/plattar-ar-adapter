@@ -39,6 +39,8 @@ export class ConfiguratorAR extends LauncherAR {
     }
 
     private _SetupAnalytics(): void {
+        if (this._analytics !== null) return;
+
         const scene: Scene = this._options.state.scene;
         let analytics: Analytics | null = null;
 

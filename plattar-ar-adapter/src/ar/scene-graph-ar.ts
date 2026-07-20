@@ -20,6 +20,7 @@ export class SceneGraphAR extends LauncherAR {
 
     // analytics instance
     private _analytics: Analytics | null = null;
+    private _analyticsSetup: Promise<Scene> | null = null;
     private _options: SceneGraphAROptions;
 
     // this thing controls the actual AR view
@@ -33,7 +34,10 @@ export class SceneGraphAR extends LauncherAR {
         this._ar = null;
     }
 
-    private async _SetupAnalytics(): Promise<Scene> {
+    private _SetupAnalytics(): Promise<Scene> {
+        if (this._analyticsSetup !== null) return this._analyticsSetup;
+
+        this._analyticsSetup = (async (): Promise<Scene> => {
         const scene: Scene = new Scene(this._options.sceneID);
         scene.include(Project);
 
@@ -67,6 +71,9 @@ export class SceneGraphAR extends LauncherAR {
         }
 
         return fetchedScene;
+        })();
+
+        return this._analyticsSetup;
     }
 
     /**

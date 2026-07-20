@@ -67,6 +67,8 @@ export class ProductAR extends LauncherAR {
     }
 
     private _SetupAnalytics(product: Product, variation: ProductVariation): void {
+        if (this._analytics !== null) return;
+
         let analytics: Analytics | null = null;
 
         const scene: Scene | undefined = product.relationships.find(Scene);
@@ -127,9 +129,7 @@ export class ProductAR extends LauncherAR {
             }
 
             const product: Product = new Product(this.productID);
-            product.include(ProductVariation);
             product.include(ProductVariation.include(FileModel));
-            product.include(Scene);
             product.include(Scene.include(Project));
 
             product.get().then((product: Product) => {

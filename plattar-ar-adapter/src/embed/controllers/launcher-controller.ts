@@ -76,6 +76,12 @@ export class LauncherController extends PlattarController {
 
                 return Promise.reject(new Error("LauncherController.startARQRCode() - legacy product transition failed"));
             }
+
+            // Kick off scene-graph encoding immediately while we proceed to the base
+            // implementation — the result is Promise-cached so no duplicate request is fired
+            if (!this.getAttribute("scene-graph-id")) {
+                dState.state.encodeSceneGraphID().catch(() => null);
+            }
         }
         catch (_err) {
         }
@@ -158,11 +164,10 @@ export class LauncherController extends PlattarController {
         if (sceneGraphID) {
             viewer.setAttribute("scene-graph-id", sceneGraphID);
         }
-        else {
+        else if (configState) {
             try {
-                const sceneGraphID: string = await (await this.getConfiguratorState()).state.encodeSceneGraphID();
-
-                viewer.setAttribute("scene-graph-id", sceneGraphID);
+                const encodedID: string = await configState.state.encodeSceneGraphID();
+                viewer.setAttribute("scene-graph-id", encodedID);
             }
             catch (_err) {
                 // scene graph ID not available for some reason
