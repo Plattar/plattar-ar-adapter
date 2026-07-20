@@ -173,6 +173,7 @@ export class ConfiguratorController extends PlattarController {
 
         viewer.setAttribute("width", width);
         viewer.setAttribute("height", height);
+        viewer.setAttribute("server", Server.location().type);
 
         if (opt.color) {
             viewer.setAttribute("color", opt.color);
@@ -188,7 +189,16 @@ export class ConfiguratorController extends PlattarController {
 
         viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
 
-        let dst: string = Server.location().base + "renderer/configurator.html?scene_id=" + sceneID;
+        let dst: string = `https://renderer.plattar.com/configurator.html?scene_id=${sceneID}`;
+
+        switch (Server.location().type) {
+            case 'review':
+                dst = `https://renderer-review.plattar.com/configurator.html?scene_id=${sceneID}`
+                break;
+            case 'staging':
+                dst = `https://renderer.plattar.space/configurator.html?scene_id=${sceneID}`
+                break;
+        }
 
         const showAR: string | null = this.getAttribute("show-ar");
         const showUI: string | null = this.getAttribute("show-ui");
@@ -196,7 +206,16 @@ export class ConfiguratorController extends PlattarController {
         const sceneGraphID: string | null = this.getAttribute("scene-graph-id");
 
         if (showUI && showUI === "true") {
-            dst = Server.location().base + "configurator/dist/index.html?scene_id=" + sceneID;
+            dst = `https://configurator.plattar.com/index.html?scene_id=${sceneID}`;
+
+            switch (Server.location().type) {
+                case 'review':
+                    dst = `https://configurator-review.plattar.com/configurator.html?scene_id=${sceneID}`
+                    break;
+                case 'staging':
+                    dst = `https://configurator.plattar.space/configurator.html?scene_id=${sceneID}`
+                    break;
+            }
         }
 
         if (configState) {
@@ -293,7 +312,7 @@ export class ConfiguratorController extends PlattarController {
         // required attributes with defaults for plattar-configurator node
         const width: string = this.getAttribute("width") || "500px";
         const height: string = this.getAttribute("height") || "500px";
-        const server: string = this.getAttribute("server") || "production";
+        const server: string = Server.location().type;
 
         const viewer: HTMLElement = document.createElement("plattar-configurator");
         this._element = viewer;

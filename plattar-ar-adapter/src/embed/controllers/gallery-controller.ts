@@ -77,6 +77,7 @@ export class GalleryController extends PlattarController {
 
         viewer.setAttribute("width", width);
         viewer.setAttribute("height", height);
+        viewer.setAttribute("server", Server.location().type);
 
         if (opt.color) {
             viewer.setAttribute("color", opt.color);
@@ -92,7 +93,16 @@ export class GalleryController extends PlattarController {
 
         viewer.setAttribute("shorten", (opt.shorten && (opt.shorten === true || opt.shorten === "true")) ? "true" : "false");
 
-        const dst: string = Server.location().base + "renderer/gallery.html?scene_id=" + sceneID;
+        let dst: string = `https://renderer.plattar.com/gallery.html?scene_id=${sceneID}`;
+
+        switch (Server.location().type) {
+            case 'review':
+                dst = `https://renderer-review.plattar.com/gallery.html?scene_id=${sceneID}`
+                break;
+            case 'staging':
+                dst = `https://renderer.plattar.space/gallery.html?scene_id=${sceneID}`
+                break;
+        }
 
         viewer.setAttribute("url", opt.url || dst);
 

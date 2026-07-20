@@ -6,7 +6,7 @@
 	"module": "dist/index.js",
 	"types": "dist/index.d.ts",
 	"scripts": {
-		"clean": "rimraf build dist node_modules",
+		"clean": "node -e \"['build','dist','node_modules'].forEach(p=>require('fs').rmSync(p,{recursive:true,force:true}))\"",
 		"build": "npm run clean && npm install && npm run build-ts && npm run build-es2019 && npm run build-es2015",
 		"build-ts": "tsc --noEmitOnError",
 		"build-es2019": "rimraf build/es2019 && mkdirp build/es2019 && browserify --standalone PlattarARAdapter dist/index.js -o build/es2019/plattar-ar-adapter.js && uglifyjs build/es2019/plattar-ar-adapter.js --output build/es2019/plattar-ar-adapter.min.js",
@@ -42,23 +42,22 @@
 	},
 	"homepage": "https://www.plattar.com",
 	"dependencies": {
-		"@plattar/plattar-analytics": "^1.152.2",
-		"@plattar/plattar-api": "^1.186.3",
-		"@plattar/plattar-qrcode": "1.178.1",
-		"@plattar/plattar-services": "^1.186.1",
-		"@plattar/plattar-web": "^1.182.2"
+		"@plattar/plattar-analytics": "^2.7.1",
+		"@plattar/plattar-api": "^2.7.1",
+		"@plattar/plattar-qrcode": "2.7.1",
+		"@plattar/plattar-web": "^2.7.2"
 	},
 	"devDependencies": {
-		"@babel/cli": "^7.27.2",
-		"@babel/core": "^7.27.4",
-		"@babel/preset-env": "^7.27.2",
+		"@babel/cli": "^7.28.6",
+		"@babel/core": "^7.29.0",
+		"@babel/preset-env": "^7.29.5",
 		"browserify": "^17.0.1",
 		"chokidar-cli": "^3.0.0",
 		"concurrently": "^9.2.1",
 		"http-server": "^14.1.1",
 		"mkdirp": "^3.0.1",
 		"rimraf": "^6.1.3",
-		"typescript": "^5.8.3",
+		"typescript": "^6.0.3",
 		"uglify-js": "^3.19.3"
 	},
 	"publishConfig": {
