@@ -54,6 +54,10 @@ export abstract class PlattarController {
     private _selectVariationIDObserver: any = null;
     private _selectVariationSKUObserver: any = null;
 
+    // watches for the renderer becoming visible after booting inside a hidden
+    // (display:none / zero-size) container so the camera focus can be corrected
+    private _revealObserver: ResizeObserver | null = null;
+
     constructor(parent: PlattarEmbed) {
         this._parent = parent;
     }
@@ -166,6 +170,65 @@ export abstract class PlattarController {
             this._selectVariationSKUObserver();
             this._selectVariationSKUObserver = null;
         }
+    }
+
+    /**
+     * When the renderer boots inside a hidden container (a display:none / zero-size
+     * ancestor that is revealed later, e.g. behind a "View in 3D" toggle) the embedded
+     * scene initialises against a 0×0 viewport. The orbit controls then latch onto a
+     * degenerate focus target and, once revealed, the camera pivots in place instead of
+     * orbiting the model (PLAT-571). We watch the viewer for its first zero→visible
+     * transition and re-issue the default camera move, which re-establishes the focus
+     * target against the now-correct viewport. This fires at most once and is a no-op
+     * for embeds that boot while already visible.
+     */
+    protected recenterCameraOnReveal(viewer: any): void {
+        // ResizeObserver is required to detect the reveal — bail gracefully if unavailable
+        if (typeof ResizeObserver === "undefined" || !viewer) {
+            return;
+        }
+
+        // clean up any previous observer (e.g. the renderer was re-created)
+        if (this._revealObserver) {
+            this._revealObserver.disconnect();
+            this._revealObserver = null;
+        }
+
+        // tracks whether the viewer was ever measured at zero size before becoming
+        // visible — only that hidden→visible path needs the focus correction
+        let bootedHidden: boolean = false;
+
+        const observer: ResizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+            const entry: ResizeObserverEntry | undefined = entries[0];
+            const rect: DOMRectReadOnly | DOMRect = entry ? entry.contentRect : viewer.getBoundingClientRect();
+            const visible: boolean = rect.width > 0 && rect.height > 0;
+
+            if (!visible) {
+                // booted or currently hidden — remember so we recenter on reveal
+                bootedHidden = true;
+                return;
+            }
+
+            // first non-zero measurement — stop observing regardless of outcome
+            observer.disconnect();
+
+            if (this._revealObserver === observer) {
+                this._revealObserver = null;
+            }
+
+            // a normally-visible boot already establishes the correct focus target
+            if (bootedHidden) {
+                try {
+                    viewer.messenger?.moveToCamera("default");
+                }
+                catch (_err) {
+                    // messenger not ready or viewer has no camera controls — safe to ignore
+                }
+            }
+        });
+
+        observer.observe(viewer);
+        this._revealObserver = observer;
     }
 
     /**
@@ -364,6 +427,11 @@ export abstract class PlattarController {
         }
 
         this._element = null;
+
+        if (this._revealObserver) {
+            this._revealObserver.disconnect();
+            this._revealObserver = null;
+        }
 
         this.removeMessengerObservers();
 

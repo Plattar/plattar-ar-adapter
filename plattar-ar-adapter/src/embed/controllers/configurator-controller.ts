@@ -348,6 +348,9 @@ export class ConfiguratorController extends PlattarController {
                 this.setupMessengerObservers(viewer, configState);
             }
 
+            // correct the orbit focus if the renderer booted inside a hidden container (PLAT-571)
+            this.recenterCameraOnReveal(viewer);
+
             return accept(viewer);
         });
     }
