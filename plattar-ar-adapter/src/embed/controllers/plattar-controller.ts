@@ -55,8 +55,8 @@ export abstract class PlattarController {
     private _selectVariationSKUObserver: any = null;
 
     // watches for the renderer becoming visible after booting inside a hidden
-    // (display:none / zero-size) container so the camera focus can be corrected
-    private _revealObserver: ResizeObserver | null = null;
+    // (display:none) container so the camera focus can be corrected
+    private _revealObserver: IntersectionObserver | null = null;
 
     constructor(parent: PlattarEmbed) {
         this._parent = parent;
@@ -173,18 +173,24 @@ export abstract class PlattarController {
     }
 
     /**
-     * When the renderer boots inside a hidden container (a display:none / zero-size
-     * ancestor that is revealed later, e.g. behind a "View in 3D" toggle) the embedded
-     * scene initialises against a 0×0 viewport. The orbit controls then latch onto a
+     * When the renderer boots inside a hidden container (a display:none ancestor that
+     * is revealed later, e.g. behind a "View in 3D" toggle) the embedded scene
+     * initialises against a 0×0 viewport. The orbit controls then latch onto a
      * degenerate focus target and, once revealed, the camera pivots in place instead of
-     * orbiting the model (PLAT-571). We watch the viewer for its first zero→visible
+     * orbiting the model (PLAT-571). We watch the viewer for its first hidden→visible
      * transition and re-issue the default camera move, which re-establishes the focus
      * target against the now-correct viewport. This fires at most once and is a no-op
      * for embeds that boot while already visible.
+     *
+     * IntersectionObserver is used rather than ResizeObserver because the <plattar-embed>
+     * host and the <plattar-configurator> are display:inline — their own boxes do not
+     * change when a display:none ancestor is toggled (only the nested iframe resizes), so
+     * a ResizeObserver on the viewer never sees the reveal. IntersectionObserver reports
+     * the visibility transition reliably and across shadow boundaries.
      */
     protected recenterCameraOnReveal(viewer: any): void {
-        // ResizeObserver is required to detect the reveal — bail gracefully if unavailable
-        if (typeof ResizeObserver === "undefined" || !viewer) {
+        // IntersectionObserver is required to detect the reveal — bail gracefully if unavailable
+        if (typeof IntersectionObserver === "undefined" || !viewer) {
             return;
         }
 
@@ -194,14 +200,13 @@ export abstract class PlattarController {
             this._revealObserver = null;
         }
 
-        // tracks whether the viewer was ever measured at zero size before becoming
-        // visible — only that hidden→visible path needs the focus correction
+        // tracks whether the viewer was ever off-screen/hidden before becoming visible —
+        // only that hidden→visible path needs the focus correction
         let bootedHidden: boolean = false;
 
-        const observer: ResizeObserver = new ResizeObserver((entries: ResizeObserverEntry[]) => {
-            const entry: ResizeObserverEntry | undefined = entries[0];
-            const rect: DOMRectReadOnly | DOMRect = entry ? entry.contentRect : viewer.getBoundingClientRect();
-            const visible: boolean = rect.width > 0 && rect.height > 0;
+        const observer: IntersectionObserver = new IntersectionObserver((entries: IntersectionObserverEntry[]) => {
+            const entry: IntersectionObserverEntry | undefined = entries[entries.length - 1];
+            const visible: boolean = entry ? entry.isIntersecting : false;
 
             if (!visible) {
                 // booted or currently hidden — remember so we recenter on reveal
@@ -209,7 +214,7 @@ export abstract class PlattarController {
                 return;
             }
 
-            // first non-zero measurement — stop observing regardless of outcome
+            // first visible callback — stop observing regardless of outcome
             observer.disconnect();
 
             if (this._revealObserver === observer) {
@@ -218,12 +223,17 @@ export abstract class PlattarController {
 
             // a normally-visible boot already establishes the correct focus target
             if (bootedHidden) {
-                try {
-                    viewer.messenger?.moveToCamera("default");
-                }
-                catch (_err) {
-                    // messenger not ready or viewer has no camera controls — safe to ignore
-                }
+                // Defer past the reveal frame: the renderer restores a valid projection
+                // aspect from its own resize handler when the iframe becomes visible, and
+                // re-issuing the camera move at the exact reveal instant races that resize
+                // (the move's end-of-lerp recentre then reads a still-NaN projection and
+                // sticks to the degenerate target). Waiting a couple of frames lets the
+                // resize land first so the recentre resolves against a valid viewport.
+                const heal = () => {
+                    try { viewer.messenger?.moveToCamera("default"); }
+                    catch (_err) { /* messenger not ready or no camera controls — ignore */ }
+                };
+                requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(heal, 400)));
             }
         });
 
