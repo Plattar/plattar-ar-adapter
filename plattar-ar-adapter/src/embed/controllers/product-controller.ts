@@ -160,14 +160,14 @@ export class ProductController extends PlattarController {
 
             const qrOptions: string = btoa(JSON.stringify(opt));
 
-            let dst: string = `https://renderer.plattar.com/launcher.html?qr_options=${qrOptions}`;
+            let dst: string = `https://configurator.plattar.com/index.html?qr_options=${qrOptions}&launch_ar=true`;
 
             switch (Server.location().type) {
                 case 'review':
-                    dst = `https://renderer-review.plattar.com/launcher.html?qr_options=${qrOptions}`
+                    dst = `https://configurator-review.plattar.com/index.html?qr_options=${qrOptions}&launch_ar=true`
                     break;
                 case 'staging':
-                    dst = `https://renderer.plattar.space/launcher.html?qr_options=${qrOptions}`
+                    dst = `https://configurator.plattar.space/index.html?qr_options=${qrOptions}&launch_ar=true`
                     break;
             }
 
