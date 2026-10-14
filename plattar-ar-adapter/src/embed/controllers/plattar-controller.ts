@@ -312,6 +312,10 @@ export abstract class PlattarController {
 
         const qrOptions: string = btoa(JSON.stringify(opt));
 
+        //let configState: string | null = null;
+        const sceneID: string | null = this.getAttribute("scene-id");
+        const embedType: string | null = this.getAttribute("embed-type");
+
         let dst: string = `https://configurator.plattar.com/index.html?qr_options=${qrOptions}&launch_ar=true`;
 
         switch (Server.location().type) {
@@ -323,9 +327,21 @@ export abstract class PlattarController {
                 break;
         }
 
-        //let configState: string | null = null;
-        const sceneID: string | null = this.getAttribute("scene-id");
-        const embedType: string | null = this.getAttribute("embed-type");
+        // face-anchored virtual try-on launches through the renderer launcher
+        // (iOS Quick Look face AR, or the webcam try-on elsewhere) - the
+        // configurator's AR launch can't run it
+        if (embedType && embedType.toLowerCase() === "vto") {
+            dst = `https://renderer.plattar.com/launcher.html?qr_options=${qrOptions}`;
+
+            switch (Server.location().type) {
+                case 'review':
+                    dst = `https://renderer-review.plattar.com/launcher.html?qr_options=${qrOptions}`
+                    break;
+                case 'staging':
+                    dst = `https://renderer.plattar.space/launcher.html?qr_options=${qrOptions}`
+                    break;
+            }
+        }
         const productID: string | null = this.getAttribute("product-id");
         const sceneProductID: string | null = this.getAttribute("scene-product-id");
         const variationID: string | null = this.getAttribute("variation-id");

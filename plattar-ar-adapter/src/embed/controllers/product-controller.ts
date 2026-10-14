@@ -160,14 +160,17 @@ export class ProductController extends PlattarController {
 
             const qrOptions: string = btoa(JSON.stringify(opt));
 
-            let dst: string = `https://configurator.plattar.com/index.html?qr_options=${qrOptions}&launch_ar=true`;
+            // product-only QR codes (legacy product embeds, furniture scenes and the
+            // VTO launcher) must go to the renderer launcher - the configurator can
+            // only boot from a scene-id and shows an error for a product_id
+            let dst: string = `https://renderer.plattar.com/launcher.html?qr_options=${qrOptions}`;
 
             switch (Server.location().type) {
                 case 'review':
-                    dst = `https://configurator-review.plattar.com/index.html?qr_options=${qrOptions}&launch_ar=true`
+                    dst = `https://renderer-review.plattar.com/launcher.html?qr_options=${qrOptions}`
                     break;
                 case 'staging':
-                    dst = `https://configurator.plattar.space/index.html?qr_options=${qrOptions}&launch_ar=true`
+                    dst = `https://renderer.plattar.space/launcher.html?qr_options=${qrOptions}`
                     break;
             }
 
