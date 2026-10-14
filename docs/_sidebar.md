@@ -39,6 +39,7 @@
 
 * **Platform Integrations**
   * [Configurator Integration](integrations/configurator-integration.md)
+  * [Configurator Events & Quote Submissions](integrations/configurator-events.md)
   * [VTO Integration](integrations/vto-integration.md)
 
 * **Resources**

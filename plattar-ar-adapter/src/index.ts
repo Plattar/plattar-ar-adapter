@@ -11,6 +11,17 @@ export { ModelAR } from "./ar/model-ar";
 export { RawAR } from "./ar/raw-ar";
 export { Util } from "./util/util";
 export { ConfiguratorState } from "./util/configurator-state";
+export {
+    ConfiguratorConnection,
+    ConfiguratorConnectionOptions,
+    ConfiguratorReport,
+    ConfiguratorSelection,
+    ConfiguratorSummary,
+    ConfiguratorSummaryItem,
+    QuoteSubmission,
+    QuoteHandler,
+    QuoteHandlerResult
+} from "./configurator/configurator-connection";
 
 import PlattarEmbed from "./embed/plattar-embed";
 import version from "./version";
