@@ -140,7 +140,6 @@ export class ConfiguratorAR extends LauncherAR {
 
                     this._ar = new QuicklookViewer();
                     this._ar.modelUrl = modelUrl;
-                    this._ar.isVTO = true;
                     this._ar.banner = this.options.banner;
 
                     return this;
