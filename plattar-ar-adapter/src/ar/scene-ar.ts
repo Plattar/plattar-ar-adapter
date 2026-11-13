@@ -220,6 +220,7 @@ export class SceneAR extends LauncherAR {
                             return this._ComposeScene(scene, "vto").then((modelUrl: string) => {
                                 this._ar = new QuicklookViewer();
                                 this._ar.modelUrl = modelUrl;
+                                this._ar.isVTO = true;
                                 this._ar.banner = this.options.banner;
 
                                 return accept(this);

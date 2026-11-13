@@ -1,4 +1,5 @@
 import { ARBanner, ARViewer } from "./ar-viewer";
+import { ARLaunchGate } from "./ar-launch-gate";
 
 export default class QuicklookViewer extends ARViewer {
     constructor() {
@@ -16,6 +17,14 @@ export default class QuicklookViewer extends ARViewer {
     public start(): void {
         if (!this.modelUrl) {
             throw new Error("QuicklookViewer.start() - model url not set, use QuicklookViewer.modelUrl");
+        }
+
+        ARLaunchGate.launch(() => this._launch(), this.launchPromptText);
+    }
+
+    private _launch(): void {
+        if (!this.modelUrl) {
+            return;
         }
 
         const anchor: HTMLAnchorElement = document.createElement("a");
