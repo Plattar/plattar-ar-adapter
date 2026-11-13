@@ -18,6 +18,11 @@ export default class RealityViewer extends ARViewer {
             throw new Error("RealityViewer.start() - model url not set, use RealityViewer.modelUrl");
         }
 
+        // Shopify storefronts with the exit-interstitial script: open AR from a hidden iframe (see ARViewer)
+        if (ARViewer.openARLinkOutsideLinkInterceptor(this.modelUrl)) {
+            return;
+        }
+
         const anchor: HTMLAnchorElement = document.createElement("a");
         anchor.setAttribute("rel", "ar");
         anchor.setAttribute("allowsContentScaling", "0");
