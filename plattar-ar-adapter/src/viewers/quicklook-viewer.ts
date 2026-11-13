@@ -25,19 +25,25 @@ export default class QuicklookViewer extends ARViewer {
 
         const banner: ARBanner | null = this.banner;
         let url: string = this.modelUrl;
+        let handleQuicklook: ((event: any) => void) | null = null;
 
         if (banner) {
             url += `#callToAction=${banner.button}`;
             url += `&checkoutTitle=${banner.title}`;
             url += `&checkoutSubtitle=${banner.subtitle}`;
 
-            const handleQuicklook: (event: any) => void = (event: any) => {
+            handleQuicklook = (event: any) => {
                 if (event.data === "_apple_ar_quicklook_button_tapped") {
                     window.location.assign(this.composedActionURL);
                 }
             }
 
             anchor.addEventListener("message", handleQuicklook, false);
+        }
+
+        // Shopify storefronts with the exit-interstitial script: open AR from a hidden iframe (see ARViewer)
+        if (ARViewer.openARLinkOutsideLinkInterceptor(encodeURI(url), handleQuicklook)) {
+            return;
         }
 
         document.body.appendChild(anchor);
